@@ -1,13 +1,15 @@
 "use client";
 
 import { PlusIcon, Trash2Icon } from "lucide-react";
-import { useMemo, type ReactNode } from "react";
+import { useId, useMemo, useRef, useState, type ReactNode } from "react";
 
+import { downscaleToJpeg } from "@/components/event/photo-upload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { api, ApiError } from "@/lib/api";
 import type {
   Block,
   CountdownBlock,
@@ -22,6 +24,7 @@ import type {
   LinkItem,
   LinksBlock,
   LocationBlock,
+  Media,
   MediaMap,
   MediaRef,
   Occasion,
@@ -400,6 +403,16 @@ function ImageForm({
   );
 }
 
+const GALLERY_MAX_IMAGES = 24;
+const GALLERY_MAX_BATCH = 10;
+
+function galleryUploadErrorMessage(err: unknown): string {
+  if (err instanceof ApiError && (err.status === 404 || err.status === 501)) {
+    return "Photo uploads aren't available yet. Please check back soon.";
+  }
+  return err instanceof ApiError ? err.message : "Couldn't process or upload that image.";
+}
+
 function GalleryForm({
   block,
   onChange,
@@ -413,6 +426,53 @@ function GalleryForm({
   media: MediaMap;
   onMediaUploaded: (id: string, ref: MediaRef) => void;
 }) {
+  const inputId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const [failures, setFailures] = useState<{ name: string; message: string }[]>([]);
+  const [skipped, setSkipped] = useState(0);
+  const remainingSlots = Math.max(0, GALLERY_MAX_IMAGES - block.images.length);
+  const uploading = progress !== null;
+
+  async function handleFiles(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0) return;
+    const picked = Array.from(fileList).slice(0, Math.min(GALLERY_MAX_BATCH, remainingSlots));
+    setSkipped(fileList.length - picked.length);
+    setFailures([]);
+    if (picked.length === 0) {
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
+
+    // Uploaded one at a time: the server's image processor runs with
+    // concurrency 1 for the whole host (build-out plan §11.4), so parallel
+    // uploads would only queue or time out. Each `images` array appended to
+    // locally so onChange only ever receives slots with a real media_id —
+    // never an empty placeholder that would fail the content validator.
+    let currentImages = block.images;
+    const batchFailures: { name: string; message: string }[] = [];
+    for (let i = 0; i < picked.length; i++) {
+      const file = picked[i];
+      setProgress({ done: i, total: picked.length });
+      try {
+        const jpeg = await downscaleToJpeg(file);
+        const { media: uploaded } = await api<{ media: Media }>(`/v1/events/${eventId}/media`, {
+          method: "POST",
+          body: jpeg,
+          headers: { "Content-Type": "image/jpeg" },
+        });
+        onMediaUploaded(uploaded.id, { src: uploaded.src, width: uploaded.width, height: uploaded.height });
+        currentImages = [...currentImages, { media_id: uploaded.id, alt: "" }];
+        onChange({ images: currentImages });
+      } catch (err) {
+        batchFailures.push({ name: file.name, message: galleryUploadErrorMessage(err) });
+      }
+    }
+    setFailures(batchFailures);
+    setProgress(null);
+    if (inputRef.current) inputRef.current.value = "";
+  }
+
   return (
     <div className="flex flex-col gap-3">
       <KickerField idPrefix="gal" value={block.kicker} onChange={(kicker) => onChange({ kicker })} />
@@ -461,17 +521,48 @@ function GalleryForm({
           </div>
         ))}
       </div>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="self-start"
-        disabled={block.images.length >= 24}
-        onClick={() => onChange({ images: [...block.images, { media_id: "", alt: "" }] })}
-      >
-        <PlusIcon data-icon="inline-start" />
-        Add photo
-      </Button>
+      <div className="flex flex-col gap-2">
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={(e) => handleFiles(e.target.files)}
+          disabled={uploading || remainingSlots === 0}
+          className="sr-only"
+          id={inputId}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="self-start"
+          disabled={uploading || remainingSlots === 0}
+          onClick={() => inputRef.current?.click()}
+        >
+          <PlusIcon data-icon="inline-start" />
+          {progress ? `Uploading ${progress.done + 1} of ${progress.total}…` : "Add photos"}
+        </Button>
+        {remainingSlots === 0 && (
+          <p className="text-xs text-muted-foreground">Gallery is full — remove a photo to add more.</p>
+        )}
+        {skipped > 0 && (
+          <p role="status" className="text-xs text-muted-foreground">
+            {skipped === 1
+              ? "1 photo wasn't added — a gallery can hold up to 24 photos."
+              : `${skipped} photos weren't added — a gallery can hold up to 24 photos.`}
+          </p>
+        )}
+        {failures.length > 0 && (
+          <div role="alert" className="flex flex-col gap-1 text-xs text-destructive">
+            {failures.map((f, idx) => (
+              <p key={`${f.name}-${idx}`}>
+                {f.name}: {f.message}
+              </p>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
