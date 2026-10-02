@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# See You There — web
 
-## Getting Started
+Next.js 16 (App Router) + Tailwind 4 + shadcn/ui. Serves the marketing pages, public event pages, host app (`/app`) and admin (`/admin`). All data comes from the Go API in `../seeyouthere-backend`.
 
-First, run the development server:
+## Run locally
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Start the API first (see the backend README), then:
+
+```sh
+cp .env.example .env.local
+npm install
+npm run dev        # http://localhost:3100
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Login emails are sent through Zoho Mail (configured in the API's `.env`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev` / `build` / `start`
+- `npm run typecheck` — generates route types, then `tsc`
+- `npm run lint`
 
-## Learn More
+## How auth works
 
-To learn more about Next.js, take a look at the following resources:
+The API sets an HttpOnly `syt_session` cookie. Client components call the API directly with `credentials: "include"` (`src/lib/api.ts`). Server components read the cookie and forward it to `GET /v1/me` (`src/lib/session.ts`); `/app` redirects to `/login` when there is no session.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Environment
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Variable | Used by | Purpose |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | browser (baked in at build) | Public API URL, e.g. `https://api.seeuthere.at` |
+| `API_INTERNAL_URL` | Next.js server | API URL from inside the network, e.g. `http://api:8080` |
 
-## Deploy on Vercel
+## Adding UI components
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`npx shadcn@latest add <component>`. If npx fails with `ECOMPROMISED` on Windows, install `shadcn` in a temp folder and run `node <tmp>/node_modules/shadcn/dist/index.js add <component>`.
