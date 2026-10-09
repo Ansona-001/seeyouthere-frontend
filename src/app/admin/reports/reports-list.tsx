@@ -79,7 +79,7 @@ export function ReportsList({
                 <Button variant="outline" disabled={pending !== null} onClick={() => dismiss(r.id)}>
                   {pending === r.id ? "Dismissing…" : "Dismiss"}
                 </Button>
-                <Button variant="destructive" render={<Link href={`/admin/events/${r.event.id}`} />}>
+                <Button variant="destructive" render={<Link href={`/admin/events/${r.event.id}`} />} nativeButton={false}>
                   Review event
                 </Button>
               </div>

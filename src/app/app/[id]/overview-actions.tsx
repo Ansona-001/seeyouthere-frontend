@@ -92,12 +92,12 @@ export function OverviewActions({ event }: { event: Event }) {
 
       <div className="flex flex-wrap gap-2">
         {canEdit && (
-          <Button variant="outline" render={<Link href={`/edit/${event.id}`} />}>
+          <Button variant="outline" render={<Link href={`/edit/${event.id}`} />} nativeButton={false}>
             Edit content
           </Button>
         )}
         {event.url && (
-          <Button variant="outline" render={<a href={event.url} target="_blank" rel="noopener noreferrer" />}>
+          <Button variant="outline" render={<a href={event.url} target="_blank" rel="noopener noreferrer" />} nativeButton={false}>
             Preview
           </Button>
         )}

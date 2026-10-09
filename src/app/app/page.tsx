@@ -20,7 +20,7 @@ export default async function DashboardPage() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="font-heading text-3xl text-brand-heading">Your events</h1>
-        <Button render={<Link href="/create" />}>Create an event</Button>
+        <Button render={<Link href="/create" />} nativeButton={false}>Create an event</Button>
       </header>
 
       {!result.ok ? (
@@ -30,7 +30,7 @@ export default async function DashboardPage() {
       ) : result.data.events.length === 0 ? (
         <EmptyState
           title="No events yet"
-          action={<Button render={<Link href="/create" />}>Create your first event</Button>}
+          action={<Button render={<Link href="/create" />} nativeButton={false}>Create your first event</Button>}
         >
           Birthday, housewarming, wedding? Create a free page and start collecting RSVPs in minutes.
         </EmptyState>

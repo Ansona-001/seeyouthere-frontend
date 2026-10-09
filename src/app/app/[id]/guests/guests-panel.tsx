@@ -312,6 +312,7 @@ function GuestRow({
                   variant="outline"
                   size="sm"
                   render={<a href={whatsappLink(g.phone, g.invite_url)} target="_blank" rel="noopener noreferrer" />}
+                  nativeButton={false}
                 >
                   WhatsApp
                 </Button>

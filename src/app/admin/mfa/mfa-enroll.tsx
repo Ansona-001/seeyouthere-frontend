@@ -76,7 +76,7 @@ export function MfaEnroll() {
           <Button type="button" variant="outline" onClick={() => copy("uri", enrollment.otpauth_uri)}>
             {copied === "uri" ? "Copied" : "Copy setup link"}
           </Button>
-          <Button type="button" variant="outline" render={<a href={enrollment.otpauth_uri} />}>
+          <Button type="button" variant="outline" render={<a href={enrollment.otpauth_uri} />} nativeButton={false}>
             Open in authenticator app
           </Button>
         </div>
