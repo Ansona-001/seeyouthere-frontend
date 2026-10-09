@@ -4,6 +4,7 @@ import { PlusIcon, Trash2Icon } from "lucide-react";
 import { useId, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { downscaleToJpeg } from "@/components/event/photo-upload";
+import { BADGE_MAX, sanitizeBadge } from "@/components/event/theme-engine/ornament-keys";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -172,6 +173,21 @@ function HeroForm({
       </Field>
       <Field label="Subtitle" htmlFor="hero-subtitle">
         <Input id="hero-subtitle" maxLength={200} value={block.subtitle} onChange={(e) => onChange({ subtitle: e.target.value })} />
+      </Field>
+      <Field label="Badge text (optional)" htmlFor="hero-badge">
+        <Input
+          id="hero-badge"
+          autoComplete="off"
+          autoCapitalize="characters"
+          spellCheck={false}
+          aria-describedby="hero-badge-hint"
+          value={block.badge ?? ""}
+          onChange={(e) => onChange({ badge: sanitizeBadge(e.target.value) })}
+        />
+        <p id="hero-badge-hint" className="text-xs text-muted-foreground">
+          Up to {BADGE_MAX} characters, such as initials (A&amp;T) or an age (30). Letters, digits and &amp; · + - only.
+          Shown by themes with a monogram, numeral or seal.
+        </p>
       </Field>
       <div className="grid gap-1.5">
         <Label>Photo</Label>
