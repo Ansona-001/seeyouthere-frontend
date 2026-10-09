@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import type {
   Block,
   ClosedReason,
-  Decoration,
   FieldDef,
   HeroBlock as HeroBlockType,
   LocationBlock as LocationBlockType,
@@ -36,6 +35,13 @@ import { EventFooter } from "./footer";
 import { EventLayoutShell } from "./layouts";
 import { ScrollReveal } from "./scroll-reveal";
 import { EventTheme } from "./theme";
+import { HeroV2 } from "./theme-engine/hero";
+import { ART } from "./theme-engine/art/registry";
+import { artClearance } from "./theme-engine/ornament-keys";
+import { LayerStack } from "./theme-engine/layers";
+import { LayoutV2 } from "./theme-engine/layout";
+import { BadgeOrnament, DividerOrnament } from "./theme-engine/ornaments";
+import { ThemeRootV2 } from "./theme-engine/root";
 
 export type EventViewMode = "live" | "preview";
 
@@ -94,9 +100,61 @@ export function EventView({
   const heroBlock = content.find((block): block is HeroBlockType => block.type === "hero");
   const rest = content.filter((block) => block.type !== "hero");
   const locationBlock = content.find((block): block is LocationBlockType => block.type === "location");
-  const calendarLocation = locationBlock
-    ? [locationBlock.name, locationBlock.address].filter(Boolean).join(", ")
-    : "";
+  const calendarLocation = locationBlock ? [locationBlock.name, locationBlock.address].filter(Boolean).join(", ") : "";
+
+  const blocks = (
+    <ScrollReveal enabled={mode === "live"}>
+      {rest.map((block, index) => (
+        <BlockSection
+          key={block.id}
+          divider={
+            theme.engine === 2 ? (
+              <DividerOrnament divider={theme.ornament?.divider} />
+            ) : (
+              <DecorationDivider decoration={theme.decoration} />
+            )
+          }
+          showDivider={index > 0 || Boolean(heroBlock)}
+        >
+          <RenderBlock
+            block={block}
+            media={media}
+            mode={mode}
+            slug={slug}
+            startsAt={startsAt}
+            endsAt={endsAt}
+            title={title}
+            calendarLocation={calendarLocation}
+            rsvp={rsvp}
+            photos={photos}
+            photosNextCursor={photosNextCursor}
+            badge={
+              theme.engine === 2 ? <BadgeOrnament badge={theme.ornament?.badge} text={heroBlock?.badge} /> : undefined
+            }
+          />
+        </BlockSection>
+      ))}
+    </ScrollReveal>
+  );
+
+  if (theme.engine === 2) {
+    // Theme engine v2: container-query shell, layered background. The v2 hero
+    // owns its hero-region layer stack.
+    const hero = heroBlock ? <HeroV2 block={heroBlock} theme={theme} media={media} /> : null;
+    // Keep the footer clear of art that hangs in the bottom corners.
+    const clearBottom = artClearance(theme.layers, (key) => Object.hasOwn(ART, key)).bottom;
+    return (
+      <ThemeRootV2 theme={theme} className="flex min-h-dvh flex-col">
+        <LayerStack layers={theme.layers} region="page" foil={theme.foil} />
+        <div className="flex-1" style={!slug && clearBottom ? { paddingBottom: clearBottom } : undefined}>
+          <LayoutV2 layout={theme.layout} hero={hero}>
+            {blocks}
+          </LayoutV2>
+        </div>
+        {slug && <EventFooter slug={slug} removeBranding={removeBranding} mode={mode} clearBottom={clearBottom} />}
+      </ThemeRootV2>
+    );
+  }
 
   return (
     <EventTheme theme={theme} mode={mode} className="flex min-h-dvh flex-col">
@@ -109,25 +167,7 @@ export function EventView({
             ) : null
           }
         >
-          <ScrollReveal enabled={mode === "live"}>
-            {rest.map((block, index) => (
-              <BlockSection key={block.id} decoration={theme.decoration} showDivider={index > 0 || Boolean(heroBlock)}>
-                <RenderBlock
-                  block={block}
-                  media={media}
-                  mode={mode}
-                  slug={slug}
-                  startsAt={startsAt}
-                  endsAt={endsAt}
-                  title={title}
-                  calendarLocation={calendarLocation}
-                  rsvp={rsvp}
-                  photos={photos}
-                  photosNextCursor={photosNextCursor}
-                />
-              </BlockSection>
-            ))}
-          </ScrollReveal>
+          {blocks}
         </EventLayoutShell>
       </div>
       {slug && <EventFooter slug={slug} removeBranding={removeBranding} mode={mode} />}
@@ -147,11 +187,11 @@ export function EventView({
  */
 function BlockSection({
   children,
-  decoration,
+  divider,
   showDivider,
 }: {
   children: ReactNode;
-  decoration: Decoration;
+  divider: ReactNode;
   showDivider: boolean;
 }) {
   return (
@@ -162,7 +202,7 @@ function BlockSection({
         "motion-safe:in-data-[reveal=on]:not-data-revealed:translate-y-8 motion-safe:in-data-[reveal=on]:not-data-revealed:opacity-0",
       )}
     >
-      {showDivider && <DecorationDivider decoration={decoration} />}
+      {showDivider && divider}
       {children}
     </div>
   );
@@ -180,6 +220,7 @@ function RenderBlock({
   rsvp,
   photos,
   photosNextCursor,
+  badge,
 }: {
   block: Block;
   media: MediaMap;
@@ -192,6 +233,8 @@ function RenderBlock({
   rsvp?: EventViewRsvpProps;
   photos?: PhotoItem[];
   photosNextCursor?: string | null;
+  /** Schema-2 badge ornament, laid over the RSVP section. */
+  badge?: ReactNode;
 }) {
   switch (block.type) {
     case "hero":
@@ -249,6 +292,7 @@ function RenderBlock({
           guestName={rsvp?.guestName}
           existingRsvp={rsvp?.existingRsvp}
           onSuccess={rsvp?.onSuccess}
+          badge={badge}
         />
       );
     case "guest_photos":

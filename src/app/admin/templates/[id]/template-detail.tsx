@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
+import { EventView } from "@/components/event/event-view";
+import { previewSampleContent, previewSampleMedia, previewSampleStartsAt } from "@/components/event/preview-sample";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -206,24 +208,7 @@ function VersionCard({
             </Button>
           </div>
         )}
-        {previews && (
-          <ul className="flex flex-wrap gap-2">
-            {previews.map((p) => (
-              <li
-                key={`${p.palette_id}-${p.font_id}`}
-                className="flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs"
-                style={{ background: p.theme.palette.background, color: p.theme.palette.text }}
-              >
-                <span
-                  className="size-3 rounded-full"
-                  style={{ background: p.theme.palette.accent }}
-                  aria-hidden
-                />
-                {p.palette_id} / {p.font_id}
-              </li>
-            ))}
-          </ul>
-        )}
+        {previews && <ThemePreview previews={previews} />}
       </CardContent>
       <CardFooter className="flex flex-wrap gap-2">
         {!locked && (
@@ -241,5 +226,42 @@ function VersionCard({
         </Button>
       </CardFooter>
     </Card>
+  );
+}
+
+function ThemePreview({ previews }: { previews: AdminTemplatePreviewResponse["previews"] }) {
+  const [selected, setSelected] = useState(0);
+  const [content] = useState(previewSampleContent);
+  const current = previews[Math.min(selected, previews.length - 1)];
+  if (!current) return <p className="text-sm text-muted-foreground">This version has no palettes to preview.</p>;
+
+  return (
+    <div className="flex flex-col gap-3">
+      <ul className="flex flex-wrap gap-2" aria-label="Palette and font">
+        {previews.map((p, i) => (
+          <li key={`${p.palette_id}-${p.font_id}`}>
+            <button
+              type="button"
+              aria-pressed={previews[selected] === p}
+              onClick={() => setSelected(i)}
+              className="flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs outline-none focus-visible:ring-3 focus-visible:ring-ring/50 aria-pressed:ring-2 aria-pressed:ring-ring"
+              style={{ background: p.theme.palette.background, color: p.theme.palette.text }}
+            >
+              <span className="size-3 rounded-full" style={{ background: p.theme.palette.accent }} aria-hidden />
+              {p.palette_id} / {p.font_id}
+            </button>
+          </li>
+        ))}
+      </ul>
+      <div className="mx-auto h-[640px] w-full max-w-[420px] overflow-y-auto rounded-lg border [container-type:inline-size]">
+        <EventView
+          content={content}
+          theme={current.theme}
+          media={previewSampleMedia}
+          mode="preview"
+          startsAt={previewSampleStartsAt}
+        />
+      </div>
+    </div>
   );
 }

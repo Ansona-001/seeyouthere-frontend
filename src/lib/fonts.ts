@@ -1,20 +1,25 @@
 import {
+  Bagel_Fat_One,
   Birthstone,
+  Bodoni_Moda,
   Bricolage_Grotesque,
   Cormorant_Garamond,
   DM_Serif_Display,
   Figtree,
   Fraunces,
   Great_Vibes,
+  Josefin_Sans,
+  Limelight,
   Lora,
   Montserrat,
+  Pinyon_Script,
   Playfair_Display,
 } from "next/font/google";
 
 import type { FontKey } from "./api-types";
 
 /**
- * The ten font families a template manifest may reference (build-out plan
+ * The fifteen font families a template manifest may reference (build-out plan
  * §3.4; rich-blocks extension §4.4 added `birthstone`/`montserrat`). This
  * list MUST match the Go allowlist in `internal/content/manifest.go` on the
  * backend — the server validates every manifest against it, so this file
@@ -25,7 +30,7 @@ import type { FontKey } from "./api-types";
  *
  * All are loaded once at module scope (a next/font requirement). Figtree and
  * Bricolage Grotesque double as the site's own UI font (`font-sans`/
- * `font-heading` in globals.css) so they're preloaded; the other eight are
+ * `font-heading` in globals.css) so they're preloaded; the other thirteen are
  * only used by whichever event theme is on screen, so `preload: false` keeps
  * a page paying for just the two or three fonts its theme actually needs.
  */
@@ -78,6 +83,43 @@ const montserrat = Montserrat({
   display: "swap",
 });
 
+const bodoniModa = Bodoni_Moda({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  axes: ["opsz"],
+  variable: "--font-bodoni-moda",
+  preload: false,
+  display: "swap",
+});
+const pinyonScript = Pinyon_Script({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-pinyon-script",
+  preload: false,
+  display: "swap",
+});
+const bagelFatOne = Bagel_Fat_One({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-bagel-fat-one",
+  preload: false,
+  display: "swap",
+});
+const limelight = Limelight({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-limelight",
+  preload: false,
+  display: "swap",
+});
+const josefinSans = Josefin_Sans({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  variable: "--font-josefin-sans",
+  preload: false,
+  display: "swap",
+});
+
 const FONT_VARIABLE: Record<FontKey, string> = {
   figtree: figtree.variable,
   bricolage_grotesque: bricolageGrotesque.variable,
@@ -89,6 +131,11 @@ const FONT_VARIABLE: Record<FontKey, string> = {
   great_vibes: greatVibes.variable,
   birthstone: birthstone.variable,
   montserrat: montserrat.variable,
+  bodoni_moda: bodoniModa.variable,
+  pinyon_script: pinyonScript.variable,
+  bagel_fat_one: bagelFatOne.variable,
+  limelight: limelight.variable,
+  josefin_sans: josefinSans.variable,
 };
 
 const FONT_CSS_VAR: Record<FontKey, string> = {
@@ -102,6 +149,11 @@ const FONT_CSS_VAR: Record<FontKey, string> = {
   great_vibes: "var(--font-great-vibes)",
   birthstone: "var(--font-birthstone)",
   montserrat: "var(--font-montserrat)",
+  bodoni_moda: "var(--font-bodoni-moda)",
+  pinyon_script: "var(--font-pinyon-script)",
+  bagel_fat_one: "var(--font-bagel-fat-one)",
+  limelight: "var(--font-limelight)",
+  josefin_sans: "var(--font-josefin-sans)",
 };
 
 /**
@@ -110,7 +162,7 @@ const FONT_CSS_VAR: Record<FontKey, string> = {
  * script vs. small tracked-uppercase label); the backend enforces that
  * these are never a valid `body` font.
  */
-export const SCRIPT_FONTS: ReadonlySet<FontKey> = new Set(["great_vibes", "birthstone"]);
+export const SCRIPT_FONTS: ReadonlySet<FontKey> = new Set(["great_vibes", "birthstone", "pinyon_script"]);
 
 /**
  * Space-separated class list of every allowlisted font's CSS variable. Add

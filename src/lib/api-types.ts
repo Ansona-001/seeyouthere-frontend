@@ -35,6 +35,8 @@ export type HeroBlock = {
   kicker: string;
   title: string;
   subtitle: string;
+  /** Optional large monogram or numeral (0-4 chars: letters, digits, & · + -); omitted by the API when empty. */
+  badge?: string;
   image: { media_id: string; alt: string } | null;
 };
 
@@ -284,10 +286,15 @@ export type FontKey =
   | "fraunces"
   | "great_vibes"
   | "birthstone"
-  | "montserrat";
+  | "montserrat"
+  | "bodoni_moda"
+  | "pinyon_script"
+  | "bagel_fat_one"
+  | "limelight"
+  | "josefin_sans";
 
 export type Layout = "centered" | "split" | "stacked";
-export type HeroStyle = "full_bleed" | "framed" | "text_only" | "spotlight";
+export type HeroStyle = "full_bleed" | "framed" | "text_only" | "spotlight" | "color_block";
 export type Decoration = "none" | "line" | "floral" | "dots" | "heart";
 
 /** Rich-blocks theme knobs (additive, manifest schema stays `1`). */
@@ -304,7 +311,22 @@ export type PaletteColors = {
   accent_text: string;
 };
 
-export type Palette = { id: string; name: string; colors: PaletteColors };
+/**
+ * A palette as the template catalog lists it. `accent_ink`, `art` and `foil`
+ * are schema-2 only and sit at palette level (not inside `colors`); the Go
+ * side omits them when empty. The resolved `Theme` carries the chosen
+ * palette's art/foil/ink at theme level instead.
+ */
+export type Palette = {
+  id: string;
+  name: string;
+  colors: PaletteColors;
+  accent_ink?: string;
+  /** Art colour ramp (`art1`..`art8` tokens), `#RRGGBB`. */
+  art?: string[];
+  /** Foil gradient stops, 3-5 `#RRGGBB`. */
+  foil?: string[];
+};
 
 /** `accent`: kicker font, `""` = falls back to `heading`. */
 export type FontPair = { id: string; name: string; heading: FontKey; body: FontKey; accent: FontKey | "" };
@@ -331,7 +353,89 @@ export type Theme = {
   palette: PaletteColors;
   fonts: { heading: FontKey; body: FontKey; accent?: FontKey };
   background: { src: string; opacity: number } | null;
+  /** Theme engine v2 (schema-2 manifests); absent on v1 themes. */
+  engine?: 2;
+  layers?: ThemeLayer[];
+  art?: string[];
+  foil?: string[];
+  ornament?: ThemeOrnament;
+  card?: ThemeCard;
+  motion?: Motion;
 };
+
+export type Motion = "none" | "draw_on" | "pop_and_settle" | "foil_sheen";
+
+/**
+ * Plain strings on purpose: the runtime treats every value as untrusted and
+ * unknown values render nothing. Intended values:
+ * - hero: none | wreath_monogram | sticker_numeral | foil_numeral | ring | cloud | doorway | monogram_rule
+ * - divider: none | line | floral | dots | heart | olive_sprig | squiggle | deco_diamond | wave | sparkle_rule
+ * - badge: none | starburst_sticker | wax_seal | foil_seal
+ * - ampersand: none | script
+ * - hero_ink: resolved HEX colour
+ */
+export type ThemeOrnament = {
+  hero: string;
+  divider: string;
+  badge: string;
+  ampersand: string;
+  hero_ink: string;
+};
+
+/**
+ * Plain strings on purpose (see `ThemeOrnament`). Intended values:
+ * - style: soft | glass | reply_card | sticker | chamfered | none
+ * - border: none | hairline | ink | foil | foil_inset
+ * - fields: boxed | underline
+ * - buttons: accent | foil
+ */
+export type ThemeCard = {
+  style: string;
+  border: string;
+  radius: number;
+  fields: string;
+  buttons: string;
+};
+
+/** Resolved background layer; colours are HEX strings, opacities are numbers. */
+export type ThemeLayer = { region?: "page" | "hero" } & (
+  | {
+      kind: "paper";
+      tone: string;
+      /** Omitted by the API when unset (as are the matching opacities). */
+      glow?: string;
+      glow_opacity?: number;
+      vignette?: string;
+      vignette_opacity?: number;
+    }
+  | { kind: "block"; edge: "straight" | "scallop" | "wave"; color: string }
+  | {
+      kind: "pattern";
+      pattern: "grid" | "dots" | "halftone" | "sunburst" | "pinstripe" | "gingham" | "stripes";
+      color: string;
+      opacity: number;
+      origin: string;
+      mask: string;
+    }
+  | {
+      kind: "texture";
+      texture: "grain" | "fibers" | "linen" | "wood" | "watercolour" | "foil" | "marble" | "velvet";
+      opacity: number;
+      blend: string;
+      colors?: string[];
+    }
+  | {
+      kind: "art";
+      art: string;
+      placement: string;
+      colors?: string[];
+      paint?: "foil";
+      opacity: number;
+      density?: string;
+    }
+  | { kind: "frame"; frame: string; inset: number; color?: string; paint?: "foil" }
+  | { kind: "image"; opacity: number; src: string }
+);
 
 // ---------------------------------------------------------------------------
 // Media references embedded in Event / PublicEvent (§4.1)

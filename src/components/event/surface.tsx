@@ -19,6 +19,27 @@ import { cn } from "@/lib/utils";
  * `internal/content/manifest.go` on the backend. Keep these two alpha
  * values in sync with that file.
  */
+/**
+ * Theme engine v2 card styles. `radius` comes from `--ev-card-radius`; `soft`
+ * and `glass` keep their v1 look above and only gain the radius and border.
+ * `chamfered` is one element: the octagon clip-path and its foil/ink ring
+ * live in globals.css (`.ev-card`), because the ring is a `::before` clipped
+ * with `polygon(evenodd, ...)`. A `sticker` tilts only when it holds no form
+ * controls, so typing is never done on a rotated field.
+ */
+const V2_CARD = [
+  "ev-card in-data-[ev-engine=2]:relative in-data-[ev-engine=2]:rounded-(--ev-card-radius)",
+  "in-data-[ev-card^=reply]:bg-(--ev-surface) in-data-[ev-card^=reply]:p-6 in-data-[ev-card^=reply]:shadow-[0_1px_2px_rgb(0_0_0/.06),0_26px_44px_-26px_rgb(0_0_0/.42)]",
+  "in-data-[ev-card=sticker]:bg-(--ev-surface) in-data-[ev-card=sticker]:p-6 in-data-[ev-card=sticker]:shadow-[0_8px_0_-2px_var(--ev-text),0_26px_34px_-22px_rgb(0_0_0/.5)] in-data-[ev-card=sticker]:-rotate-[.75deg] in-data-[ev-card=sticker]:has-[input,select,textarea]:rotate-0",
+  "in-data-[ev-card=chamfered]:bg-(--ev-surface) in-data-[ev-card=chamfered]:p-6",
+  "in-data-[ev-card=none]:border-y-[3px] in-data-[ev-card=none]:border-(--ev-text) in-data-[ev-card=none]:py-2",
+  // border: hairline | ink | foil | foil_inset (none adds nothing)
+  "in-data-[ev-border=hairline]:border in-data-[ev-border=hairline]:border-(--ev-text)/28",
+  "in-data-[ev-border=ink]:border-[2.5px] in-data-[ev-border=ink]:border-(--ev-text) in-data-[ev-border=ink]:in-data-[ev-card^=reply]:border-[1.5px]",
+  "in-data-[ev-border=foil]:border in-data-[ev-border=foil]:border-transparent in-data-[ev-border=foil]:[background:linear-gradient(var(--ev-surface),var(--ev-surface))_padding-box,var(--ev-foil,linear-gradient(var(--ev-text),var(--ev-text)))_border-box]",
+  "in-data-[ev-border$=inset]:after:pointer-events-none in-data-[ev-border$=inset]:after:absolute in-data-[ev-border$=inset]:after:inset-2 in-data-[ev-border$=inset]:after:border in-data-[ev-border$=inset]:after:border-transparent in-data-[ev-border$=inset]:after:[border-image:var(--ev-foil,linear-gradient(var(--ev-text),var(--ev-text)))_1] in-data-[ev-border$=inset]:after:content-['']",
+];
+
 export function EvCard({
   as: Component = "div",
   className,
@@ -39,6 +60,8 @@ export function EvCard({
         "[@media(prefers-reduced-transparency:reduce)]:in-data-[ev-surface=glass]:bg-(--ev-surface) [@media(prefers-reduced-transparency:reduce)]:in-data-[ev-surface=glass]:backdrop-blur-none",
         // hover lift, hover-capable pointers and motion allowed only
         "[@media(hover:hover)]:motion-safe:in-data-[ev-surface=glass]:transition-transform [@media(hover:hover)]:motion-safe:in-data-[ev-surface=glass]:hover:-translate-y-1",
+        // theme engine v2 (data-ev-card / data-ev-border are set only by ThemeRootV2, so v1 never matches)
+        V2_CARD,
         className,
       )}
     >

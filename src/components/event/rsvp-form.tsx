@@ -25,6 +25,17 @@ export type RsvpFormProps = {
   onSuccess?: (rsvp: Rsvp) => void;
 };
 
+/**
+ * Theme engine v2 variants. `data-ev-fields` / `data-ev-buttons` are set only
+ * by `ThemeRootV2`, so v1 pages never match. Underline fields keep the focus
+ * ring and thicken the rule to the accent ink; every control stays >= 44px tall.
+ */
+const UNDERLINE_FIELD =
+  "in-data-[ev-fields=underline]:rounded-none in-data-[ev-fields=underline]:border-0 in-data-[ev-fields=underline]:border-b in-data-[ev-fields=underline]:border-(--ev-text)/55 in-data-[ev-fields=underline]:bg-transparent in-data-[ev-fields=underline]:px-0.5 in-data-[ev-fields=underline]:focus-visible:border-b-2 in-data-[ev-fields=underline]:focus-visible:border-(--ev-accent-ink)";
+const FOIL_BUTTON =
+  "in-data-[ev-buttons=foil]:bg-[image:var(--ev-foil,none)] in-data-[ev-buttons=foil]:bg-[length:160%_100%] in-data-[ev-buttons=foil]:focus-visible:outline-2 in-data-[ev-buttons=foil]:focus-visible:outline-offset-2 in-data-[ev-buttons=foil]:focus-visible:outline-(--ev-accent-ink)";
+const V2_OPTION = "in-data-[ev-engine=2]:min-h-11";
+
 type Attending = "yes" | "no" | "maybe";
 const ATTENDING_OPTIONS: readonly Attending[] = ["yes", "maybe", "no"];
 
@@ -114,6 +125,7 @@ export function RsvpForm({
       <div className="grid gap-1.5">
         <Label htmlFor={`${formId}-name`}>Your name</Label>
         <Input
+          className={UNDERLINE_FIELD}
           id={`${formId}-name`}
           required
           maxLength={120}
@@ -127,6 +139,7 @@ export function RsvpForm({
       <div className="grid gap-1.5">
         <Label htmlFor={`${formId}-email`}>Email (optional)</Label>
         <Input
+          className={UNDERLINE_FIELD}
           id={`${formId}-email`}
           type="email"
           autoComplete="email"
@@ -143,7 +156,7 @@ export function RsvpForm({
           {ATTENDING_OPTIONS.map((option) => (
             <label
               key={option}
-              className="flex flex-1 cursor-pointer items-center justify-center rounded-lg border border-input px-3 py-2 text-sm font-medium capitalize has-checked:border-(--ev-accent) has-checked:bg-(--ev-accent)/10 has-disabled:cursor-not-allowed has-disabled:opacity-50"
+              className={`flex flex-1 cursor-pointer items-center justify-center rounded-lg border border-input px-3 py-2 text-sm font-medium capitalize has-checked:border-(--ev-accent) has-checked:bg-(--ev-accent)/10 has-disabled:cursor-not-allowed has-disabled:opacity-50 ${V2_OPTION}`}
             >
               <input
                 type="radio"
@@ -164,6 +177,7 @@ export function RsvpForm({
         <div className="grid gap-1.5">
           <Label htmlFor={`${formId}-count`}>Party size (incl. you)</Label>
           <Input
+            className={UNDERLINE_FIELD}
             id={`${formId}-count`}
             type="number"
             inputMode="numeric"
@@ -210,7 +224,8 @@ export function RsvpForm({
       <Button
         type="submit"
         disabled={formDisabled || pending}
-        className="bg-(--ev-accent) text-(--ev-accent-text) hover:opacity-90"
+        data-ev-cta=""
+        className={`bg-(--ev-accent) text-(--ev-accent-text) hover:opacity-90 ${FOIL_BUTTON}`}
       >
         {pending ? "Sending…" : existingRsvp ? "Update RSVP" : "Send RSVP"}
       </Button>
@@ -265,7 +280,7 @@ function RsvpField({
           value={typeof value === "string" ? value : ""}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
-          className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+          className={`h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 in-data-[ev-engine=2]:h-11 ${UNDERLINE_FIELD}`}
         >
           <option value="" disabled>
             Choose…
@@ -289,7 +304,7 @@ function RsvpField({
           {field.options.map((opt) => (
             <label
               key={opt}
-              className="flex cursor-pointer items-center gap-1.5 rounded-full border border-input px-3 py-1 text-sm has-checked:border-(--ev-accent) has-checked:bg-(--ev-accent)/10 has-disabled:cursor-not-allowed has-disabled:opacity-50"
+              className={`flex cursor-pointer items-center gap-1.5 rounded-full border border-input px-3 py-1 text-sm has-checked:border-(--ev-accent) has-checked:bg-(--ev-accent)/10 has-disabled:cursor-not-allowed has-disabled:opacity-50 ${V2_OPTION}`}
             >
               <input
                 type="checkbox"
@@ -311,6 +326,7 @@ function RsvpField({
       <div className="grid gap-1.5">
         <Label htmlFor={id}>{fieldLabel}</Label>
         <Input
+          className={UNDERLINE_FIELD}
           id={id}
           type="number"
           inputMode="numeric"
@@ -330,6 +346,7 @@ function RsvpField({
       <div className="grid gap-1.5">
         <Label htmlFor={id}>{fieldLabel}</Label>
         <Textarea
+          className={UNDERLINE_FIELD}
           id={id}
           maxLength={field.max_length}
           required={field.required}
@@ -345,6 +362,7 @@ function RsvpField({
     <div className="grid gap-1.5">
       <Label htmlFor={id}>{fieldLabel}</Label>
       <Input
+        className={UNDERLINE_FIELD}
         id={id}
         maxLength={field.max_length}
         required={field.required}
