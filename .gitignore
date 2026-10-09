@@ -43,3 +43,11 @@ next-env.d.ts
 
 # graphify code graph (local)
 graphify-out/
+
+# third-party agent skills (reinstall with `npx skills experimental_install`; includes native binaries)
+/.agents/
+/.claude/skills/
+/.claude/agents/
+/.github/skills/
+/.github/agents/
+/agent/
