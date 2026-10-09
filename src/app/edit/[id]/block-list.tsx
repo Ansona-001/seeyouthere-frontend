@@ -3,6 +3,7 @@
 import { ChevronDownIcon, ChevronUpIcon, PlusIcon, Trash2Icon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "cn";
 import type { Block, BlockType } from "@/lib/api-types";
 
 import { BLOCK_LABELS, BLOCK_TYPES, canAddBlock } from "./blocks";
@@ -30,16 +31,19 @@ export function BlockList({
   return (
     <div className="flex flex-col gap-3">
       <ol className="flex flex-col gap-1.5">
-        {content.length === 0 && <li className="text-sm text-muted-foreground">No blocks yet — add one below.</li>}
+        {content.length === 0 && <li className="rounded-xl border border-dashed border-input px-3.5 py-3 text-sm text-muted-foreground">No sections yet. Add one below.</li>}
         {content.map((block, index) => (
           <li key={block.id} className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => onSelect(block.id)}
               aria-pressed={selectedId === block.id}
-              className={`flex-1 truncate rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
-                selectedId === block.id ? "border-primary bg-primary/5" : "border-border hover:bg-muted/40"
-              }`}
+              className={cn(
+                "min-h-11 min-w-0 flex-1 truncate rounded-xl border px-3.5 text-left text-sm font-medium transition-colors duration-(--duration-fast)",
+                selectedId === block.id
+                  ? "border-primary bg-secondary"
+                  : "border-input bg-card [@media(hover:hover)]:hover:bg-accent",
+              )}
             >
               {BLOCK_LABELS[block.type]}
               {"heading" in block && block.heading ? ` — ${block.heading}` : ""}
@@ -48,7 +52,7 @@ export function BlockList({
             <Button
               type="button"
               variant="ghost"
-              size="icon-sm"
+              size="icon"
               aria-label="Move up"
               disabled={index === 0}
               onClick={() => onMove(block.id, -1)}
@@ -58,14 +62,14 @@ export function BlockList({
             <Button
               type="button"
               variant="ghost"
-              size="icon-sm"
+              size="icon"
               aria-label="Move down"
               disabled={index === content.length - 1}
               onClick={() => onMove(block.id, 1)}
             >
               <ChevronDownIcon />
             </Button>
-            <Button type="button" variant="ghost" size="icon-sm" aria-label="Remove block" onClick={() => onRemove(block.id)}>
+            <Button type="button" variant="ghost" size="icon" aria-label="Remove block" onClick={() => onRemove(block.id)}>
               <Trash2Icon />
             </Button>
           </li>

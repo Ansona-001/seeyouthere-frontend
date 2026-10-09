@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -148,19 +149,25 @@ export function EventSettingsForm({ event }: { event: Event }) {
   }
 
   return (
-    <div className="flex max-w-lg flex-col gap-5">
-      <form onSubmit={saveSettings} className="flex flex-col gap-3">
+    <div className="flex max-w-xl flex-col gap-5">
+      <Card>
+        <CardHeader>
+          <CardTitle>Event page</CardTitle>
+          <CardDescription>Your link, who can see the page and how guests reply.</CardDescription>
+        </CardHeader>
+        <CardContent>
+      <form onSubmit={saveSettings} className="flex flex-col gap-4">
         <div className="grid gap-1.5">
           <Label htmlFor="settings-slug">Link</Label>
           {slugLocked ? (
             <p className="text-sm text-muted-foreground">
-              {event.url ?? "seeuthere.at/" + (event.slug ?? "…")}{" "}
-              <span className="text-xs">(can&rsquo;t be changed after publishing)</span>
+              {event.url ?? "seeyouthere.at/" + (event.slug ?? "…")}{" "}
+              <span className="text-sm">(can&rsquo;t be changed after publishing)</span>
             </p>
           ) : (
             <>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>seeuthere.at/</span>
+                <span>seeyouthere.at/</span>
                 <Input
                   id="settings-slug"
                   value={slugInput}
@@ -169,15 +176,15 @@ export function EventSettingsForm({ event }: { event: Event }) {
                   className="flex-1"
                 />
               </div>
-              {checkingSlug && <p className="text-xs text-muted-foreground">Checking…</p>}
+              {checkingSlug && <p className="text-sm text-muted-foreground">Checking…</p>}
               {currentSlugCheck && !currentSlugCheck.available && (
-                <p className="text-xs text-destructive">
+                <p className="text-sm text-destructive">
                   {currentSlugCheck.reason === "taken" && "That link is already taken."}
                   {currentSlugCheck.reason === "blocked" && "That link isn't available."}
                   {currentSlugCheck.reason === "invalid" && "That's not a valid link."}
                 </p>
               )}
-              {currentSlugCheck?.available && <p className="text-xs text-brand-success">Available</p>}
+              {currentSlugCheck?.available && <p className="text-sm font-medium text-brand-success">Available</p>}
             </>
           )}
         </div>
@@ -229,7 +236,7 @@ export function EventSettingsForm({ event }: { event: Event }) {
 
         <div className="flex items-center gap-3">
           <Switch id="settings-notify" checked={notifyRsvps} onCheckedChange={setNotifyRsvps} />
-          <Label htmlFor="settings-notify">Email me when I get new RSVPs</Label>
+          <Label htmlFor="settings-notify" className="min-h-11">Email me when I get new RSVPs</Label>
         </div>
 
         {error && (
@@ -241,10 +248,25 @@ export function EventSettingsForm({ event }: { event: Event }) {
           {pending ? "Saving…" : "Save settings"}
         </Button>
       </form>
+        </CardContent>
+      </Card>
 
-      <div className="flex flex-col gap-2 border-t pt-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Publishing</CardTitle>
+          <CardDescription>
+            {status === "published"
+              ? "Your page is live."
+              : status === "hidden"
+                ? "Your page is unpublished and hidden from guests."
+                : status === "draft"
+                  ? "Your page is a draft. Guests can't see it yet."
+                  : "Your page is not available."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
         {notReady && (
-          <div role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <div role="alert" className="rounded-xl bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
             This event isn&rsquo;t ready to publish yet. Missing: {notReady.join(", ")}.
           </div>
         )}
@@ -261,8 +283,18 @@ export function EventSettingsForm({ event }: { event: Event }) {
         {status === "taken_down" && (
           <p className="text-sm text-muted-foreground">This event has been taken down and can&rsquo;t be republished.</p>
         )}
-        <DeleteEventButton eventId={event.id} />
-      </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Delete this event</CardTitle>
+          <CardDescription>Removes the page, guests, RSVPs and photos for good.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DeleteEventButton eventId={event.id} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

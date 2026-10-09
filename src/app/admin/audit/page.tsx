@@ -16,7 +16,7 @@ export default async function AdminAuditPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="font-heading text-2xl font-bold">Audit log</h1>
+      <h1 className="font-heading text-2xl text-brand-heading">Audit log</h1>
 
       {!result.ok ? (
         <Alert variant="destructive">

@@ -65,12 +65,12 @@ export function MediaGrid({
               width={480}
               height={480}
             />
-            <figcaption className="flex flex-col gap-1 text-xs text-muted-foreground">
+            <figcaption className="flex flex-col gap-1 text-sm text-muted-foreground">
               <Link href={`/admin/events/${m.event.id}`} className="truncate hover:underline">
                 {m.event.title || "(untitled)"}
               </Link>
               <span>{m.guest_name ?? "Host upload"} · {formatDateTime(m.created_at)}</span>
-              <Badge variant={m.moderation_status === "rejected" ? "destructive" : "secondary"} className="w-fit">
+              <Badge variant={m.moderation_status === "rejected" ? "destructive" : m.moderation_status === "approved" ? "default" : "secondary"} className="w-fit capitalize">
                 {m.moderation_status}
               </Badge>
             </figcaption>
@@ -88,7 +88,7 @@ export function MediaGrid({
         ))}
       </div>
       {cursor && (
-        <Button variant="outline" size="sm" className="self-start" disabled={pending !== null} onClick={loadMore}>
+        <Button variant="outline" className="self-start" disabled={pending !== null} onClick={loadMore}>
           {pending === "more" ? "Loading…" : "Load more"}
         </Button>
       )}

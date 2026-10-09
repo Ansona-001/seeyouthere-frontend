@@ -6,6 +6,7 @@ import type { AdminTemplate } from "@/lib/api-types";
 
 export function TemplatesList({ templates }: { templates: AdminTemplate[] }) {
   return (
+    <div className="overflow-hidden rounded-xl bg-card ring-1 ring-border">
     <Table>
       <TableHeader>
         <TableRow>
@@ -35,5 +36,6 @@ export function TemplatesList({ templates }: { templates: AdminTemplate[] }) {
         ))}
       </TableBody>
     </Table>
+    </div>
   );
 }

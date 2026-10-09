@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState, type FormEvent } from "react";
 
+import { EmptyState } from "@/components/brand/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -159,13 +160,13 @@ export function GuestsPanel({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <form onSubmit={search} className="flex gap-2">
+        <form onSubmit={search} className="flex w-full gap-2 sm:w-auto">
           <Input
             aria-label="Search guests"
             placeholder="Search by name or email"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-56"
+            className="w-full min-w-0 sm:w-64"
           />
           <Button type="submit" variant="outline">
             Search
@@ -179,13 +180,13 @@ export function GuestsPanel({
               trigger={<Button>Add guest</Button>}
               onSaved={(g) => setGuests((prev) => [g, ...prev])}
             />
-            <form onSubmit={importCsv} className="flex items-center gap-2">
+            <form onSubmit={importCsv} className="flex flex-wrap items-center gap-2">
               <input
                 ref={fileInput}
                 type="file"
                 accept="text/csv,.csv"
                 aria-label="Import guests from CSV"
-                className="text-sm"
+                className="max-w-full text-sm file:mr-3 file:min-h-9 file:rounded-full file:border file:border-input file:bg-card file:px-3.5 file:text-sm file:font-semibold"
               />
               <Button type="submit" variant="outline" disabled={pending === "import"}>
                 {pending === "import" ? "Importing…" : "Import CSV"}
@@ -201,7 +202,7 @@ export function GuestsPanel({
       {!published && canManage && (
         <p className="text-sm text-muted-foreground">Publish this event to send invites.</p>
       )}
-      {notice && <p className="text-sm text-brand-success">{notice}</p>}
+      {notice && <p role="status" className="text-sm font-medium text-brand-success">{notice}</p>}
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}
@@ -209,8 +210,15 @@ export function GuestsPanel({
       )}
 
       {guests.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No guests yet.</p>
+        <EmptyState title={initialQuery ? "No matching guests" : "No guests yet"}>
+          {initialQuery
+            ? "Try a different name or email."
+            : canManage
+              ? "Add guests one by one or import a CSV, then send each of them a personal invite link."
+              : "Guests added by the hosts will show up here."}
+        </EmptyState>
       ) : (
+        <div className="overflow-hidden rounded-xl bg-card ring-1 ring-border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -239,9 +247,10 @@ export function GuestsPanel({
             ))}
           </TableBody>
         </Table>
+        </div>
       )}
       {cursor && (
-        <Button variant="outline" size="sm" className="self-start" disabled={pending !== null} onClick={loadMore}>
+        <Button variant="outline" className="self-start" disabled={pending !== null} onClick={loadMore}>
           {pending === "more" ? "Loading…" : "Load more"}
         </Button>
       )}
@@ -282,7 +291,7 @@ function GuestRow({
       <TableCell>{g.household_size}</TableCell>
       <TableCell>
         {g.rsvp ? (
-          <Badge variant={g.rsvp.attending === "yes" ? "secondary" : "outline"}>
+          <Badge variant={g.rsvp.attending === "yes" ? "default" : g.rsvp.attending === "maybe" ? "secondary" : "outline"} className="capitalize">
             {g.rsvp.attending} ({g.rsvp.count})
           </Badge>
         ) : (
@@ -291,7 +300,8 @@ function GuestRow({
       </TableCell>
       <TableCell className="text-muted-foreground">{formatDateTime(g.invited_at)}</TableCell>
       {canManage && (
-        <TableCell className="flex flex-wrap justify-end gap-1.5 text-right">
+        <TableCell>
+          <div className="flex flex-wrap justify-end gap-1.5">
           {g.invite_url && (
             <>
               <Button variant="outline" size="sm" onClick={() => onCopy(g.invite_url!)}>
@@ -329,6 +339,7 @@ function GuestRow({
           <Button variant="destructive" size="sm" disabled={pending === g.id} onClick={() => onRemove(g.id)}>
             Remove
           </Button>
+          </div>
         </TableCell>
       )}
     </TableRow>

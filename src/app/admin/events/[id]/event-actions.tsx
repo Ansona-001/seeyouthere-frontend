@@ -59,11 +59,11 @@ export function EventActions({ event, viewerRoles }: { event: Event & { owner_em
 
       <div className="flex flex-wrap gap-2">
         {event.status === "taken_down" ? (
-          <Button variant="outline" size="sm" disabled={pending !== null} onClick={restore}>
+          <Button variant="outline" disabled={pending !== null} onClick={restore}>
             {pending === "restore" ? "Restoring…" : "Restore"}
           </Button>
         ) : (
-          <Button variant="destructive" size="sm" disabled={pending !== null} onClick={takedown}>
+          <Button variant="destructive" disabled={pending !== null} onClick={takedown}>
             {pending === "takedown" ? "Taking down…" : "Take down"}
           </Button>
         )}

@@ -32,10 +32,10 @@ export default async function AdminEventDetailPage({ params }: PageProps<"/admin
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <Link href="/admin/events" className="text-sm text-muted-foreground hover:underline">
+        <Link href="/admin/events" className="inline-flex min-h-11 items-center text-sm font-medium text-muted-foreground hover:underline">
           ← Events
         </Link>
-        <h1 className="font-heading text-2xl font-bold">{event.title || "(untitled)"}</h1>
+        <h1 className="font-heading text-2xl text-brand-heading">{event.title || "(untitled)"}</h1>
         <p className="text-muted-foreground">
           {event.owner_email} · {event.occasion_slug} · <Badge variant="outline">{event.status}</Badge>
         </p>

@@ -49,6 +49,7 @@ export function SessionsList({ initialSessions }: { initialSessions: Session[] }
   return (
     <div className="flex flex-col gap-3">
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+      <div className="overflow-hidden rounded-xl ring-1 ring-border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -65,7 +66,7 @@ export function SessionsList({ initialSessions }: { initialSessions: Session[] }
                   <span className="truncate">{s.user_agent || "Unknown device"}</span>
                   {s.current && <Badge variant="secondary">This device</Badge>}
                 </div>
-                <div className="text-xs text-muted-foreground">{s.ip}</div>
+                <div className="text-sm text-muted-foreground">{s.ip}</div>
               </TableCell>
               <TableCell>{formatRelative(s.last_seen_at)}</TableCell>
               <TableCell className="text-right">
@@ -84,9 +85,10 @@ export function SessionsList({ initialSessions }: { initialSessions: Session[] }
           ))}
         </TableBody>
       </Table>
+      </div>
       {others.length > 0 && (
         <div>
-          <Button variant="outline" size="sm" disabled={revokingOthers} onClick={revokeOthers}>
+          <Button variant="outline" disabled={revokingOthers} onClick={revokeOthers}>
             {revokingOthers ? "Signing out other devices…" : "Sign out all other devices"}
           </Button>
         </div>

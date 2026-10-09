@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import { EmptyState } from "@/components/brand/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { API_URL, api, ApiError, type EventRole, type Media, type MediaListResponse, type ModerationStatus } from "@/lib/api";
@@ -66,7 +67,7 @@ export function PhotosPanel({
 
   return (
     <div className="flex flex-col gap-4">
-      <nav aria-label="Filter by moderation status" className="flex gap-1">
+      <nav aria-label="Filter by moderation status" className="flex flex-wrap gap-1.5">
         {STATUSES.map((s) => (
           <Link
             key={s.value}
@@ -74,8 +75,8 @@ export function PhotosPanel({
             aria-current={status === s.value ? "page" : undefined}
             className={
               status === s.value
-                ? "rounded-lg bg-primary px-2.5 py-1 text-sm font-medium text-primary-foreground"
-                : "rounded-lg px-2.5 py-1 text-sm font-medium text-muted-foreground hover:bg-muted"
+                ? "inline-flex min-h-11 items-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground"
+                : "inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
             }
           >
             {s.label}
@@ -90,7 +91,11 @@ export function PhotosPanel({
       )}
 
       {media.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No {status} photos.</p>
+        <EmptyState title={`No ${status} photos`}>
+          {status === "pending"
+            ? "Photos your guests upload will wait here for your approval."
+            : `Photos you ${status === "approved" ? "approve" : "reject"} will be listed here.`}
+        </EmptyState>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {media.map((m) => (
@@ -103,18 +108,18 @@ export function PhotosPanel({
                 width={480}
                 height={480}
               />
-              <figcaption className="flex flex-col gap-1 text-xs text-muted-foreground">
+              <figcaption className="flex flex-col gap-1 text-sm text-muted-foreground">
                 <span>{m.guest_name ?? "Guest"} · {formatDateTime(m.created_at)}</span>
-                <Badge variant={m.moderation_status === "rejected" ? "destructive" : "secondary"} className="w-fit">
+                <Badge variant={m.moderation_status === "rejected" ? "destructive" : m.moderation_status === "approved" ? "default" : "secondary"} className="w-fit capitalize">
                   {m.moderation_status}
                 </Badge>
               </figcaption>
               {canModerate && m.moderation_status === "pending" && (
                 <div className="flex gap-1.5">
-                  <Button size="sm" disabled={pending !== null} onClick={() => moderate(m.id, "approve")} className="flex-1">
+                  <Button disabled={pending !== null} onClick={() => moderate(m.id, "approve")} className="flex-1">
                     {pending === m.id ? "…" : "Approve"}
                   </Button>
-                  <Button variant="destructive" size="sm" disabled={pending !== null} onClick={() => moderate(m.id, "reject")} className="flex-1">
+                  <Button variant="outline" disabled={pending !== null} onClick={() => moderate(m.id, "reject")} className="flex-1">
                     Reject
                   </Button>
                 </div>
@@ -124,7 +129,7 @@ export function PhotosPanel({
         </div>
       )}
       {cursor && (
-        <Button variant="outline" size="sm" className="self-start" disabled={pending !== null} onClick={loadMore}>
+        <Button variant="outline" className="self-start" disabled={pending !== null} onClick={loadMore}>
           {pending === "more" ? "Loading…" : "Load more"}
         </Button>
       )}

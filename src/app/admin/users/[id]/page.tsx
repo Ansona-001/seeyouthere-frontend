@@ -32,10 +32,10 @@ export default async function AdminUserDetailPage({ params }: PageProps<"/admin/
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <Link href="/admin/users" className="text-sm text-muted-foreground hover:underline">
+        <Link href="/admin/users" className="inline-flex min-h-11 items-center text-sm font-medium text-muted-foreground hover:underline">
           ← Users
         </Link>
-        <h1 className="font-heading text-2xl font-bold">{user.name || "(no name)"}</h1>
+        <h1 className="font-heading text-2xl text-brand-heading">{user.name || "(no name)"}</h1>
         <p className="text-muted-foreground">{user.email}</p>
       </div>
 

@@ -7,6 +7,7 @@ import { downscaleToJpeg } from "@/components/event/photo-upload";
 import { BADGE_MAX, sanitizeBadge } from "@/components/event/theme-engine/ornament-keys";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -184,7 +185,7 @@ function HeroForm({
           value={block.badge ?? ""}
           onChange={(e) => onChange({ badge: sanitizeBadge(e.target.value) })}
         />
-        <p id="hero-badge-hint" className="text-xs text-muted-foreground">
+        <p id="hero-badge-hint" className="text-sm text-muted-foreground">
           Up to {BADGE_MAX} characters, such as initials (A&amp;T) or an age (30). Letters, digits and &amp; · + - only.
           Shown by themes with a monogram, numeral or seal.
         </p>
@@ -272,18 +273,17 @@ function DatetimeForm({
         <Input id="dt-end" type="datetime-local" value={block.end_local} onChange={(e) => onChange({ end_local: e.target.value })} />
       </Field>
       <Field label="Time zone" htmlFor="dt-tz">
-        <select
+        <NativeSelect
           id="dt-tz"
           value={block.timezone}
           onChange={(e) => onChange({ timezone: e.target.value })}
-          className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
         >
           {timezones.map((tz) => (
             <option key={tz} value={tz}>
               {tz}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </Field>
       <div className="flex items-center gap-3">
         <Switch id="dt-allday" checked={block.all_day} onCheckedChange={(v) => onChange({ all_day: v })} />
@@ -336,7 +336,7 @@ function ScheduleForm({ block, onChange }: { block: ScheduleBlock; onChange: OnC
       </Field>
       <div className="flex flex-col gap-3">
         {block.items.map((item, i) => (
-          <div key={i} className="flex flex-col gap-2 rounded-lg border p-3">
+          <div key={i} className="flex flex-col gap-2 rounded-xl border border-input bg-card p-3">
             <div className="flex gap-2">
               <Input
                 type="time"
@@ -496,19 +496,18 @@ function GalleryForm({
         <Input id="gal-heading" maxLength={120} value={block.heading} onChange={(e) => onChange({ heading: e.target.value })} />
       </Field>
       <Field label="Layout" htmlFor="gal-display">
-        <select
+        <NativeSelect
           id="gal-display"
           value={block.display}
           onChange={(e) => onChange({ display: e.target.value as GalleryBlock["display"] })}
-          className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
         >
           <option value="grid">Grid</option>
           <option value="carousel">Carousel</option>
-        </select>
+        </NativeSelect>
       </Field>
       <div className="flex flex-col gap-3">
         {block.images.map((img, i) => (
-          <div key={i} className="flex flex-col gap-2 rounded-lg border p-3">
+          <div key={i} className="flex flex-col gap-2 rounded-xl border border-input bg-card p-3">
             <MediaField
               eventId={eventId}
               preview={img.media_id ? media[img.media_id] ?? null : null}
@@ -560,17 +559,17 @@ function GalleryForm({
           {progress ? `Uploading ${progress.done + 1} of ${progress.total}…` : "Add photos"}
         </Button>
         {remainingSlots === 0 && (
-          <p className="text-xs text-muted-foreground">Gallery is full — remove a photo to add more.</p>
+          <p className="text-sm text-muted-foreground">Gallery is full — remove a photo to add more.</p>
         )}
         {skipped > 0 && (
-          <p role="status" className="text-xs text-muted-foreground">
+          <p role="status" className="text-sm text-muted-foreground">
             {skipped === 1
               ? "1 photo wasn't added — a gallery can hold up to 24 photos."
               : `${skipped} photos weren't added — a gallery can hold up to 24 photos.`}
           </p>
         )}
         {failures.length > 0 && (
-          <div role="alert" className="flex flex-col gap-1 text-xs text-destructive">
+          <div role="alert" className="flex flex-col gap-1 text-sm text-destructive">
             {failures.map((f, idx) => (
               <p key={`${f.name}-${idx}`}>
                 {f.name}: {f.message}
@@ -612,7 +611,7 @@ function LinksForm({ block, onChange }: { block: LinksBlock; onChange: OnChange<
       </Field>
       <div className="flex flex-col gap-3">
         {block.items.map((item, i) => (
-          <div key={i} className="flex flex-col gap-2 rounded-lg border p-3">
+          <div key={i} className="flex flex-col gap-2 rounded-xl border border-input bg-card p-3">
             <Input
               required
               maxLength={80}
@@ -671,7 +670,7 @@ function FaqForm({ block, onChange }: { block: FaqBlock; onChange: OnChange<FaqB
       </Field>
       <div className="flex flex-col gap-3">
         {block.items.map((item, i) => (
-          <div key={i} className="flex flex-col gap-2 rounded-lg border p-3">
+          <div key={i} className="flex flex-col gap-2 rounded-xl border border-input bg-card p-3">
             <div className="flex gap-2">
               <Input
                 required
@@ -713,7 +712,7 @@ function FaqForm({ block, onChange }: { block: FaqBlock; onChange: OnChange<FaqB
 function CountdownForm({ block, onChange }: { block: CountdownBlock; onChange: OnChange<CountdownBlock> }) {
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-xs text-muted-foreground">Counts down to your event&rsquo;s date &amp; time block.</p>
+      <p className="text-sm text-muted-foreground">Counts down to your event&rsquo;s date &amp; time block.</p>
       <KickerField idPrefix="cd" value={block.kicker} onChange={(kicker) => onChange({ kicker })} />
       <Field label="Heading" htmlFor="cd-heading">
         <Input id="cd-heading" maxLength={120} value={block.heading} onChange={(e) => onChange({ heading: e.target.value })} />
@@ -825,13 +824,13 @@ function RsvpBlockForm({
             {occasionFields.map((f) => {
               const toggle = block.fields.find((t) => t.key === f.key);
               return (
-                <div key={f.key} className="flex items-center justify-between gap-2 rounded-lg border p-2">
+                <div key={f.key} className="flex items-center justify-between gap-2 rounded-xl border border-input bg-card p-2.5">
                   <div className="flex items-center gap-3">
                     <Switch checked={Boolean(toggle)} onCheckedChange={(v) => toggleField(f.key, v)} />
                     <span className="text-sm">{f.label}</span>
                   </div>
                   {toggle && (
-                    <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
                       <input
                         type="checkbox"
                         checked={toggle.required}
@@ -851,7 +850,7 @@ function RsvpBlockForm({
         <p className="mb-2 text-sm font-medium">Your own questions (up to 5)</p>
         <div className="flex flex-col gap-2">
           {block.questions.map((q, i) => (
-            <div key={q.key} className="flex flex-col gap-2 rounded-lg border p-2">
+            <div key={q.key} className="flex flex-col gap-2 rounded-xl border border-input bg-card p-2.5">
               <div className="flex gap-2">
                 <Input
                   placeholder="Question"
@@ -869,7 +868,7 @@ function RsvpBlockForm({
                   <Trash2Icon />
                 </Button>
               </div>
-              <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
                 <input type="checkbox" checked={q.required} onChange={(e) => updateQuestion(i, { required: e.target.checked })} />
                 Required
               </label>

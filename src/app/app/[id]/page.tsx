@@ -57,11 +57,11 @@ function StatCard({ label, value, sub }: { label: string; value: number; sub?: s
   return (
     <Card size="sm">
       <CardHeader>
-        <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
+        <CardTitle className="text-sm font-semibold text-muted-foreground font-sans">{label}</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-2xl font-semibold">{value}</p>
-        {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
+        <p className="font-heading text-4xl text-brand-heading tabular-nums">{value}</p>
+        {sub && <p className="text-sm text-muted-foreground">{sub}</p>}
       </CardContent>
     </Card>
   );

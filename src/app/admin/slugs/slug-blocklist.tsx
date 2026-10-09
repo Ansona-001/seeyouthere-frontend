@@ -121,7 +121,7 @@ export function SlugBlocklist({
         </Table>
       )}
       {cursor && (
-        <Button variant="outline" size="sm" className="self-start" disabled={pending !== null} onClick={loadMore}>
+        <Button variant="outline" className="self-start" disabled={pending !== null} onClick={loadMore}>
           {pending === "more" ? "Loading…" : "Load more"}
         </Button>
       )}

@@ -41,6 +41,7 @@ export function EventsTable({
 
   return (
     <div className="flex flex-col gap-3">
+      <div className="overflow-hidden rounded-xl bg-card ring-1 ring-border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -67,9 +68,10 @@ export function EventsTable({
           ))}
         </TableBody>
       </Table>
+      </div>
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
       {cursor && (
-        <Button variant="outline" size="sm" className="self-start" disabled={pending} onClick={loadMore}>
+        <Button variant="outline" className="self-start" disabled={pending} onClick={loadMore}>
           {pending ? "Loading…" : "Load more"}
         </Button>
       )}

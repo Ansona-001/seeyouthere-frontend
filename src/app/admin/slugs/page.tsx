@@ -16,7 +16,7 @@ export default async function AdminSlugsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="font-heading text-2xl font-bold">Slug blocklist</h1>
+      <h1 className="font-heading text-2xl text-brand-heading">Slug blocklist</h1>
       <p className="text-sm text-muted-foreground">
         Terms here are refused as event slugs (exact match, hyphen-separated token, or substring for longer terms).
       </p>

@@ -71,15 +71,15 @@ export function ReportsList({
               <span className="font-medium">{r.reason}</span>
               {r.details ? `: ${r.details}` : ""}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Owner: {r.event.owner_email} · reported {formatDateTime(r.created_at)}
             </p>
             {r.status === "open" || r.status === "reviewing" ? (
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" disabled={pending !== null} onClick={() => dismiss(r.id)}>
+                <Button variant="outline" disabled={pending !== null} onClick={() => dismiss(r.id)}>
                   {pending === r.id ? "Dismissing…" : "Dismiss"}
                 </Button>
-                <Button variant="destructive" size="sm" render={<Link href={`/admin/events/${r.event.id}`} />}>
+                <Button variant="destructive" render={<Link href={`/admin/events/${r.event.id}`} />}>
                   Review event
                 </Button>
               </div>
@@ -90,7 +90,7 @@ export function ReportsList({
         </Card>
       ))}
       {cursor && (
-        <Button variant="outline" size="sm" className="self-start" disabled={pending !== null} onClick={loadMore}>
+        <Button variant="outline" className="self-start" disabled={pending !== null} onClick={loadMore}>
           {pending === "more" ? "Loading…" : "Load more"}
         </Button>
       )}

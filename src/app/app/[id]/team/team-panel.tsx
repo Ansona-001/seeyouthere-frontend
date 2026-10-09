@@ -84,7 +84,7 @@ export function TeamPanel({
     <div className="flex flex-col gap-4">
       {isOwner && (
         <form onSubmit={add} className="flex flex-wrap items-end gap-3">
-          <div className="grid gap-1.5">
+          <div className="grid w-full gap-1.5 sm:w-auto">
             <Label htmlFor="member-email">Email</Label>
             <Input
               id="member-email"
@@ -93,7 +93,7 @@ export function TeamPanel({
               onChange={(e) => setEmail(e.target.value)}
               required
               maxLength={254}
-              className="w-56"
+              className="w-full sm:w-64"
             />
           </div>
           <div className="grid gap-1.5">
@@ -114,13 +114,14 @@ export function TeamPanel({
         </form>
       )}
 
-      {notice && <p className="text-sm text-brand-success">{notice}</p>}
+      {notice && <p role="status" className="text-sm font-medium text-brand-success">{notice}</p>}
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
       )}
 
+      <div className="overflow-hidden rounded-xl bg-card ring-1 ring-border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -151,7 +152,7 @@ export function TeamPanel({
                       </SelectContent>
                     </Select>
                   ) : (
-                    <Badge variant={m.role === "owner" ? "default" : "secondary"}>{m.role}</Badge>
+                    <Badge variant={m.role === "owner" ? "default" : "secondary"} className="capitalize">{m.role}</Badge>
                   )}
                 </TableCell>
                 <TableCell className="text-right">
@@ -171,6 +172,7 @@ export function TeamPanel({
           })}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }

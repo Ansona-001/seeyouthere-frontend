@@ -108,19 +108,19 @@ export function TemplateDetail({ template }: { template: AdminTemplateDetail }) 
 
       <Card>
         <CardHeader>
-          <CardTitle>Visibility</CardTitle>
+          <CardTitle>Availability</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center gap-3">
           <Switch id="premium" checked={isPremium} disabled={pending !== null} onCheckedChange={togglePremium} />
-          <label htmlFor="premium" className="text-sm">
+          <label htmlFor="premium" className="text-sm font-medium">
             Premium (hidden from the host picker; assign manually from an event&rsquo;s admin flags)
           </label>
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-between">
-        <h2 className="font-heading text-lg font-semibold">Versions</h2>
-        <Button variant="outline" size="sm" disabled={pending !== null} onClick={newVersion}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-heading text-lg text-brand-heading">Versions</h2>
+        <Button variant="outline" disabled={pending !== null} onClick={newVersion}>
           {pending === "new-version" ? "Creating…" : "New draft version"}
         </Button>
       </div>
@@ -179,11 +179,11 @@ function VersionCard({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           Version {version.version}
-          <Badge variant={locked ? "secondary" : "outline"}>{version.status}</Badge>
+          <Badge variant={locked ? "default" : "outline"} className="capitalize">{version.status}</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           {locked ? `Published ${formatDateTime(version.published_at)}` : "Draft — edit and publish when ready."}
         </p>
         <Textarea
@@ -191,7 +191,7 @@ function VersionCard({
           onChange={(e) => onDraftChange(e.target.value)}
           disabled={locked}
           rows={12}
-          className="font-mono text-xs"
+          className="font-mono text-sm"
           aria-label={`Manifest JSON for version ${version.version}`}
         />
         {!locked && (
@@ -200,10 +200,10 @@ function VersionCard({
               type="file"
               accept="image/jpeg,image/png,image/webp"
               ref={fileInputRef}
-              className="text-sm"
+              className="max-w-full text-sm file:mr-3 file:min-h-9 file:rounded-full file:border file:border-input file:bg-card file:px-3.5 file:text-sm file:font-semibold"
               aria-label="Background image"
             />
-            <Button variant="outline" size="sm" disabled={pending !== null} onClick={onUpload}>
+            <Button variant="outline" disabled={pending !== null} onClick={onUpload}>
               {pending === `background:${version.version}` ? "Uploading…" : "Upload background"}
             </Button>
           </div>
@@ -213,15 +213,15 @@ function VersionCard({
       <CardFooter className="flex flex-wrap gap-2">
         {!locked && (
           <>
-            <Button variant="outline" size="sm" disabled={pending !== null} onClick={onSave}>
+            <Button variant="outline" disabled={pending !== null} onClick={onSave}>
               {pending === `save:${version.version}` ? "Saving…" : "Save manifest"}
             </Button>
-            <Button size="sm" disabled={pending !== null} onClick={onPublish}>
+            <Button disabled={pending !== null} onClick={onPublish}>
               {pending === `publish:${version.version}` ? "Publishing…" : "Publish"}
             </Button>
           </>
         )}
-        <Button variant="ghost" size="sm" disabled={pending !== null} onClick={onPreview}>
+        <Button variant="ghost" disabled={pending !== null} onClick={onPreview}>
           {pending === `preview:${version.version}` ? "Loading preview…" : "Preview theme colours"}
         </Button>
       </CardFooter>
@@ -244,16 +244,16 @@ function ThemePreview({ previews }: { previews: AdminTemplatePreviewResponse["pr
               type="button"
               aria-pressed={previews[selected] === p}
               onClick={() => setSelected(i)}
-              className="flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs outline-none focus-visible:ring-3 focus-visible:ring-ring/50 aria-pressed:ring-2 aria-pressed:ring-ring"
+              className="flex min-h-11 items-center gap-2 rounded-full border border-input px-3.5 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50 aria-pressed:ring-2 aria-pressed:ring-ring"
               style={{ background: p.theme.palette.background, color: p.theme.palette.text }}
             >
-              <span className="size-3 rounded-full" style={{ background: p.theme.palette.accent }} aria-hidden />
+              <span className="size-3.5 rounded-full ring-1 ring-border" style={{ background: p.theme.palette.accent }} aria-hidden />
               {p.palette_id} / {p.font_id}
             </button>
           </li>
         ))}
       </ul>
-      <div className="mx-auto h-[640px] w-full max-w-[420px] overflow-y-auto rounded-lg border [container-type:inline-size]">
+      <div className="mx-auto h-[640px] w-full max-w-[420px] overflow-y-auto rounded-xl border border-input [container-type:inline-size]">
         <EventView
           content={content}
           theme={current.theme}

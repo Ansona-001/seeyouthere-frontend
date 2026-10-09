@@ -55,10 +55,10 @@ export function EventsList({
       <ul className="flex flex-col gap-3">
         {events.map((e) => (
           <li key={e.id}>
-            <Card>
-              <Link href={`/app/${e.id}`} className="contents">
+            <Card className="transition-shadow focus-within:ring-2 focus-within:ring-ring [@media(hover:hover)]:hover:shadow-md">
+              <Link href={`/app/${e.id}`} className="contents outline-none">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex flex-wrap items-center gap-2 text-2xl">
                     {e.title || "(untitled)"}
                     <Badge variant={STATUS_VARIANT[e.status]}>{STATUS_LABEL[e.status]}</Badge>
                     {e.role !== "owner" && <Badge variant="outline">Co-host · {e.role}</Badge>}
@@ -83,7 +83,7 @@ export function EventsList({
         </p>
       )}
       {cursor && (
-        <Button variant="outline" size="sm" className="self-start" disabled={pending} onClick={loadMore}>
+        <Button variant="outline" className="self-start" disabled={pending} onClick={loadMore}>
           {pending ? "Loading…" : "Load more"}
         </Button>
       )}

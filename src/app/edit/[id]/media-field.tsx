@@ -76,7 +76,7 @@ export function MediaField({
         {pending ? "Uploading…" : preview ? "Replace image" : "Upload image"}
       </Button>
       {error && (
-        <p role="alert" className="text-xs text-destructive">
+        <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
       )}

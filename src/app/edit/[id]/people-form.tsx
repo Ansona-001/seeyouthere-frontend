@@ -53,7 +53,7 @@ export function PeopleForm({
 
       <div className="flex flex-col gap-3">
         {block.people.map((person, i) => (
-          <div key={i} className="flex flex-col gap-2 rounded-lg border p-3">
+          <div key={i} className="flex flex-col gap-2 rounded-xl border border-input bg-card p-3">
             <div className="flex items-center justify-between gap-2">
               <p className="text-sm font-medium">Person {i + 1}</p>
               <div className="flex items-center gap-1">

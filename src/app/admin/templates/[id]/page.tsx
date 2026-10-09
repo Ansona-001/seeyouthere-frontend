@@ -27,10 +27,10 @@ export default async function AdminTemplateDetailPage({ params }: PageProps<"/ad
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <Link href="/admin/templates" className="text-sm text-muted-foreground hover:underline">
+        <Link href="/admin/templates" className="inline-flex min-h-11 items-center text-sm font-medium text-muted-foreground hover:underline">
           ← Templates
         </Link>
-        <h1 className="font-heading text-2xl font-bold">{result.data.name}</h1>
+        <h1 className="font-heading text-2xl text-brand-heading">{result.data.name}</h1>
       </div>
       <TemplateDetail template={result.data} />
     </div>

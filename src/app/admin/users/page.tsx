@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { redirectIfMfaRequired, requireAdminUser } from "@/lib/admin";
@@ -33,19 +35,19 @@ export default async function AdminUsersPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="font-heading text-2xl font-bold">Users</h1>
+      <h1 className="font-heading text-2xl text-brand-heading">Users</h1>
       <form method="get" className="flex flex-wrap items-end gap-3">
         <div className="grid gap-1.5">
           <Label htmlFor="q">Search</Label>
-          <Input id="q" name="q" defaultValue={q} placeholder="Name or email" className="w-56" />
+          <Input id="q" name="q" defaultValue={q} placeholder="Name or email" className="w-full sm:w-64" />
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="status">Status</Label>
-          <select
+          <NativeSelect
             id="status"
             name="status"
             defaultValue={status}
-            className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm dark:bg-input/30"
+            className="min-w-36"
           >
             <option value="">Any</option>
             {STATUSES.map((s) => (
@@ -53,14 +55,11 @@ export default async function AdminUsersPage({
                 {s}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </div>
-        <button
-          type="submit"
-          className="h-8 rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/80"
-        >
+        <Button type="submit" variant="outline">
           Filter
-        </button>
+        </Button>
       </form>
 
       {!result.ok ? (
@@ -68,7 +67,7 @@ export default async function AdminUsersPage({
           <AlertDescription>{result.message}</AlertDescription>
         </Alert>
       ) : result.data.users.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No users match.</p>
+        <p className="rounded-xl border border-dashed border-input bg-card px-4 py-6 text-center text-sm text-muted-foreground">No users match.</p>
       ) : (
         <UsersTable
           initialUsers={result.data.users}

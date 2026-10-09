@@ -48,7 +48,7 @@ export function SettingsPanel({
 
   if (state.role === "anon") {
     return (
-      <div className="flex flex-col gap-3 rounded-lg border p-3 text-sm">
+      <div className="flex flex-col gap-3 rounded-xl border border-input bg-card p-3 text-sm">
         <p className="text-muted-foreground">Sign in to choose a link and publish this event.</p>
         <Link href={`/login?next=${encodeURIComponent(`/edit/${state.id}`)}`} className={buttonVariants({})}>
           Sign in to publish
@@ -180,12 +180,12 @@ function OwnerSettings({
           <Label htmlFor="settings-slug">Link</Label>
           {slugLocked ? (
             <p className="text-sm text-muted-foreground">
-              {state.url ?? "seeuthere.at/" + (state.slug ?? "…")} <span className="text-xs">(can&rsquo;t be changed after publishing)</span>
+              {state.url ?? "seeyouthere.at/" + (state.slug ?? "…")} <span className="text-sm">(can&rsquo;t be changed after publishing)</span>
             </p>
           ) : (
             <>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>seeuthere.at/</span>
+                <span>seeyouthere.at/</span>
                 <Input
                   id="settings-slug"
                   value={slugInput}
@@ -194,15 +194,15 @@ function OwnerSettings({
                   className="flex-1"
                 />
               </div>
-              {checkingSlug && <p className="text-xs text-muted-foreground">Checking…</p>}
+              {checkingSlug && <p className="text-sm text-muted-foreground">Checking…</p>}
               {currentSlugCheck && !currentSlugCheck.available && (
-                <p className="text-xs text-destructive">
+                <p className="text-sm text-destructive">
                   {currentSlugCheck.reason === "taken" && "That link is already taken."}
                   {currentSlugCheck.reason === "blocked" && "That link isn't available."}
                   {currentSlugCheck.reason === "invalid" && "That's not a valid link."}
                 </p>
               )}
-              {currentSlugCheck?.available && <p className="text-xs text-brand-success">Available</p>}
+              {currentSlugCheck?.available && <p className="text-sm font-medium text-brand-success">Available</p>}
             </>
           )}
         </div>
@@ -254,7 +254,7 @@ function OwnerSettings({
 
         <div className="flex items-center gap-3">
           <Switch id="settings-notify" checked={notifyRsvps} onCheckedChange={setNotifyRsvps} />
-          <Label htmlFor="settings-notify">Email me when I get new RSVPs</Label>
+          <Label htmlFor="settings-notify" className="min-h-11">Email me when I get new RSVPs</Label>
         </div>
 
         {error && (
@@ -269,7 +269,7 @@ function OwnerSettings({
 
       <div className="flex flex-col gap-2 border-t pt-4">
         {notReady && (
-          <div role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <div role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
             This event isn&rsquo;t ready to publish yet. Missing: {notReady.join(", ")}.
           </div>
         )}

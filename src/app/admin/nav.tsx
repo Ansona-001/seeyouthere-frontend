@@ -37,7 +37,7 @@ export function AdminNav({ roles }: { roles: string[] }) {
                 href={link.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "rounded-full px-3.5 py-2 text-sm font-semibold transition-colors",
+                  "inline-flex min-h-11 items-center rounded-full px-3.5 text-sm font-semibold transition-colors",
                   active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground",
                 )}
               >
@@ -46,7 +46,7 @@ export function AdminNav({ roles }: { roles: string[] }) {
             );
           })}
         </nav>
-        <span className="text-xs text-muted-foreground">{roles.join(", ")}</span>
+        <span className="text-sm text-muted-foreground">{roles.join(", ")}</span>
       </div>
     </header>
   );

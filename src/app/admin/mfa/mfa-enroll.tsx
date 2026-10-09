@@ -70,13 +70,13 @@ export function MfaEnroll() {
           </code>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={() => copy("secret", enrollment.secret)}>
+          <Button type="button" variant="outline" onClick={() => copy("secret", enrollment.secret)}>
             {copied === "secret" ? "Copied" : "Copy key"}
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={() => copy("uri", enrollment.otpauth_uri)}>
+          <Button type="button" variant="outline" onClick={() => copy("uri", enrollment.otpauth_uri)}>
             {copied === "uri" ? "Copied" : "Copy setup link"}
           </Button>
-          <Button type="button" variant="outline" size="sm" render={<a href={enrollment.otpauth_uri} />}>
+          <Button type="button" variant="outline" render={<a href={enrollment.otpauth_uri} />}>
             Open in authenticator app
           </Button>
         </div>
