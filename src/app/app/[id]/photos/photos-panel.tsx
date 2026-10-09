@@ -94,7 +94,7 @@ export function PhotosPanel({
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {media.map((m) => (
-            <figure key={m.id} className="flex flex-col gap-1.5 rounded-xl bg-card p-2 ring-1 ring-foreground/10">
+            <figure key={m.id} className="flex flex-col gap-1.5 rounded-xl bg-card p-2 ring-1 ring-border">
               {/* eslint-disable-next-line @next/next/no-img-element -- host moderation view served from the API host, not eligible for next/image */}
               <img
                 src={`${API_URL}/v1/events/${eventId}/media/${m.id}/file?w=480`}

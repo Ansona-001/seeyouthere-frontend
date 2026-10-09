@@ -201,7 +201,7 @@ export function GuestsPanel({
       {!published && canManage && (
         <p className="text-sm text-muted-foreground">Publish this event to send invites.</p>
       )}
-      {notice && <p className="text-sm text-green-700 dark:text-green-500">{notice}</p>}
+      {notice && <p className="text-sm text-brand-success">{notice}</p>}
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}

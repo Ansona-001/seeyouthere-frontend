@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { SiteFooter } from "@/components/brand/site-footer";
+import { SiteHeader } from "@/components/brand/site-header";
 import { safeNextPath } from "@/lib/safe-next";
 import { getCurrentUser } from "@/lib/session";
 
@@ -15,8 +17,12 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   if (await getCurrentUser()) redirect(nextPath);
 
   return (
-    <main className="flex flex-1 items-center justify-center px-4 py-16">
-      <LoginForm nextPath={nextPath} />
-    </main>
+    <>
+      <SiteHeader />
+      <main className="flex flex-1 items-center justify-center px-4 py-16">
+        <LoginForm nextPath={nextPath} />
+      </main>
+      <SiteFooter />
+    </>
   );
 }

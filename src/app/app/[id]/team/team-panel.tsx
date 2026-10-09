@@ -114,7 +114,7 @@ export function TeamPanel({
         </form>
       )}
 
-      {notice && <p className="text-sm text-green-700 dark:text-green-500">{notice}</p>}
+      {notice && <p className="text-sm text-brand-success">{notice}</p>}
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}

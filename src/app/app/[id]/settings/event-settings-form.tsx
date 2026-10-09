@@ -177,7 +177,7 @@ export function EventSettingsForm({ event }: { event: Event }) {
                   {currentSlugCheck.reason === "invalid" && "That's not a valid link."}
                 </p>
               )}
-              {currentSlugCheck?.available && <p className="text-xs text-green-700 dark:text-green-500">Available</p>}
+              {currentSlugCheck?.available && <p className="text-xs text-brand-success">Available</p>}
             </>
           )}
         </div>
