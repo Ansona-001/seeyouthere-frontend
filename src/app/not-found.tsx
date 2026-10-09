@@ -13,7 +13,7 @@ export default function NotFound() {
     <>
       <SiteHeader />
       <main className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-24 text-center">
-        <h1 className="font-heading text-3xl font-bold tracking-tight">This page isn&apos;t available</h1>
+        <h1 className="font-heading text-4xl text-brand-heading">This page isn&apos;t available</h1>
         <p className="max-w-sm text-muted-foreground">
           It may have been moved, unpublished, or the link might not be quite right.
         </p>

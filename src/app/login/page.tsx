@@ -19,7 +19,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
     <>
       <SiteHeader />
-      <main className="flex flex-1 items-center justify-center px-4 py-16">
+      <main className="flex flex-1 items-center justify-center px-4 py-12 sm:py-16">
         <LoginForm nextPath={nextPath} />
       </main>
       <SiteFooter />

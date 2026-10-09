@@ -103,16 +103,16 @@ export function SetupWizard({ occasion, templates }: { occasion: Occasion; templ
   return (
     <div className="flex flex-col gap-8">
       <header className="text-center">
-        <p className="text-sm font-medium text-muted-foreground">
+        <p className="text-sm font-medium text-brand-brass-ink">
           {hasQuestions ? `Step ${step === "questions" ? 1 : 2} of 2` : "Almost there"}
         </p>
-        <h1 className="font-heading text-3xl font-bold sm:text-4xl">
+        <h1 className="mt-1 font-heading text-4xl text-brand-heading sm:text-5xl">
           {step === "questions" ? "Tell us a bit more" : "Pick a look"}
         </h1>
       </header>
 
       {step === "questions" ? (
-        <form onSubmit={goToDesign} className="mx-auto flex w-full max-w-md flex-col gap-4">
+        <form onSubmit={goToDesign} className="mx-auto flex w-full max-w-md flex-col gap-5 rounded-3xl bg-card p-6 shadow-sm ring-1 ring-border">
           {occasion.setup_questions.map((q) => (
             <div key={q.key} className="grid gap-1.5">
               <Label htmlFor={`q-${q.key}`}>
@@ -125,7 +125,7 @@ export function SetupWizard({ occasion, templates }: { occasion: Occasion; templ
                   value={answerFor(q.key, q.type)}
                   onChange={(e) => setAnswers((a) => ({ ...a, [q.key]: e.target.value }))}
                   required={q.required}
-                  className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+                  className="h-11.5 w-full min-w-0 rounded-md border border-input bg-card px-3 text-base text-foreground outline-none transition-[border-color,box-shadow] duration-(--duration-fast) focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/28 motion-reduce:transition-none"
                 >
                   {timezones.map((tz) => (
                     <option key={tz} value={tz}>
@@ -146,36 +146,23 @@ export function SetupWizard({ occasion, templates }: { occasion: Occasion; templ
               )}
             </div>
           ))}
-          <Button type="submit" disabled={missingRequired}>
+          <Button type="submit" size="lg" disabled={missingRequired}>
             Continue
           </Button>
         </form>
       ) : (
         <div className="flex flex-col gap-8">
           <section>
-            <h2 className="mb-3 text-sm font-medium text-muted-foreground">Template</h2>
+            <h2 className="mb-3 font-heading text-xl text-brand-heading">Template</h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {templates.map((t) => (
-                <button
-                  key={t.slug}
-                  type="button"
-                  onClick={() => selectTemplate(t)}
-                  aria-pressed={t.slug === templateSlug}
-                  className={`rounded-xl border p-3 text-left transition-colors ${
-                    t.slug === templateSlug ? "border-primary ring-2 ring-primary/30" : "border-border hover:bg-muted/40"
-                  }`}
-                >
-                  <p className="font-heading text-sm font-medium">{t.name}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground capitalize">
-                    {t.layout} · {t.hero_style.replace("_", " ")}
-                  </p>
-                </button>
+                <TemplateCard key={t.slug} template={t} selected={t.slug === templateSlug} onSelect={() => selectTemplate(t)} />
               ))}
             </div>
           </section>
 
           <section>
-            <h2 className="mb-3 text-sm font-medium text-muted-foreground">Palette</h2>
+            <h2 className="mb-3 font-heading text-xl text-brand-heading">Palette</h2>
             <div className="flex flex-wrap gap-2">
               {template.palettes.map((p) => (
                 <PaletteSwatch key={p.id} palette={p} selected={p.id === paletteId} onSelect={() => setPaletteId(p.id)} />
@@ -184,7 +171,7 @@ export function SetupWizard({ occasion, templates }: { occasion: Occasion; templ
           </section>
 
           <section>
-            <h2 className="mb-3 text-sm font-medium text-muted-foreground">Fonts</h2>
+            <h2 className="mb-3 font-heading text-xl text-brand-heading">Fonts</h2>
             <div className="flex flex-wrap gap-2">
               {template.fonts.map((f) => (
                 <button
@@ -192,8 +179,8 @@ export function SetupWizard({ occasion, templates }: { occasion: Occasion; templ
                   type="button"
                   onClick={() => setFontId(f.id)}
                   aria-pressed={f.id === fontId}
-                  className={`rounded-lg border px-3 py-2 text-left transition-colors ${
-                    f.id === fontId ? "border-primary ring-2 ring-primary/30" : "border-border hover:bg-muted/40"
+                  className={`${choiceBase} min-h-11 rounded-full px-4 py-2 text-left ${
+                    f.id === fontId ? choiceOn : choiceOff
                   }`}
                   style={{ fontFamily: fontCssVar(f.heading) }}
                 >
@@ -206,7 +193,7 @@ export function SetupWizard({ occasion, templates }: { occasion: Occasion; templ
           <section aria-label="Preview">
             <div
               style={themeStyle({ ...emptyTheme, layout: template.layout, hero_style: template.hero_style, decoration: template.decoration, palette: palette.colors, fonts: { heading: fontPair.heading, body: fontPair.body } })}
-              className="rounded-2xl bg-(--ev-bg) p-8 text-center ring-1 ring-foreground/10"
+              className="rounded-3xl bg-(--ev-bg) p-8 text-center ring-1 ring-foreground/10 sm:p-12"
             >
               <p className="text-3xl font-semibold text-(--ev-text) [font-family:var(--ev-font-heading)]">
                 {occasion.copy.title_template.replace(/\{[a-z0-9_]+\}/gi, "…")}
@@ -216,20 +203,20 @@ export function SetupWizard({ occasion, templates }: { occasion: Occasion; templ
           </section>
 
           {error && (
-            <p role="alert" className="text-center text-sm text-destructive">
+            <p role="alert" className="text-center text-sm font-medium text-destructive">
               {error}
             </p>
           )}
 
-          <div className="flex justify-between gap-3">
+          <div className="flex flex-wrap justify-between gap-3">
             {hasQuestions ? (
-              <Button type="button" variant="outline" onClick={() => setStep("questions")} disabled={pending}>
+              <Button type="button" size="lg" variant="outline" onClick={() => setStep("questions")} disabled={pending}>
                 Back
               </Button>
             ) : (
               <span />
             )}
-            <Button type="button" onClick={create} disabled={pending}>
+            <Button type="button" size="lg" onClick={create} disabled={pending}>
               {pending ? "Creating…" : "Create my event"}
             </Button>
           </div>
@@ -240,6 +227,53 @@ export function SetupWizard({ occasion, templates }: { occasion: Occasion; templ
 }
 
 const emptyTheme = { background: null } as const;
+
+const choiceBase =
+  "inline-flex items-center border bg-card outline-none transition-[border-color,box-shadow,background-color] duration-(--duration-fast) focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none";
+const choiceOn = "border-primary bg-secondary ring-2 ring-primary/30";
+const choiceOff = "border-input hover:bg-accent";
+
+/** Template option: a miniature of its default palette and heading font, plus its name. */
+function TemplateCard({
+  template,
+  selected,
+  onSelect,
+}: {
+  template: TemplateSummary;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const palette = template.palettes.find((p) => p.id === template.defaults.palette) ?? template.palettes[0];
+  const font = template.fonts.find((f) => f.id === template.defaults.font) ?? template.fonts[0];
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={selected}
+      className={`${choiceBase} flex-col items-stretch gap-2 rounded-2xl p-2 text-left ${selected ? choiceOn : choiceOff}`}
+    >
+      <span
+        aria-hidden
+        className="grid h-20 place-items-center rounded-xl text-xl ring-1 ring-foreground/10"
+        style={{
+          backgroundColor: palette.colors.background,
+          color: palette.colors.text,
+          fontFamily: fontCssVar(font.heading),
+        }}
+      >
+        <span>
+          Aa<span style={{ color: palette.colors.accent }}>.</span>
+        </span>
+      </span>
+      <span className="px-1 pb-1">
+        <span className="block font-heading text-base text-brand-heading">{template.name}</span>
+        <span className="block text-xs text-muted-foreground capitalize">
+          {template.layout} · {template.hero_style.replace("_", " ")}
+        </span>
+      </span>
+    </button>
+  );
+}
 
 function PaletteSwatch({
   palette,
@@ -257,14 +291,12 @@ function PaletteSwatch({
       aria-pressed={selected}
       aria-label={palette.name}
       title={palette.name}
-      className={`flex items-center gap-1.5 rounded-full border p-1.5 transition-colors ${
-        selected ? "border-primary ring-2 ring-primary/30" : "border-border hover:bg-muted/40"
-      }`}
+      className={`${choiceBase} min-h-11 min-w-11 justify-center gap-1.5 rounded-full px-3 ${selected ? choiceOn : choiceOff}`}
     >
       {(["background", "accent", "text"] as const).map((k) => (
         <span
           key={k}
-          className="size-4 rounded-full ring-1 ring-black/10"
+          className="size-5 rounded-full ring-1 ring-foreground/20"
           style={{ backgroundColor: palette.colors[k] }}
         />
       ))}
