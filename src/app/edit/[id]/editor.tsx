@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useReducer, useRef, useState } from "react";
 
 import { EventView } from "@/components/event/event-view";
@@ -270,9 +271,19 @@ function EditorTopBar({
 }) {
   return (
     <header className="flex flex-wrap items-center justify-between gap-3 border-b bg-card px-4 py-3">
-      <div>
-        <p className="font-heading text-lg text-brand-heading">{state.title || "Untitled event"}</p>
-        <SaveIndicator state={state} />
+      <div className="flex items-center gap-3">
+        <Link
+          href={state.role === "anon" ? "/" : "/app"}
+          aria-label={state.role === "anon" ? "Back to the home page" : "Back to your events"}
+          className="inline-flex min-h-11 items-center gap-1 rounded-md pr-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+        >
+          <span aria-hidden="true">&larr;</span>
+          <span className="hidden sm:inline">{state.role === "anon" ? "Home" : "Your events"}</span>
+        </Link>
+        <div>
+          <p className="font-heading text-lg text-brand-heading">{state.title || "Untitled event"}</p>
+          <SaveIndicator state={state} />
+        </div>
       </div>
       <div className="flex items-center gap-2">
         {state.status !== "draft" && (
