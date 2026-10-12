@@ -7,7 +7,7 @@ export function ImageBlock({ block, media }: { block: ImageBlockType; media: Med
   if (!ref) return null;
 
   return (
-    <figure className="px-0 py-4 sm:px-2">
+    <figure className="px-0 py-4 @min-[640px]/ev:px-2">
       <div className="mx-auto max-w-2xl overflow-hidden rounded-2xl">
         <Image
           src={ref.src}

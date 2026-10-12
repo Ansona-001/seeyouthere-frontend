@@ -60,7 +60,7 @@ export function Countdown({ target }: { target: string }) {
       className={
         reducedMotion
           ? "grid w-full max-w-md grid-cols-3 gap-3"
-          : "grid w-full max-w-xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-6"
+          : "grid w-full max-w-xl grid-cols-2 gap-3 @min-[640px]/ev:grid-cols-4 @min-[640px]/ev:gap-6"
       }
     >
       {cells.map(([label, value]) => (

@@ -18,7 +18,7 @@ export function VideoBlock({
   const poster = block.poster_media_id ? media[block.poster_media_id] : undefined;
 
   return (
-    <section className="px-2 py-8 sm:px-4">
+    <section className="px-2 py-8 @min-[640px]/ev:px-4">
       <BlockHeading kicker={block.kicker} heading={block.heading} className="mb-6 text-center" />
       <EvCard as="div" className={`mx-auto overflow-hidden rounded-2xl ${ASPECT_CLASS[block.aspect]}`}>
         <VideoEmbed

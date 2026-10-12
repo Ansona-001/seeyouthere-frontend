@@ -4,7 +4,7 @@ import { BlockHeading } from "../block-heading";
 
 export function FaqBlock({ block }: { block: FaqBlockType }) {
   return (
-    <section className="px-2 py-8 sm:px-4">
+    <section className="px-2 py-8 @min-[640px]/ev:px-4">
       <BlockHeading kicker={block.kicker} heading={block.heading} className="mb-5 text-center" />
       <div className="mx-auto flex max-w-xl flex-col divide-y divide-(--ev-accent)/15">
         {block.items.map((item, index) => (

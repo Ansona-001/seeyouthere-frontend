@@ -56,7 +56,7 @@ export function EvCard({
         "in-data-[ev-surface=card]:rounded-3xl in-data-[ev-surface=card]:border in-data-[ev-surface=card]:border-(--ev-muted)/15 in-data-[ev-surface=card]:bg-(--ev-surface) in-data-[ev-surface=card]:p-5 in-data-[ev-surface=card]:shadow-sm",
         // glass: 72% below md, 55% + blur from md up; no blur/vignette under prefers-reduced-transparency
         "in-data-[ev-surface=glass]:rounded-3xl in-data-[ev-surface=glass]:border in-data-[ev-surface=glass]:border-(--ev-surface)/40 in-data-[ev-surface=glass]:bg-(--ev-surface)/72 in-data-[ev-surface=glass]:p-5 in-data-[ev-surface=glass]:shadow-[0_8px_30px_-12px_var(--ev-accent)]",
-        "md:in-data-[ev-surface=glass]:bg-(--ev-surface)/55 md:in-data-[ev-surface=glass]:backdrop-blur-md md:in-data-[ev-surface=glass]:backdrop-saturate-150",
+        "@min-[768px]/ev:in-data-[ev-surface=glass]:bg-(--ev-surface)/55 @min-[768px]/ev:in-data-[ev-surface=glass]:backdrop-blur-md @min-[768px]/ev:in-data-[ev-surface=glass]:backdrop-saturate-150",
         "[@media(prefers-reduced-transparency:reduce)]:in-data-[ev-surface=glass]:bg-(--ev-surface) [@media(prefers-reduced-transparency:reduce)]:in-data-[ev-surface=glass]:backdrop-blur-none",
         // hover lift, hover-capable pointers and motion allowed only
         "[@media(hover:hover)]:motion-safe:in-data-[ev-surface=glass]:transition-transform [@media(hover:hover)]:motion-safe:in-data-[ev-surface=glass]:hover:-translate-y-1",

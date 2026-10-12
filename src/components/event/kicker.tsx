@@ -22,7 +22,7 @@ export function Kicker({ children, className }: { children: ReactNode; className
       className={cn(
         "text-(--ev-accent-ink) [font-family:var(--ev-font-accent)]",
         "text-xs tracking-[0.3em] uppercase",
-        "in-data-[ev-accent-script]:-mb-2 in-data-[ev-accent-script]:text-4xl in-data-[ev-accent-script]:tracking-normal in-data-[ev-accent-script]:normal-case in-data-[ev-accent-script]:sm:text-5xl",
+        "in-data-[ev-accent-script]:-mb-2 in-data-[ev-accent-script]:text-4xl in-data-[ev-accent-script]:tracking-normal in-data-[ev-accent-script]:normal-case in-data-[ev-accent-script]:@min-[640px]/ev:text-5xl",
         className,
       )}
     >
