@@ -45,3 +45,22 @@ export function adminErrorMessage(err: { status: number; code: string; message: 
       return err.message || GENERIC;
   }
 }
+
+/** Friendly message for the template status and draft-version delete endpoints. */
+export function templateErrorMessage(err: { status: number; code: string; message: string } | null): string {
+  if (!err) return GENERIC;
+  switch (err.code) {
+    case "needs_published_version":
+      return "Publish a version first.";
+    case "version_published":
+      return "Published versions can't be deleted.";
+    case "last_version":
+      return "A template needs at least one version.";
+    case "storage_unavailable":
+      return "File storage isn't responding. Nothing was deleted; please try again in a moment.";
+    case "not_found":
+      return "That template or version no longer exists.";
+    default:
+      return adminErrorMessage(err);
+  }
+}
