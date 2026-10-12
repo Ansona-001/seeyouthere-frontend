@@ -243,11 +243,16 @@ const PREVIEW_SLUGS: ReadonlySet<string> = new Set([
 
 /**
  * Occasion-specific previews at public/templates/<slug>--<occasion>.webp for the
- * photo-hero v1 templates. Keys are a static allowlist: the occasion comes from
+ * v1 templates. Keys are a static allowlist: the occasion comes from
  * the route, so it is never interpolated into a URL unless it is listed here.
  */
 const OCCASION_PREVIEWS: ReadonlySet<string> = new Set([
-  ...["wedding", "engagement", "birthday", "baby-shower", "housewarming", "party"].flatMap((o) => [`classic--${o}`, `modern--${o}`]),
+  ...["wedding", "engagement", "birthday", "baby-shower", "housewarming", "party"].flatMap((o) => [
+    `classic--${o}`,
+    `modern--${o}`,
+    `minimal--${o}`,
+  ]),
+  ...["birthday", "party", "baby-shower", "housewarming"].map((o) => `confetti--${o}`),
   ...["wedding", "engagement", "baby-shower"].map((o) => `garden--${o}`),
   ...["wedding", "engagement"].map((o) => `heirloom--${o}`),
 ]);
