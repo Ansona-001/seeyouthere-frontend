@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
 import { redirectIfMfaRequired, requireAdminUser } from "@/lib/admin";
 import type { AdminMediaListResponse, ModerationStatus } from "@/lib/api-types";
 import { serverApi } from "@/lib/server-api";
@@ -26,28 +28,25 @@ export default async function AdminMediaPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="font-heading text-2xl font-bold">Guest media</h1>
-      <form method="get" className="flex items-end gap-3">
-        <label className="grid gap-1.5 text-sm">
+      <h1 className="font-heading text-2xl text-brand-heading">Guest media</h1>
+      <form method="get" className="flex flex-wrap items-end gap-3">
+        <label className="grid gap-1.5 text-sm font-semibold">
           Status
-          <select
+          <NativeSelect
             name="status"
             defaultValue={status}
-            className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm dark:bg-input/30"
+            className="min-w-36"
           >
             {STATUSES.map((s) => (
               <option key={s} value={s}>
                 {s}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </label>
-        <button
-          type="submit"
-          className="h-8 rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/80"
-        >
+        <Button type="submit" variant="outline">
           Filter
-        </button>
+        </Button>
       </form>
 
       {!result.ok ? (
@@ -55,7 +54,7 @@ export default async function AdminMediaPage({
           <AlertDescription>{result.message}</AlertDescription>
         </Alert>
       ) : result.data.media.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No media with this status.</p>
+        <p className="rounded-xl border border-dashed border-input bg-card px-4 py-6 text-center text-sm text-muted-foreground">No media with this status.</p>
       ) : (
         <MediaGrid initialMedia={result.data.media} initialCursor={result.data.next_cursor} basePath={basePath} />
       )}

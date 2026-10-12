@@ -36,7 +36,7 @@ export function AddToCalendar({ info }: { info: CalendarInfo }) {
     "inline-flex items-center justify-center rounded-full border border-(--ev-accent-ink)/40 px-4 py-1.5 text-xs font-medium tracking-[0.2em] text-(--ev-accent-ink) uppercase transition-colors hover:bg-(--ev-accent-ink)/10";
 
   return (
-    <div className="mt-2 flex flex-col items-center gap-2 sm:flex-row sm:gap-3">
+    <div className="mt-2 flex flex-col items-center gap-2 @min-[640px]/ev:flex-row @min-[640px]/ev:gap-3">
       <a href={googleHref} target="_blank" rel="noopener noreferrer" className={pillClass}>
         Google Calendar
       </a>

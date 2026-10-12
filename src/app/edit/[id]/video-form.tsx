@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import type { MediaMap, MediaRef, VideoAspect, VideoBlock } from "@/lib/api-types";
 import { isValidVideo, parseVideoUrl, videoWatchUrl } from "@/lib/video";
 
@@ -72,31 +73,30 @@ export function VideoForm({
         />
       </Field>
       {parsed ? (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           {parsed.provider === "youtube" ? "YouTube video detected." : "Vimeo video detected."}
         </p>
       ) : touched && urlInput.trim() ? (
-        <p role="alert" className="text-xs text-destructive">
+        <p role="alert" className="text-sm text-destructive">
           Paste a YouTube or Vimeo link.
         </p>
       ) : hasVideo ? (
-        <p className="text-xs text-muted-foreground">Currently set to a {block.provider === "youtube" ? "YouTube" : "Vimeo"} video.</p>
+        <p className="text-sm text-muted-foreground">Currently set to a {block.provider === "youtube" ? "YouTube" : "Vimeo"} video.</p>
       ) : null}
-      <p className="text-xs text-muted-foreground">The video must be public or unlisted.</p>
+      <p className="text-sm text-muted-foreground">The video must be public or unlisted.</p>
 
       <Field label="Aspect ratio" htmlFor="video-aspect">
-        <select
+        <NativeSelect
           id="video-aspect"
           value={block.aspect}
           onChange={(e) => onChange({ aspect: e.target.value as VideoAspect })}
-          className="flex h-9 w-full rounded-lg border border-input bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
         >
           {ASPECT_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </Field>
 
       <Field label="Caption" htmlFor="video-caption">
@@ -105,7 +105,7 @@ export function VideoForm({
 
       <div className="grid gap-1.5">
         <p className="text-sm font-medium">Poster image (optional)</p>
-        <p className="text-xs text-muted-foreground">Shown before the guest presses play. Falls back to a themed placeholder.</p>
+        <p className="text-sm text-muted-foreground">Shown before the guest presses play. Falls back to a themed placeholder.</p>
         <MediaField
           eventId={eventId}
           preview={block.poster_media_id ? media[block.poster_media_id] ?? null : null}

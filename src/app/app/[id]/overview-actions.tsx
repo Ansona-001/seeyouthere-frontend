@@ -60,13 +60,13 @@ export function OverviewActions({ event }: { event: Event }) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
-        <Badge variant={event.status === "taken_down" ? "destructive" : "secondary"}>{STATUS_LABEL[event.status]}</Badge>
+        <Badge variant={event.status === "taken_down" ? "destructive" : event.status === "published" ? "default" : "outline"}>{STATUS_LABEL[event.status]}</Badge>
         {event.url ? (
           <div className="flex items-center gap-1.5 text-sm">
-            <a href={event.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+            <a href={event.url} target="_blank" rel="noopener noreferrer" className="break-all font-medium text-primary underline-offset-4 hover:underline">
               {event.url}
             </a>
-            <Button type="button" variant="ghost" size="sm" onClick={copyLink}>
+            <Button type="button" variant="ghost" onClick={copyLink}>
               {copied ? "Copied" : "Copy link"}
             </Button>
           </div>
@@ -76,7 +76,7 @@ export function OverviewActions({ event }: { event: Event }) {
       </div>
 
       {notReady && (
-        <div role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div role="alert" className="rounded-xl bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
           This event isn&rsquo;t ready to publish yet. Missing: {notReady.join(", ")}. Set these in{" "}
           <Link href={`/app/${event.id}/settings`} className="underline">
             Settings
@@ -92,12 +92,12 @@ export function OverviewActions({ event }: { event: Event }) {
 
       <div className="flex flex-wrap gap-2">
         {canEdit && (
-          <Button variant="outline" render={<Link href={`/edit/${event.id}`} />}>
+          <Button variant="outline" render={<Link href={`/edit/${event.id}`} />} nativeButton={false}>
             Edit content
           </Button>
         )}
         {event.url && (
-          <Button variant="outline" render={<a href={event.url} target="_blank" rel="noopener noreferrer" />}>
+          <Button variant="outline" render={<a href={event.url} target="_blank" rel="noopener noreferrer" />} nativeButton={false}>
             Preview
           </Button>
         )}

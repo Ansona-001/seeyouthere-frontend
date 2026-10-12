@@ -41,37 +41,43 @@ export function UsersTable({
 
   return (
     <div className="flex flex-col gap-3">
+      <div className="overflow-hidden rounded-xl bg-card ring-1 ring-border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Roles</TableHead>
             <TableHead>Joined</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {users.map((u) => (
             <TableRow key={u.id}>
-              <TableCell>
+              <TableCell className="max-w-72 truncate" title={u.email}>
                 <Link href={`/admin/users/${u.id}`} className="font-medium hover:underline">
-                  {u.name || "(no name)"}
+                  {u.email}
                 </Link>
               </TableCell>
-              <TableCell className="text-muted-foreground">{u.email}</TableCell>
               <TableCell>
                 <Badge variant={u.status === "active" ? "secondary" : "destructive"}>{u.status}</Badge>
               </TableCell>
               <TableCell className="text-muted-foreground">{u.roles.join(", ") || "—"}</TableCell>
               <TableCell className="text-muted-foreground">{formatDateTime(u.created_at)}</TableCell>
+              <TableCell className="text-right">
+                <Button size="sm" variant="outline" render={<Link href={`/admin/users/${u.id}`} />} nativeButton={false}>
+                  Manage
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      </div>
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
       {cursor && (
-        <Button variant="outline" size="sm" className="self-start" disabled={pending} onClick={loadMore}>
+        <Button variant="outline" className="self-start" disabled={pending} onClick={loadMore}>
           {pending ? "Loading…" : "Load more"}
         </Button>
       )}

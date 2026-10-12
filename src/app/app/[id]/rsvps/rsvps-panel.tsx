@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import { EmptyState } from "@/components/brand/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -91,7 +92,7 @@ export function RsvpsPanel({
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <nav aria-label="Filter by response" className="flex gap-1">
+        <nav aria-label="Filter by response" className="flex flex-wrap gap-1.5">
           {FILTERS.map((f) => (
             <Link
               key={f.label}
@@ -99,8 +100,8 @@ export function RsvpsPanel({
               aria-current={attending === f.value ? "page" : undefined}
               className={
                 attending === f.value
-                  ? "rounded-lg bg-primary px-2.5 py-1 text-sm font-medium text-primary-foreground"
-                  : "rounded-lg px-2.5 py-1 text-sm font-medium text-muted-foreground hover:bg-muted"
+                  ? "inline-flex min-h-11 items-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground"
+                  : "inline-flex min-h-11 items-center rounded-full px-4 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
               }
             >
               {f.label}
@@ -109,7 +110,7 @@ export function RsvpsPanel({
         </nav>
         <a
           href={`${API_URL}/v1/events/${eventId}/rsvps.csv`}
-          className="rounded-lg border border-input px-2.5 py-1.5 text-sm font-medium hover:bg-muted"
+          className="inline-flex min-h-11 items-center rounded-full border border-input px-4 text-sm font-semibold hover:bg-muted"
         >
           Download CSV
         </a>
@@ -122,8 +123,11 @@ export function RsvpsPanel({
       )}
 
       {rsvps.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No RSVPs yet.</p>
+        <EmptyState title="No RSVPs yet">
+          {attending ? "Nobody has given this response." : "Responses will appear here as soon as guests reply to your invite."}
+        </EmptyState>
       ) : (
+        <div className="overflow-hidden rounded-xl bg-card ring-1 ring-border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -141,7 +145,7 @@ export function RsvpsPanel({
                 <TableCell className="font-medium">{r.name}</TableCell>
                 <TableCell className="text-muted-foreground">{r.email ?? "—"}</TableCell>
                 <TableCell>
-                  <Badge variant={r.attending === "yes" ? "secondary" : r.attending === "no" ? "outline" : "default"}>
+                  <Badge variant={r.attending === "yes" ? "default" : r.attending === "maybe" ? "secondary" : "outline"} className="capitalize">
                     {r.attending}
                   </Badge>
                 </TableCell>
@@ -158,9 +162,10 @@ export function RsvpsPanel({
             ))}
           </TableBody>
         </Table>
+        </div>
       )}
       {cursor && (
-        <Button variant="outline" size="sm" className="self-start" disabled={pending !== null} onClick={loadMore}>
+        <Button variant="outline" className="self-start" disabled={pending !== null} onClick={loadMore}>
           {pending === "more" ? "Loading…" : "Load more"}
         </Button>
       )}
@@ -172,10 +177,10 @@ function SummaryTile({ label, value }: { label: string; value: string | number }
   return (
     <Card size="sm">
       <CardHeader>
-        <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
+        <CardTitle className="font-sans text-sm font-semibold text-muted-foreground">{label}</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-xl font-semibold">{value}</p>
+        <p className="font-heading text-2xl text-brand-heading tabular-nums">{value}</p>
       </CardContent>
     </Card>
   );

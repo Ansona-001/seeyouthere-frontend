@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import { GateShell } from "@/components/brand/gate-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,9 +40,8 @@ export function PasswordGate({ slug }: { slug: string }) {
   }
 
   return (
-    <div className="mx-auto flex min-h-[70vh] w-full max-w-sm flex-col items-center justify-center gap-4 px-6 text-center">
-      <h1 className="text-2xl font-medium [font-family:var(--ev-font-heading)]">This page is private</h1>
-      <p className="text-(--ev-muted)">Enter the password the host shared with you.</p>
+    <GateShell title="This page is private">
+      <p className="text-muted-foreground">Enter the password the host shared with you.</p>
       <form onSubmit={handleSubmit} className="flex w-full flex-col gap-3">
         <div className="grid gap-1.5 text-left">
           <Label htmlFor="event-password">Password</Label>
@@ -53,23 +53,21 @@ export function PasswordGate({ slug }: { slug: string }) {
             autoComplete="current-password"
             minLength={8}
             maxLength={128}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? "event-password-error" : undefined}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
         {error && (
-          <p role="alert" className="text-sm text-destructive">
+          <p id="event-password-error" role="alert" className="text-left text-sm font-medium text-destructive">
             {error}
           </p>
         )}
-        <Button
-          type="submit"
-          disabled={pending}
-          className="bg-(--ev-accent) text-(--ev-accent-text) hover:opacity-90"
-        >
+        <Button type="submit" size="lg" disabled={pending}>
           {pending ? "Checking…" : "Continue"}
         </Button>
       </form>
-    </div>
+    </GateShell>
   );
 }

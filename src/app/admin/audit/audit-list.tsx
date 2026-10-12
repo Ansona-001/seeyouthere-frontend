@@ -36,6 +36,7 @@ export function AuditList({
 
   return (
     <div className="flex flex-col gap-3">
+      <div className="overflow-hidden rounded-xl bg-card ring-1 ring-border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -50,7 +51,7 @@ export function AuditList({
             <TableRow key={e.id}>
               <TableCell className="text-muted-foreground">{formatDateTime(e.created_at)}</TableCell>
               <TableCell>{e.actor_email ?? "system"}</TableCell>
-              <TableCell className="font-mono text-xs">{e.action}</TableCell>
+              <TableCell className="font-mono text-sm">{e.action}</TableCell>
               <TableCell className="text-muted-foreground">
                 {e.target_type} {e.target_id.slice(0, 8)}…
               </TableCell>
@@ -58,9 +59,10 @@ export function AuditList({
           ))}
         </TableBody>
       </Table>
+      </div>
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
       {cursor && (
-        <Button variant="outline" size="sm" className="self-start" disabled={pending} onClick={loadMore}>
+        <Button variant="outline" className="self-start" disabled={pending} onClick={loadMore}>
           {pending ? "Loading…" : "Load more"}
         </Button>
       )}

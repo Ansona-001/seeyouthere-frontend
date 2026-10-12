@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { GateShell } from "@/components/brand/gate-shell";
+import { Button } from "@/components/ui/button";
 import { api, ApiError } from "@/lib/api";
 
 type Props = {
@@ -59,23 +61,22 @@ export function AcceptLink({ slug, endpoint, redirectTo, emptyLinkMessage }: Pro
 
   if (pending) {
     return (
-      <main className="mx-auto flex min-h-[70vh] w-full max-w-sm flex-col items-center justify-center gap-3 px-6 text-center">
+      <GateShell title="Opening your invite…" as="h1">
         <p role="status" className="text-muted-foreground">
-          Opening your invite…
+          One moment.
         </p>
-      </main>
+      </GateShell>
     );
   }
 
   return (
-    <main className="mx-auto flex min-h-[70vh] w-full max-w-sm flex-col items-center justify-center gap-3 px-6 text-center">
-      <h1 className="text-xl font-medium">Couldn&apos;t open this link</h1>
+    <GateShell title="Couldn't open this link">
       <p role="alert" className="text-muted-foreground">
         {error}
       </p>
-      <Link href={`/${slug}`} className="text-sm underline underline-offset-4">
+      <Button variant="outline" render={<Link href={`/${slug}`} />} nativeButton={false}>
         Go to the event page
-      </Link>
-    </main>
+      </Button>
+    </GateShell>
   );
 }

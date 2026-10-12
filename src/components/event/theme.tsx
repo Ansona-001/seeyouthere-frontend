@@ -88,7 +88,8 @@ export function EventTheme({
       )}
     >
       <TextureLayer texture={texture} fixed={mode === "live"} />
-      {children}
+      {/* Named size container for the blocks' `@min-[…]/ev:` queries. Kept off the root so the live (`fixed`) texture layer is not trapped by the container's layout containment. */}
+      <div className="@container/ev flex flex-1 flex-col">{children}</div>
     </div>
   );
 }

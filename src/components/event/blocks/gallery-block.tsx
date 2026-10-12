@@ -19,7 +19,7 @@ export function GalleryBlock({
 
   if (block.display === "carousel") {
     return (
-      <section className="px-0 py-8 sm:px-2">
+      <section className="px-0 py-8 @min-[640px]/ev:px-2">
         <BlockHeading kicker={block.kicker} heading={block.heading} className="mb-5 text-center" />
         <div className="mx-auto max-w-2xl">
           <Carousel label={block.heading || "Photos"} variant="slide" autoplayMs={4500} interactive={mode === "live"}>
@@ -41,9 +41,9 @@ export function GalleryBlock({
   }
 
   return (
-    <section className="px-0 py-8 sm:px-2">
+    <section className="px-0 py-8 @min-[640px]/ev:px-2">
       <BlockHeading kicker={block.kicker} heading={block.heading} className="mb-5 text-center" />
-      <div className="mx-auto grid max-w-3xl grid-cols-2 gap-2 sm:grid-cols-3">
+      <div className="mx-auto grid max-w-3xl grid-cols-2 gap-2 @min-[640px]/ev:grid-cols-3">
         {images.map((img) => (
           <div key={img.media_id} className="aspect-square overflow-hidden rounded-lg">
             <Image src={img.ref!.src} alt={img.alt} width={480} height={480} className="size-full object-cover" />

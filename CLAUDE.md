@@ -39,7 +39,7 @@ npm audit --omit=dev # after any dependency change
 ## Performance
 
 - Ship minimal client JS: server components, no heavy UI/animation/date libraries when CSS or the platform does it (`<input type="date">`, CSS transitions, `Intl`).
-- Images via `next/image` with explicit size; fonts only via `next/font` (already set: Figtree body, Bricolage Grotesque headings, Geist Mono).
+- Images via `next/image` with explicit size; fonts only via `next/font` (already set: Figtree body, Gloock headings, Geist Mono; Bricolage Grotesque only for event themes).
 - Use streaming/`Suspense` for slow server data; set `cache`/revalidation deliberately on each fetch (user-specific = `no-store`).
 - Target Core Web Vitals: LCP < 2.5 s, CLS < 0.1, INP < 200 ms on a mid-range phone.
 

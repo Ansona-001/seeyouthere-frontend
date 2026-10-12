@@ -32,7 +32,7 @@ export function GuestPhotosBlock({
       ) : (
         photos &&
         photos.length > 0 && (
-          <div className="grid w-full max-w-2xl grid-cols-3 gap-2 sm:grid-cols-4">
+          <div className="grid w-full max-w-2xl grid-cols-3 gap-2 @min-[640px]/ev:grid-cols-4">
             {photos.map((photo) => (
               <div key={photo.id} className="aspect-square overflow-hidden rounded-lg">
                 <Image src={photo.src} alt="" width={480} height={480} className="size-full object-cover" />

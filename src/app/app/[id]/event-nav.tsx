@@ -28,14 +28,14 @@ export function EventNav({ eventId, title, role }: { eventId: string; title: str
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        <Link href="/app" className="text-sm text-muted-foreground hover:text-foreground">
+      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        <Link href="/app" className="inline-flex min-h-11 items-center rounded-md text-sm font-medium text-muted-foreground hover:text-foreground">
           Your events
         </Link>
         <span className="text-muted-foreground">/</span>
-        <h1 className="font-heading text-xl font-semibold">{title || "(untitled)"}</h1>
+        <h1 className="font-heading text-2xl text-brand-heading">{title || "(untitled)"}</h1>
       </div>
-      <nav aria-label="Event sections" className="flex flex-wrap gap-1 border-b pb-px">
+      <nav aria-label="Event sections" className="-mx-4 flex gap-1 overflow-x-auto border-b px-4 pb-px">
         {tabs.map((tab) => {
           const active = tab.href === base ? pathname === base : pathname.startsWith(tab.href);
           return (
@@ -44,9 +44,9 @@ export function EventNav({ eventId, title, role }: { eventId: string; title: str
               href={tab.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "rounded-t-lg px-3 py-2 text-sm font-medium transition-colors",
+                "inline-flex min-h-11 shrink-0 items-center rounded-t-lg px-3.5 text-sm font-semibold transition-colors",
                 active
-                  ? "border-b-2 border-primary text-foreground"
+                  ? "border-b-2 border-primary text-brand-heading"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >

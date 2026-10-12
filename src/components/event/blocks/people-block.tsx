@@ -17,13 +17,13 @@ export function PeopleBlock({ block, media }: { block: PeopleBlockType; media: M
   const single = block.people.length === 1;
 
   return (
-    <section className="px-2 py-8 sm:px-4">
+    <section className="px-2 py-8 @min-[640px]/ev:px-4">
       <BlockHeading kicker={block.kicker} heading={block.heading} className="mb-6 text-center" />
       <div
         className={cn(
           "mx-auto grid gap-6",
-          single ? "max-w-sm grid-cols-1" : "grid-cols-1 md:grid-cols-2",
-          block.people.length > 4 && "lg:grid-cols-3",
+          single ? "max-w-sm grid-cols-1" : "grid-cols-1 @min-[768px]/ev:grid-cols-2",
+          block.people.length > 4 && "@min-[1024px]/ev:grid-cols-3",
         )}
       >
         {block.people.map((person, index) => (
@@ -40,7 +40,7 @@ function PersonCard({ person, media }: { person: Person; media: MediaMap }) {
 
   return (
     <EvCard as="article" className="flex flex-col items-center gap-3 rounded-3xl p-6 text-center">
-      <div className="size-36 overflow-hidden rounded-full ring-2 ring-(--ev-accent)/40 sm:size-44">
+      <div className="size-36 overflow-hidden rounded-full ring-2 ring-(--ev-accent)/40 @min-[640px]/ev:size-44">
         {photo ? (
           <Image src={photo.src} alt={alt} width={480} height={480} className="size-full object-cover" />
         ) : (

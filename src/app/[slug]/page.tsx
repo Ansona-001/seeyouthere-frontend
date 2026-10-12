@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 
+import { GateShell } from "@/components/brand/gate-shell";
 import { EventView } from "@/components/event/event-view";
 import { PasswordGate } from "@/components/event/password-gate";
+import { Button } from "@/components/ui/button";
 import type { HeroBlock, PublicEvent } from "@/lib/api-types";
 import { serverApi } from "@/lib/server-api";
 
@@ -74,10 +77,14 @@ export default async function PublicEventPage({ params }: PageProps<"/[slug]">) 
     // Infra failure (API down) or an unmapped error — don't claim the page
     // doesn't exist; let the visitor retry instead.
     return (
-      <main className="flex flex-1 flex-col items-center justify-center gap-2 px-6 py-24 text-center">
-        <h1 className="text-2xl font-medium">Something went wrong</h1>
-        <p className="text-muted-foreground">{result.message}</p>
-      </main>
+      <GateShell title="Something went wrong">
+        <p role="alert" className="text-muted-foreground">
+          {result.message}
+        </p>
+        <Button variant="outline" render={<Link href={`/${slug}`} />} nativeButton={false}>
+          Try again
+        </Button>
+      </GateShell>
     );
   }
 

@@ -6,20 +6,20 @@ import { EvCard } from "../surface";
 
 /**
  * Build-out plan rich-blocks extension §4.3: under `surface: "card"`/
- * `"glass"` the schedule becomes a `grid gap-4 md:grid-cols-2` of item
+ * `"glass"` the schedule becomes a `grid gap-4 @min-[768px]/ev:grid-cols-2` of item
  * cards; under `"plain"` (the default, every existing template) it renders
  * identically to the original bulleted timeline. One markup, driven by the
  * `data-ev-surface` ancestor attribute — no JS, no duplicate DOM.
  */
 export function ScheduleBlock({ block }: { block: ScheduleBlockType }) {
   return (
-    <section className="px-2 py-8 sm:px-4">
+    <section className="px-2 py-8 @min-[640px]/ev:px-4">
       <BlockHeading kicker={block.kicker} heading={block.heading} className="mb-6 text-center" />
       <ol
         className={cn(
-          "mx-auto grid max-w-3xl grid-cols-1 gap-4 md:grid-cols-2",
+          "mx-auto grid max-w-3xl grid-cols-1 gap-4 @min-[768px]/ev:grid-cols-2",
           "in-data-[ev-surface=plain]:max-w-md in-data-[ev-surface=plain]:grid-cols-1 in-data-[ev-surface=plain]:gap-5 in-data-[ev-surface=plain]:border-l in-data-[ev-surface=plain]:border-(--ev-accent)/25 in-data-[ev-surface=plain]:pl-5",
-          "md:in-data-[ev-surface=plain]:grid-cols-1",
+          "@min-[768px]/ev:in-data-[ev-surface=plain]:grid-cols-1",
         )}
       >
         {block.items.map((item, index) => (

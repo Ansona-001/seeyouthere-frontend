@@ -198,7 +198,7 @@ export function Editor({
           <div className={mobileView === "preview" ? "hidden lg:block" : ""}>
             <fieldset disabled={editingDisabled} className="flex flex-col gap-6">
               <section>
-                <h2 className="mb-2 font-heading text-sm font-semibold text-muted-foreground">Content</h2>
+                <h2 className="mb-2 font-heading text-base text-brand-heading">Content</h2>
                 <BlockList
                   content={state.content}
                   selectedId={selectedBlockId}
@@ -208,7 +208,7 @@ export function Editor({
                   onMove={moveBlock}
                 />
                 {selectedBlock && (
-                  <div className="mt-4 rounded-xl border p-4">
+                  <div className="mt-4 rounded-xl bg-card p-4 ring-1 ring-border">
                     <BlockForm
                       block={selectedBlock}
                       occasion={occasion}
@@ -222,7 +222,7 @@ export function Editor({
               </section>
 
               <section>
-                <h2 className="mb-2 font-heading text-sm font-semibold text-muted-foreground">Design</h2>
+                <h2 className="mb-2 font-heading text-base text-brand-heading">Design</h2>
                 <DesignPanel
                   templates={templates}
                   templateSlug={state.templateSlug}
@@ -236,7 +236,7 @@ export function Editor({
               </section>
 
               <section>
-                <h2 className="mb-2 font-heading text-sm font-semibold text-muted-foreground">Settings</h2>
+                <h2 className="mb-2 font-heading text-base text-brand-heading">Settings</h2>
                 <SettingsPanel state={state} dispatch={dispatch} canPublish={canPublishNow} />
               </section>
             </fieldset>
@@ -271,27 +271,27 @@ function EditorTopBar({
   return (
     <header className="flex flex-wrap items-center justify-between gap-3 border-b bg-card px-4 py-3">
       <div>
-        <p className="font-heading text-sm font-semibold">{state.title || "Untitled event"}</p>
+        <p className="font-heading text-lg text-brand-heading">{state.title || "Untitled event"}</p>
         <SaveIndicator state={state} />
       </div>
       <div className="flex items-center gap-2">
         {state.status !== "draft" && (
-          <Button size="sm" onClick={onSaveNow} disabled={!state.dirty || state.saveStatus === "saving" || state.saveStatus === "conflict"}>
+          <Button onClick={onSaveNow} disabled={!state.dirty || state.saveStatus === "saving" || state.saveStatus === "conflict"}>
             {state.saveStatus === "saving" ? "Saving…" : "Save changes"}
           </Button>
         )}
       </div>
 
       {state.saveStatus === "conflict" && (
-        <div role="alert" className="w-full rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div role="alert" className="w-full rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
           This event was changed somewhere else.{" "}
-          <button type="button" className="font-medium underline" onClick={onReload}>
+          <button type="button" className="min-h-11 font-semibold underline" onClick={onReload}>
             Reload to see the latest version.
           </button>
         </div>
       )}
       {state.saveStatus === "error" && state.saveMessage && (
-        <div role="alert" className="w-full rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div role="alert" className="w-full rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {state.saveMessage}
           {state.saveIssues && state.saveIssues.length > 0 && (
             <ul className="mt-1 list-inside list-disc">
@@ -318,5 +318,5 @@ function SaveIndicator({ state }: { state: ReturnType<typeof editorStateFromEven
         : state.dirty
           ? "Unsaved changes"
           : "All changes saved";
-  return <p className="text-xs text-muted-foreground">{text}</p>;
+  return <p role="status" className="text-sm text-muted-foreground">{text}</p>;
 }

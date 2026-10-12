@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
 import { redirectIfMfaRequired, requireAdminUser } from "@/lib/admin";
 import type { AdminReportsListResponse, ReportStatus } from "@/lib/api-types";
 import { serverApi } from "@/lib/server-api";
@@ -26,28 +28,25 @@ export default async function AdminReportsPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="font-heading text-2xl font-bold">Reports</h1>
-      <form method="get" className="flex items-end gap-3">
-        <label className="grid gap-1.5 text-sm">
+      <h1 className="font-heading text-2xl text-brand-heading">Reports</h1>
+      <form method="get" className="flex flex-wrap items-end gap-3">
+        <label className="grid gap-1.5 text-sm font-semibold">
           Status
-          <select
+          <NativeSelect
             name="status"
             defaultValue={status}
-            className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm dark:bg-input/30"
+            className="min-w-36"
           >
             {STATUSES.map((s) => (
               <option key={s} value={s}>
                 {s}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </label>
-        <button
-          type="submit"
-          className="h-8 rounded-lg bg-primary px-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/80"
-        >
+        <Button type="submit" variant="outline">
           Filter
-        </button>
+        </Button>
       </form>
 
       {!result.ok ? (
@@ -55,7 +54,7 @@ export default async function AdminReportsPage({
           <AlertDescription>{result.message}</AlertDescription>
         </Alert>
       ) : result.data.reports.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No reports with this status.</p>
+        <p className="rounded-xl border border-dashed border-input bg-card px-4 py-6 text-center text-sm text-muted-foreground">No reports with this status.</p>
       ) : (
         <ReportsList
           initialReports={result.data.reports}

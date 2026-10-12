@@ -50,9 +50,9 @@ export function LoginForm({ nextPath = "/app" }: { nextPath?: string }) {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full max-w-sm rounded-3xl shadow-md">
       <CardHeader>
-        <CardTitle className="text-2xl">{step === "email" ? "Log in or sign up" : "Check your email"}</CardTitle>
+        <CardTitle className="text-3xl">{step === "email" ? "Log in or sign up" : "Check your email"}</CardTitle>
         <CardDescription>
           {step === "email" ? (
             "We'll email you a 6-digit code. No password needed."
@@ -80,8 +80,8 @@ export function LoginForm({ nextPath = "/app" }: { nextPath?: string }) {
                 placeholder="you@example.com"
               />
             </div>
-            {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" disabled={pending}>
+            {error && <p role="alert" className="text-sm font-medium text-destructive">{error}</p>}
+            <Button type="submit" size="lg" disabled={pending}>
               {pending ? "Sending…" : "Email me a code"}
             </Button>
           </form>
@@ -103,14 +103,14 @@ export function LoginForm({ nextPath = "/app" }: { nextPath?: string }) {
                 className="text-center text-lg tracking-[0.5em]"
               />
             </div>
-            {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" disabled={pending || code.length !== 6}>
+            {error && <p role="alert" className="text-sm font-medium text-destructive">{error}</p>}
+            <Button type="submit" size="lg" disabled={pending || code.length !== 6}>
               {pending ? "Checking…" : "Log in"}
             </Button>
             <div className="flex justify-between text-sm">
               <button
                 type="button"
-                className="text-muted-foreground underline-offset-4 hover:underline"
+                className="min-h-11 rounded-md px-1 text-muted-foreground underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
                 onClick={() => {
                   setError(null);
                   setStep("email");
@@ -120,7 +120,7 @@ export function LoginForm({ nextPath = "/app" }: { nextPath?: string }) {
               </button>
               <button
                 type="button"
-                className="text-muted-foreground underline-offset-4 hover:underline disabled:opacity-50"
+                className="min-h-11 rounded-md px-1 text-muted-foreground underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
                 disabled={pending}
                 onClick={() => requestCode()}
               >

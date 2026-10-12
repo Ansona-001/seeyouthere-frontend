@@ -20,7 +20,7 @@ export function HeroBlock({
 
   if (heroStyle === "full_bleed" && image) {
     return (
-      <div className="relative flex min-h-[70vh] w-full items-end overflow-hidden sm:min-h-screen lg:h-dvh lg:min-h-0">
+      <div className="relative flex min-h-[70vh] w-full items-end overflow-hidden @min-[640px]/ev:min-h-screen @min-[1024px]/ev:h-dvh @min-[1024px]/ev:min-h-0">
         <Image
           src={image.src}
           alt={block.image?.alt ?? ""}
@@ -30,9 +30,9 @@ export function HeroBlock({
           className="object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
-        <div className="relative z-10 w-full px-6 pb-10 text-white sm:px-10 sm:pb-16">
+        <div className="relative z-10 w-full px-6 pb-10 text-white @min-[640px]/ev:px-10 @min-[640px]/ev:pb-16">
           {block.kicker && <Kicker className="text-white/90">{block.kicker}</Kicker>}
-          <h1 className="text-4xl font-semibold [font-family:var(--ev-font-heading)] sm:text-6xl">{block.title}</h1>
+          <h1 className="text-4xl font-semibold [font-family:var(--ev-font-heading)] @min-[640px]/ev:text-6xl">{block.title}</h1>
           {block.subtitle && <p className="mt-3 max-w-xl text-lg text-white/90">{block.subtitle}</p>}
         </div>
       </div>
@@ -68,9 +68,9 @@ export function HeroBlock({
   }
 
   return (
-    <div className="flex flex-col items-center px-6 pt-14 pb-2 text-center sm:pt-20">
+    <div className="flex flex-col items-center px-6 pt-14 pb-2 text-center @min-[640px]/ev:pt-20">
       {heroStyle === "framed" && image && (
-        <div className="mb-6 aspect-4/5 w-full max-w-xs overflow-hidden rounded-2xl ring-1 ring-(--ev-accent)/20 sm:max-w-sm">
+        <div className="mb-6 aspect-4/5 w-full max-w-xs overflow-hidden rounded-2xl ring-1 ring-(--ev-accent)/20 @min-[640px]/ev:max-w-sm">
           <Image
             src={image.src}
             alt={block.image?.alt ?? ""}
@@ -81,7 +81,7 @@ export function HeroBlock({
         </div>
       )}
       {block.kicker && <Kicker>{block.kicker}</Kicker>}
-      <h1 className="text-4xl font-semibold text-(--ev-text) [font-family:var(--ev-font-heading)] sm:text-5xl">
+      <h1 className="text-4xl font-semibold text-(--ev-text) [font-family:var(--ev-font-heading)] @min-[640px]/ev:text-5xl">
         {block.title}
       </h1>
       {block.subtitle && <p className="mt-3 max-w-md text-lg text-(--ev-muted)">{block.subtitle}</p>}

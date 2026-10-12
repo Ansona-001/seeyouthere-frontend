@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { EmptyState } from "@/components/brand/empty-state";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { redirectIfMfaRequired, requireAdminUser } from "@/lib/admin";
 import type { AdminTemplatesListResponse } from "@/lib/api-types";
@@ -18,7 +19,7 @@ export default async function AdminTemplatesPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-heading text-2xl font-bold">Templates</h1>
+        <h1 className="font-heading text-2xl text-brand-heading">Templates</h1>
         <NewTemplateDialog />
       </div>
 
@@ -27,7 +28,9 @@ export default async function AdminTemplatesPage() {
           <AlertDescription>{result.message}</AlertDescription>
         </Alert>
       ) : result.data.templates.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No templates yet.</p>
+        <EmptyState title="No templates yet" action={<NewTemplateDialog />}>
+          Create a template to offer hosts a starting point for their invitations.
+        </EmptyState>
       ) : (
         <TemplatesList templates={result.data.templates} />
       )}

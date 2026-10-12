@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 
 import { cn } from "cn";
 
+import { Logo } from "@/components/brand/logo";
+
 const LINKS = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/users", label: "Users" },
@@ -22,7 +24,8 @@ export function AdminNav({ roles }: { roles: string[] }) {
   return (
     <header className="border-b bg-card">
       <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-        <Link href="/admin" className="font-heading text-lg font-semibold">
+        <Link href="/admin" className="flex items-center gap-2 rounded-md font-heading text-lg text-brand-heading">
+          <Logo variant="mark" title="" className="size-7" />
           Admin
         </Link>
         <nav aria-label="Admin sections" className="flex flex-wrap gap-1">
@@ -34,8 +37,8 @@ export function AdminNav({ roles }: { roles: string[] }) {
                 href={link.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors",
-                  active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  "inline-flex min-h-11 items-center rounded-full px-3.5 text-sm font-semibold transition-colors",
+                  active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground",
                 )}
               >
                 {link.label}
@@ -43,7 +46,7 @@ export function AdminNav({ roles }: { roles: string[] }) {
             );
           })}
         </nav>
-        <span className="text-xs text-muted-foreground">{roles.join(", ")}</span>
+        <span className="text-sm text-muted-foreground">{roles.join(", ")}</span>
       </div>
     </header>
   );

@@ -51,7 +51,7 @@ export function ProfileForm({ initialName }: { initialName: string }) {
         />
       </div>
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-      {saved && !error && <p className="text-sm text-muted-foreground">Saved.</p>}
+      {saved && !error && <p role="status" className="text-sm font-medium text-brand-success">Saved.</p>}
       <div>
         <Button type="submit" disabled={pending || unchanged || trimmed.length === 0}>
           {pending ? "Saving…" : "Save name"}

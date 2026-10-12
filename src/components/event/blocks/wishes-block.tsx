@@ -14,7 +14,7 @@ export function WishesBlock({ block, interactive }: { block: WishesBlockType; in
   if (block.items.length === 0) return null;
 
   return (
-    <section className="px-2 py-8 sm:px-4">
+    <section className="px-2 py-8 @min-[640px]/ev:px-4">
       <BlockHeading kicker={block.kicker} heading={block.heading} className="mb-6 text-center" />
       <div className="mx-auto max-w-xl">
         <Carousel

@@ -79,7 +79,7 @@ export function UserActions({
       <div className="flex flex-wrap gap-2">
         <Button
           variant="outline"
-          size="sm"
+         
           disabled={locked || pending !== null || target.status === "active"}
           onClick={() => setStatus("active")}
         >
@@ -87,7 +87,7 @@ export function UserActions({
         </Button>
         <Button
           variant="outline"
-          size="sm"
+         
           disabled={locked || pending !== null || target.status === "suspended"}
           onClick={() => setStatus("suspended")}
         >
@@ -95,13 +95,13 @@ export function UserActions({
         </Button>
         <Button
           variant="destructive"
-          size="sm"
+         
           disabled={locked || !isSuperAdmin || pending !== null || target.status === "banned"}
           onClick={() => setStatus("banned")}
         >
           {pending === "status:banned" ? "Banning…" : "Ban"}
         </Button>
-        <Button variant="outline" size="sm" disabled={locked || pending !== null} onClick={revokeSessions}>
+        <Button variant="outline" disabled={locked || pending !== null} onClick={revokeSessions}>
           {pending === "revoke" ? "Revoking…" : "Revoke sessions"}
         </Button>
       </div>
@@ -127,7 +127,7 @@ export function UserActions({
             })}
           </div>
           <div>
-            <Button variant="outline" size="sm" disabled={isSelf || pending !== null} onClick={resetMfa}>
+            <Button variant="outline" disabled={isSelf || pending !== null} onClick={resetMfa}>
               {pending === "mfa" ? "Resetting…" : "Reset two-factor authentication"}
             </Button>
           </div>
