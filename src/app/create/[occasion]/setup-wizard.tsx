@@ -4,12 +4,11 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 
-import { themeStyle } from "@/components/event/theme";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api, ApiError, type Event } from "@/lib/api";
-import type { Occasion, Palette, TemplateSummary } from "@/lib/api-types";
+import type { Occasion, TemplateSummary } from "@/lib/api-types";
 import { fontCssVar } from "@/lib/fonts";
 
 type Step = "questions" | "design";
@@ -19,9 +18,9 @@ type Step = "questions" | "design";
 // template/question lists, since storage is attacker-editable.
 const DRAFT_KEY = "syt:create-draft";
 
-type Restored = { answers: Record<string, string>; template: string; palette: string; font: string };
+type Restored = { answers: Record<string, string>; template: string };
 
-type SavedDraft = { occasion: string; answers: Record<string, string>; template: string; palette: string; font: string };
+type SavedDraft = { occasion: string; answers: Record<string, string>; template: string };
 
 function saveDraft(draft: SavedDraft) {
   try {
@@ -55,8 +54,8 @@ function restoreDraft(raw: string | null, occasion: Occasion, templates: Templat
   try {
     const d: unknown = JSON.parse(raw);
     if (typeof d !== "object" || d === null) return null;
-    const { occasion: o, answers, template, palette, font } = d as Record<string, unknown>;
-    if (o !== occasion.slug || typeof template !== "string" || typeof palette !== "string" || typeof font !== "string") return null;
+    const { occasion: o, answers, template } = d as Record<string, unknown>;
+    if (o !== occasion.slug || typeof template !== "string") return null;
     if (typeof answers !== "object" || answers === null || Array.isArray(answers)) return null;
     const tpl = templates.find((t) => t.slug === template);
     if (!tpl) return null;
@@ -65,12 +64,7 @@ function restoreDraft(raw: string | null, occasion: Occasion, templates: Templat
       const v = (answers as Record<string, unknown>)[q.key];
       if (typeof v === "string" && v.length <= 500) restored[q.key] = v;
     }
-    return {
-      answers: restored,
-      template: tpl.slug,
-      palette: tpl.palettes.some((p) => p.id === palette) ? palette : tpl.defaults.palette,
-      font: tpl.fonts.some((f) => f.id === font) ? font : tpl.defaults.font,
-    };
+    return { answers: restored, template: tpl.slug };
   } catch {
     return null;
   }
@@ -78,7 +72,8 @@ function restoreDraft(raw: string | null, occasion: Occasion, templates: Templat
 
 /**
  * Occasion setup wizard (build-out plan §11.1, §11.4): setup questions (when
- * the occasion has any), then template/palette/font, then `POST /v1/events`.
+ * the occasion has any), then the template, then `POST /v1/events`. Palette and fonts are
+ * chosen later in the editor's design panel.
  * `content.BuildInitialContent` on the server does all the placeholder-copy
  * and answer-substitution work, so this only needs to collect answers and a
  * design choice — the created event already has full, editable content.
@@ -108,14 +103,10 @@ function SetupWizardInner({
   const [step, setStep] = useState<Step>(initial || !hasQuestions ? "design" : "questions");
   const [answers, setAnswers] = useState<Record<string, string>>(initial?.answers ?? {});
   const [templateSlug, setTemplateSlug] = useState(initial?.template ?? templates[0].slug);
-  const [paletteId, setPaletteId] = useState(initial?.palette ?? templates[0].defaults.palette);
-  const [fontId, setFontId] = useState(initial?.font ?? templates[0].defaults.font);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const template = templates.find((t) => t.slug === templateSlug) ?? templates[0];
-  const palette = template.palettes.find((p) => p.id === paletteId) ?? template.palettes[0];
-  const fontPair = template.fonts.find((f) => f.id === fontId) ?? template.fonts[0];
 
   const browserTimezone = useMemo(() => {
     try {
@@ -134,8 +125,6 @@ function SetupWizardInner({
 
   function selectTemplate(next: TemplateSummary) {
     setTemplateSlug(next.slug);
-    setPaletteId(next.defaults.palette);
-    setFontId(next.defaults.font);
   }
 
   function answerFor(key: string, questionType: string): string {
@@ -159,7 +148,7 @@ function SetupWizardInner({
       if (value) finalAnswers[q.key] = value;
     }
     if (!signedIn) {
-      saveDraft({ occasion: occasion.slug, answers: finalAnswers, template: template.slug, palette: paletteId, font: fontId });
+      saveDraft({ occasion: occasion.slug, answers: finalAnswers, template: template.slug });
       const back = `/create/${occasion.slug}?resume=1`;
       router.push(`/login?next=${encodeURIComponent(back)}`);
       return;
@@ -170,17 +159,6 @@ function SetupWizardInner({
         method: "POST",
         json: { occasion_slug: occasion.slug, template_slug: template.slug, answers: finalAnswers },
       });
-      if (event.overrides.palette !== paletteId || event.overrides.font !== fontId) {
-        try {
-          await api(`/v1/events/${event.id}`, {
-            method: "PATCH",
-            json: { version: event.version, overrides: { palette: paletteId, font: fontId } },
-          });
-        } catch {
-          // The event itself was created fine; the design panel in the editor
-          // can still set the palette/font, so this isn't worth blocking on.
-        }
-      }
       clearDraft();
       router.push(`/edit/${event.id}`);
     } catch (err) {
@@ -260,47 +238,6 @@ function SetupWizardInner({
             </div>
           </section>
 
-          <section>
-            <h2 className="mb-3 font-heading text-xl text-brand-heading">Palette</h2>
-            <div className="flex flex-wrap gap-2">
-              {template.palettes.map((p) => (
-                <PaletteSwatch key={p.id} palette={p} selected={p.id === paletteId} onSelect={() => setPaletteId(p.id)} />
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <h2 className="mb-3 font-heading text-xl text-brand-heading">Fonts</h2>
-            <div className="flex flex-wrap gap-2">
-              {template.fonts.map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setFontId(f.id)}
-                  aria-pressed={f.id === fontId}
-                  className={`${choiceBase} min-h-11 rounded-full px-4 py-2 text-left ${
-                    f.id === fontId ? choiceOn : choiceOff
-                  }`}
-                  style={{ fontFamily: fontCssVar(f.heading) }}
-                >
-                  {f.name}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section aria-label="Preview">
-            <div
-              style={themeStyle({ ...emptyTheme, layout: template.layout, hero_style: template.hero_style, decoration: template.decoration, palette: palette.colors, fonts: { heading: fontPair.heading, body: fontPair.body } })}
-              className="rounded-3xl bg-(--ev-bg) p-8 text-center ring-1 ring-foreground/10 sm:p-12"
-            >
-              <p className="text-3xl font-semibold text-(--ev-text) [font-family:var(--ev-font-heading)]">
-                {occasion.copy.title_template.replace(/\{[a-z0-9_]+\}/gi, "…")}
-              </p>
-              <p className="mt-2 text-(--ev-muted) [font-family:var(--ev-font-body)]">{occasion.copy.tagline}</p>
-            </div>
-          </section>
-
           {error && (
             <p role="alert" className="text-center text-sm font-medium text-destructive">
               {error}
@@ -324,8 +261,6 @@ function SetupWizardInner({
     </div>
   );
 }
-
-const emptyTheme = { background: null } as const;
 
 const choiceBase =
   "inline-flex items-center border bg-card outline-none transition-[border-color,box-shadow,background-color] duration-(--duration-fast) focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none";
@@ -412,35 +347,6 @@ function TemplateCard({
           {template.layout} · {template.hero_style.replace("_", " ")}
         </span>
       </span>
-    </button>
-  );
-}
-
-function PaletteSwatch({
-  palette,
-  selected,
-  onSelect,
-}: {
-  palette: Palette;
-  selected: boolean;
-  onSelect: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-pressed={selected}
-      aria-label={palette.name}
-      title={palette.name}
-      className={`${choiceBase} min-h-11 min-w-11 justify-center gap-1.5 rounded-full px-3 ${selected ? choiceOn : choiceOff}`}
-    >
-      {(["background", "accent", "text"] as const).map((k) => (
-        <span
-          key={k}
-          className="size-5 rounded-full ring-1 ring-foreground/20"
-          style={{ backgroundColor: palette.colors[k] }}
-        />
-      ))}
     </button>
   );
 }
