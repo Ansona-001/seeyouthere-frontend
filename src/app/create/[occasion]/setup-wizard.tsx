@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useMemo, useState, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 
 import { themeStyle } from "@/components/event/theme";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,68 @@ import { fontCssVar } from "@/lib/fonts";
 
 type Step = "questions" | "design";
 
+// A visitor who isn't signed in keeps their choices across the login redirect in sessionStorage
+// (this tab only, cleared on restore). Everything read back is re-validated against the live
+// template/question lists, since storage is attacker-editable.
+const DRAFT_KEY = "syt:create-draft";
+
+type Restored = { answers: Record<string, string>; template: string; palette: string; font: string };
+
+type SavedDraft = { occasion: string; answers: Record<string, string>; template: string; palette: string; font: string };
+
+function saveDraft(draft: SavedDraft) {
+  try {
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  } catch {
+    // Storage can be blocked; the visitor just re-picks after logging in.
+  }
+}
+
+function readDraft(): string | null {
+  try {
+    return sessionStorage.getItem(DRAFT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function clearDraft() {
+  try {
+    sessionStorage.removeItem(DRAFT_KEY);
+  } catch {
+    // Nothing to clear if storage is blocked.
+  }
+}
+
+const noopSubscribe = () => () => {};
+
+/** Parses and validates a saved draft against the live occasion/templates; null if anything is off. */
+function restoreDraft(raw: string | null, occasion: Occasion, templates: TemplateSummary[]): Restored | null {
+  if (!raw) return null;
+  try {
+    const d: unknown = JSON.parse(raw);
+    if (typeof d !== "object" || d === null) return null;
+    const { occasion: o, answers, template, palette, font } = d as Record<string, unknown>;
+    if (o !== occasion.slug || typeof template !== "string" || typeof palette !== "string" || typeof font !== "string") return null;
+    if (typeof answers !== "object" || answers === null || Array.isArray(answers)) return null;
+    const tpl = templates.find((t) => t.slug === template);
+    if (!tpl) return null;
+    const restored: Record<string, string> = {};
+    for (const q of occasion.setup_questions) {
+      const v = (answers as Record<string, unknown>)[q.key];
+      if (typeof v === "string" && v.length <= 500) restored[q.key] = v;
+    }
+    return {
+      answers: restored,
+      template: tpl.slug,
+      palette: tpl.palettes.some((p) => p.id === palette) ? palette : tpl.defaults.palette,
+      font: tpl.fonts.some((f) => f.id === font) ? font : tpl.defaults.font,
+    };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Occasion setup wizard (build-out plan §11.1, §11.4): setup questions (when
  * the occasion has any), then template/palette/font, then `POST /v1/events`.
@@ -21,14 +83,33 @@ type Step = "questions" | "design";
  * and answer-substitution work, so this only needs to collect answers and a
  * design choice — the created event already has full, editable content.
  */
-export function SetupWizard({ occasion, templates }: { occasion: Occasion; templates: TemplateSummary[] }) {
+export function SetupWizard(props: { occasion: Occasion; templates: TemplateSummary[]; signedIn: boolean }) {
+  // Coming back from login (?resume=1): restore what the visitor had picked and land on the
+  // design step. The server renders without it, so the saved choices are read client-side.
+  const resume = useSearchParams().get("resume") === "1";
+  const raw = useSyncExternalStore(noopSubscribe, () => (resume && props.signedIn ? readDraft() : null), () => null);
+  const initial = restoreDraft(raw, props.occasion, props.templates);
+  return <SetupWizardInner key={initial ? "restored" : "fresh"} {...props} initial={initial} />;
+}
+
+function SetupWizardInner({
+  occasion,
+  templates,
+  signedIn,
+  initial,
+}: {
+  occasion: Occasion;
+  templates: TemplateSummary[];
+  signedIn: boolean;
+  initial: Restored | null;
+}) {
   const router = useRouter();
   const hasQuestions = occasion.setup_questions.length > 0;
-  const [step, setStep] = useState<Step>(hasQuestions ? "questions" : "design");
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [templateSlug, setTemplateSlug] = useState(templates[0].slug);
-  const [paletteId, setPaletteId] = useState(templates[0].defaults.palette);
-  const [fontId, setFontId] = useState(templates[0].defaults.font);
+  const [step, setStep] = useState<Step>(initial || !hasQuestions ? "design" : "questions");
+  const [answers, setAnswers] = useState<Record<string, string>>(initial?.answers ?? {});
+  const [templateSlug, setTemplateSlug] = useState(initial?.template ?? templates[0].slug);
+  const [paletteId, setPaletteId] = useState(initial?.palette ?? templates[0].defaults.palette);
+  const [fontId, setFontId] = useState(initial?.font ?? templates[0].defaults.font);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,13 +153,19 @@ export function SetupWizard({ occasion, templates }: { occasion: Occasion; templ
 
   async function create() {
     setError(null);
+    const finalAnswers: Record<string, string> = {};
+    for (const q of occasion.setup_questions) {
+      const value = answerFor(q.key, q.type).trim();
+      if (value) finalAnswers[q.key] = value;
+    }
+    if (!signedIn) {
+      saveDraft({ occasion: occasion.slug, answers: finalAnswers, template: template.slug, palette: paletteId, font: fontId });
+      const back = `/create/${occasion.slug}?resume=1`;
+      router.push(`/login?next=${encodeURIComponent(back)}`);
+      return;
+    }
     setPending(true);
     try {
-      const finalAnswers: Record<string, string> = {};
-      for (const q of occasion.setup_questions) {
-        const value = answerFor(q.key, q.type).trim();
-        if (value) finalAnswers[q.key] = value;
-      }
       const { event } = await api<{ event: Event }>("/v1/events", {
         method: "POST",
         json: { occasion_slug: occasion.slug, template_slug: template.slug, answers: finalAnswers },
@@ -94,12 +181,23 @@ export function SetupWizard({ occasion, templates }: { occasion: Occasion; templ
           // can still set the palette/font, so this isn't worth blocking on.
         }
       }
+      clearDraft();
       router.push(`/edit/${event.id}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't reach the server. Please try again.");
       setPending(false);
     }
   }
+
+  // Back from login with the choices restored: the visitor already pressed create, so finish the job.
+  // The ref keeps React's dev double-run from creating two events.
+  const autoCreated = useRef(false);
+  useEffect(() => {
+    if (!initial || !signedIn || autoCreated.current) return;
+    autoCreated.current = true;
+    void create();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once on arrival; create reads current state
+  }, []);
 
   return (
     <div className="flex flex-col gap-8">
@@ -218,7 +316,7 @@ export function SetupWizard({ occasion, templates }: { occasion: Occasion; templ
               <span />
             )}
             <Button type="button" size="lg" onClick={create} disabled={pending}>
-              {pending ? "Creating…" : "Create my event"}
+              {pending ? "Creating…" : signedIn ? "Create my event" : "Log in to create my event"}
             </Button>
           </div>
         </div>
