@@ -230,7 +230,7 @@ function SetupWizardInner({
       ) : (
         <div className="flex flex-col gap-8">
           <section>
-            <h2 className="mb-3 font-heading text-xl text-brand-heading">Template</h2>
+            <h2 className="sr-only">Template</h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {templates.map((t) => (
                 <TemplateCard key={t.slug} template={t} occasionSlug={occasion.slug} selected={t.slug === templateSlug} onSelect={() => selectTemplate(t)} />
