@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 
@@ -154,9 +155,9 @@ export function SetupWizard({ occasion, templates }: { occasion: Occasion; templ
         <div className="flex flex-col gap-8">
           <section>
             <h2 className="mb-3 font-heading text-xl text-brand-heading">Template</h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {templates.map((t) => (
-                <TemplateCard key={t.slug} template={t} selected={t.slug === templateSlug} onSelect={() => selectTemplate(t)} />
+                <TemplateCard key={t.slug} template={t} occasionSlug={occasion.slug} selected={t.slug === templateSlug} onSelect={() => selectTemplate(t)} />
               ))}
             </div>
           </section>
@@ -233,38 +234,75 @@ const choiceBase =
 const choiceOn = "border-primary bg-secondary ring-2 ring-primary/30";
 const choiceOff = "border-input hover:bg-accent";
 
-/** Template option: a miniature of its default palette and heading font, plus its name. */
+/** Slugs that ship a preview at public/templates/<slug>.webp; anything else (e.g. admin-created) gets the swatch. */
+const PREVIEW_SLUGS: ReadonlySet<string> = new Set([
+  "olive-grove", "letterpress", "velvet-foil", "sunlit", "sprinkles", "risograph",
+  "cloud-nine", "gingham", "open-door", "terrazzo", "gilt-noir", "mirror-ball",
+  "heirloom", "confetti", "classic", "garden", "modern", "minimal",
+]);
+
+/**
+ * Occasion-specific previews at public/templates/<slug>--<occasion>.webp for the
+ * photo-hero v1 templates. Keys are a static allowlist: the occasion comes from
+ * the route, so it is never interpolated into a URL unless it is listed here.
+ */
+const OCCASION_PREVIEWS: ReadonlySet<string> = new Set([
+  ...["wedding", "engagement", "birthday", "baby-shower", "housewarming", "party"].flatMap((o) => [`classic--${o}`, `modern--${o}`]),
+  ...["wedding", "engagement", "baby-shower"].map((o) => `garden--${o}`),
+  ...["wedding", "engagement"].map((o) => `heirloom--${o}`),
+]);
+
+/** Template option: a preview of the invite (or a palette/font swatch when none exists), plus its name. */
 function TemplateCard({
   template,
+  occasionSlug,
   selected,
   onSelect,
 }: {
   template: TemplateSummary;
+  occasionSlug: string;
   selected: boolean;
   onSelect: () => void;
 }) {
   const palette = template.palettes.find((p) => p.id === template.defaults.palette) ?? template.palettes[0];
   const font = template.fonts.find((f) => f.id === template.defaults.font) ?? template.fonts[0];
+  const variant = `${template.slug}--${occasionSlug}`;
+  const previewSrc = OCCASION_PREVIEWS.has(variant) ? `/templates/${variant}.webp` : `/templates/${template.slug}.webp`;
   return (
     <button
       type="button"
       onClick={onSelect}
       aria-pressed={selected}
-      className={`${choiceBase} flex-col items-stretch gap-2 rounded-2xl p-2 text-left ${selected ? choiceOn : choiceOff}`}
+      className={`${choiceBase} flex-col items-stretch gap-2 rounded-2xl p-2 focus-visible:ring-3 text-left ${selected ? choiceOn : choiceOff}`}
     >
-      <span
-        aria-hidden
-        className="grid h-20 place-items-center rounded-xl text-xl ring-1 ring-foreground/10"
-        style={{
-          backgroundColor: palette.colors.background,
-          color: palette.colors.text,
-          fontFamily: fontCssVar(font.heading),
-        }}
-      >
-        <span>
-          Aa<span style={{ color: palette.colors.accent }}>.</span>
+      {PREVIEW_SLUGS.has(template.slug) ? (
+        // Decorative: the name caption below already identifies the template.
+        <Image
+          src={previewSrc}
+          alt=""
+          width={390}
+          height={520}
+          // Static, pre-compressed files; the site's custom loader only serves media renditions.
+          unoptimized
+          loading="lazy"
+          className="aspect-3/4 w-full rounded-xl object-cover object-top ring-1 ring-foreground/10"
+          style={{ backgroundColor: palette.colors.background }}
+        />
+      ) : (
+        <span
+          aria-hidden
+          className="grid aspect-3/4 place-items-center rounded-xl text-3xl ring-1 ring-foreground/10"
+          style={{
+            backgroundColor: palette.colors.background,
+            color: palette.colors.text,
+            fontFamily: fontCssVar(font.heading),
+          }}
+        >
+          <span>
+            Aa<span style={{ color: palette.colors.accent }}>.</span>
+          </span>
         </span>
-      </span>
+      )}
       <span className="px-1 pb-1">
         <span className="block font-heading text-base text-brand-heading">{template.name}</span>
         <span className="block text-xs text-muted-foreground capitalize">
