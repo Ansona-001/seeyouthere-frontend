@@ -54,7 +54,8 @@ export function BlockList({
               variant="ghost"
               size="icon"
               aria-label="Move up"
-              disabled={index === 0}
+              // The hero is always drawn first, whatever its position, so it stays pinned at the top.
+              disabled={index === 0 || block.type === "hero" || content[index - 1]?.type === "hero"}
               onClick={() => onMove(block.id, -1)}
             >
               <ChevronUpIcon />
@@ -64,7 +65,7 @@ export function BlockList({
               variant="ghost"
               size="icon"
               aria-label="Move down"
-              disabled={index === content.length - 1}
+              disabled={index === content.length - 1 || block.type === "hero"}
               onClick={() => onMove(block.id, 1)}
             >
               <ChevronDownIcon />
