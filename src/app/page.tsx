@@ -1,20 +1,43 @@
+import Image from "next/image";
 import Link from "next/link";
 
-import { Logo } from "@/components/brand/logo";
 import { SiteFooter } from "@/components/brand/site-footer";
 import { SiteHeader } from "@/components/brand/site-header";
 import { Button } from "@/components/ui/button";
 
 // Mirrors the occasion catalog seeded in the API (slug -> /create/[slug]).
 // Kept static so the landing page needs no API round-trip and no client JS.
+// Card art: real renders of our themes, cropped and pre-optimised in public/landing.
 const OCCASIONS = [
-  { slug: "wedding", name: "Wedding", blurb: "Schedule, location, dress code and RSVP on one page." },
-  { slug: "engagement", name: "Engagement", blurb: "Share the news and gather your people for the party." },
-  { slug: "birthday", name: "Birthday", blurb: "Where, when and who's coming, without the group chat." },
-  { slug: "baby-shower", name: "Baby shower", blurb: "Celebrate the little one on the way." },
-  { slug: "housewarming", name: "Housewarming", blurb: "Invite friends to come see the new place." },
-  { slug: "party", name: "Party", blurb: "Any other gathering, with a title of your own." },
+  { slug: "wedding", art: "wedding", name: "Weddings", caption: "Invites and save the dates", backdrop: "backdrop-linen", tilt: "-rotate-3" },
+  { slug: "birthday", art: "birthday", name: "Birthdays", caption: "From first to fiftieth", backdrop: "backdrop-confetti", tilt: "rotate-3" },
+  { slug: "baby-shower", art: "baby-shower", name: "Baby showers", caption: "Soft, sweet, a little silly", backdrop: "backdrop-watercolour", tilt: "-rotate-2" },
+  { slug: "housewarming", art: "housewarming", name: "Housewarmings", caption: "New keys, open doors", backdrop: "backdrop-oak", tilt: "rotate-2" },
+  { slug: "engagement", art: "engagement", name: "Engagements", caption: "Tell everyone, properly", backdrop: "backdrop-foil", tilt: "rotate-3" },
+  { slug: "party", art: "milestone", name: "Parties", caption: "Milestones and late nights", backdrop: "backdrop-marble", tilt: "-rotate-2" },
 ] as const;
+
+type IconName = "all" | "wedding" | "engagement" | "birthday" | "baby-shower" | "housewarming" | "party";
+
+const STRIP: readonly { icon: IconName; href: string; label: string }[] = [
+  { icon: "all", href: "/create", label: "All designs" },
+  { icon: "wedding", href: "/create/wedding", label: "Weddings" },
+  { icon: "engagement", href: "/create/engagement", label: "Engagements" },
+  { icon: "birthday", href: "/create/birthday", label: "Birthdays" },
+  { icon: "baby-shower", href: "/create/baby-shower", label: "Baby showers" },
+  { icon: "housewarming", href: "/create/housewarming", label: "Housewarmings" },
+  { icon: "party", href: "/create/party", label: "Parties" },
+];
+
+const ICON_PATHS: Record<IconName, string> = {
+  all: "M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z",
+  wedding: "M9 18a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM15 18a5 5 0 1 0 0-10 5 5 0 0 0 0 10z",
+  engagement: "M12 21a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM9 4l-2 3 5 2 5-2-2-3z",
+  birthday: "M4 20h16M5 20v-6h14v6M5 14c2 0 2-2 3.5-2s2 2 3.5 2 2-2 3.5-2 1.5 2 3.5 2M12 11V7M12 4v1",
+  "baby-shower": "M9 3h6M10 3v3h4V3M8 8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2zM8 13h3M8 17h3",
+  housewarming: "M4 11l8-7 8 7M6 10v10h12V10M10 20v-5h4v5",
+  party: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z",
+};
 
 const STEPS = [
   { title: "Pick an occasion", body: "Start from a page built for the kind of event you are hosting." },
@@ -25,86 +48,159 @@ const STEPS = [
 const linkFocus =
   "outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
+const navLink = `inline-flex h-11 items-center rounded-md px-3 text-sm font-medium text-foreground transition-colors duration-(--duration-fast) hover:bg-accent motion-reduce:transition-none ${linkFocus}`;
+
+function CardArt({
+  name,
+  alt = "",
+  className,
+  priority = false,
+}: {
+  name: string;
+  alt?: string;
+  className: string;
+  priority?: boolean;
+}) {
+  return (
+    <Image
+      src={`/landing/card-${name}.webp`}
+      alt={alt}
+      width={320}
+      height={480}
+      // Already cropped and compressed; the site's custom loader only serves media renditions.
+      unoptimized
+      priority={priority}
+      className={`absolute rounded-md shadow-xl ring-1 ring-black/10 ${className}`}
+    />
+  );
+}
+
 export default function HomePage() {
   return (
     <>
-      <SiteHeader />
-      <main className="flex flex-1 flex-col gap-16 pb-16 sm:gap-24 sm:pb-24">
-        <section className="mx-auto w-full max-w-6xl px-4 sm:px-6" aria-labelledby="hero-title">
-          <div className="relative overflow-hidden rounded-3xl bg-brand-field px-6 py-14 text-brand-on-forest [--logo-dot:var(--brand-brass-bright)] sm:px-12 sm:py-20">
-            <Logo
-              variant="mark"
-              title=""
-              className="pointer-events-none absolute -right-6 -bottom-10 size-56 text-brand-on-forest/10 sm:right-8 sm:size-80"
-            />
-            <div className="relative max-w-2xl">
-              <p className="text-sm font-medium tracking-wide text-brand-brass-bright uppercase">
-                Invitation pages and RSVPs
-              </p>
-              <h1
-                id="hero-title"
-                className="mt-4 font-heading text-5xl leading-[1.05] text-balance sm:text-7xl"
-              >
-                Invitations worth opening<span className="text-brand-brass-bright">.</span>
-              </h1>
-              <p className="mt-5 max-w-xl text-lg text-brand-on-forest-muted">
-                Design an invitation page for your event, share a single link, and keep track of who is
-                coming.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Button
-                  size="lg"
-                  className="bg-brand-on-forest text-brand-field shadow-none hover:bg-brand-on-forest/90"
-                  render={<Link href="/create" />}
-                  nativeButton={false}
-                >
-                  Create an event
-                </Button>
-                <Button
-                  size="lg"
-                  variant="ghost"
-                  className="text-brand-on-forest hover:bg-brand-on-forest/10"
-                  render={<Link href="/login" />}
-                  nativeButton={false}
-                >
-                  Log in
-                </Button>
-              </div>
+      <SiteHeader
+        links={
+          <>
+            <a href="#designs" className={navLink}>
+              Designs
+            </a>
+            <a href="#how" className={navLink}>
+              How it works
+            </a>
+          </>
+        }
+      />
+      <main className="flex flex-1 flex-col gap-14 pb-16 sm:gap-20 sm:pb-24">
+        <section
+          className="mx-auto grid w-full max-w-6xl items-center gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:gap-12"
+          aria-labelledby="hero-title"
+        >
+          <div className="pt-4 lg:pt-0">
+            <h1
+              id="hero-title"
+              className="font-heading text-5xl leading-[1.02] text-balance text-brand-heading sm:text-7xl"
+            >
+              Invitations worth opening<span className="text-brand-brass">.</span>
+            </h1>
+            <p className="mt-5 max-w-md text-lg text-muted-foreground">
+              Pick a design, add the when and where, and send it by link. Every reply lands in one tidy
+              list.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button size="lg" render={<Link href="/create" />} nativeButton={false}>
+                Create an invite
+              </Button>
+              <Button size="lg" variant="outline" render={<Link href="#designs" />} nativeButton={false}>
+                Browse designs
+              </Button>
             </div>
+          </div>
+
+          <div className="relative h-72 overflow-hidden rounded-3xl bg-brand-field sm:h-96 lg:h-[26rem]">
+            <div
+              aria-hidden
+              className="absolute inset-0 opacity-40 [background-image:repeating-linear-gradient(0deg,color-mix(in_oklab,var(--brand-on-forest)_8%,transparent)_0_1px,transparent_1px_4px),repeating-linear-gradient(90deg,color-mix(in_oklab,var(--brand-on-forest)_6%,transparent)_0_1px,transparent_1px_4px)]"
+            />
+            <CardArt
+              name="wedding"
+              alt="Example wedding invitation in the Olive Grove design"
+              priority
+              className="top-1/2 left-1/2 w-32 -translate-x-[118%] -translate-y-[48%] -rotate-[9deg] sm:w-40 lg:w-48"
+            />
+            <CardArt
+              name="milestone"
+              alt="Example 50th birthday invitation in the Gilt Noir design"
+              priority
+              className="top-1/2 left-1/2 w-32 translate-x-[18%] -translate-y-[46%] rotate-[7deg] sm:w-40 lg:w-48"
+            />
+            <CardArt
+              name="birthday"
+              alt="Example kids' birthday invitation in the Sprinkles design"
+              priority
+              className="top-1/2 left-1/2 z-10 w-32 -translate-x-1/2 -translate-y-[52%] -rotate-[2deg] sm:w-40 lg:w-48"
+            />
           </div>
         </section>
 
         <nav aria-label="Occasions" className="mx-auto w-full max-w-6xl">
-          <ul className="flex snap-x gap-2 overflow-x-auto px-4 py-1 [scrollbar-width:none] sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-6 [&::-webkit-scrollbar]:hidden">
-            {OCCASIONS.map((o) => (
-              <li key={o.slug} className="shrink-0 snap-start">
+          <ul className="flex snap-x gap-3 overflow-x-auto px-4 py-1 [scrollbar-width:none] sm:justify-center sm:px-6 [&::-webkit-scrollbar]:hidden">
+            {STRIP.map((o, i) => (
+              <li key={o.icon} className="shrink-0 snap-start">
                 <Link
-                  href={`/create/${o.slug}`}
-                  className={`inline-flex h-11 items-center rounded-full border border-input bg-card px-5 text-[0.9375rem] font-medium text-foreground transition-colors duration-(--duration-fast) hover:bg-accent motion-reduce:transition-none ${linkFocus}`}
+                  href={o.href}
+                  className={`group flex w-24 flex-col items-center gap-2 rounded-2xl py-1 text-center text-xs font-medium text-foreground ${linkFocus}`}
                 >
-                  {o.name}
+                  <span
+                    aria-hidden
+                    className={`grid size-14 place-items-center rounded-full ring-1 transition-colors duration-(--duration-fast) motion-reduce:transition-none ${
+                      i === 0
+                        ? "bg-brand-field text-brand-on-forest ring-brand-field"
+                        : "bg-card text-brand-heading ring-border group-hover:bg-accent"
+                    }`}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="size-6"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d={ICON_PATHS[o.icon]} />
+                    </svg>
+                  </span>
+                  {o.label}
                 </Link>
               </li>
             ))}
           </ul>
         </nav>
 
-        <section className="mx-auto w-full max-w-6xl px-4 sm:px-6" aria-labelledby="occasions-title">
-          <h2 id="occasions-title" className="font-heading text-3xl text-brand-heading sm:text-4xl">
+        <section
+          id="designs"
+          className="mx-auto w-full max-w-6xl scroll-mt-4 px-4 sm:px-6"
+          aria-labelledby="occasions-title"
+        >
+          <h2 id="occasions-title" className="font-heading text-3xl text-brand-heading sm:text-5xl">
             What do you want to send?
           </h2>
-          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <p className="mt-2 text-muted-foreground">Pick an occasion to start your invitation.</p>
+          <ul className="mt-8 grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-3">
             {OCCASIONS.map((o) => (
               <li key={o.slug}>
-                <Link
-                  href={`/create/${o.slug}`}
-                  className={`group grid h-full gap-2 rounded-[28px] bg-card p-6 shadow-sm ring-1 ring-border transition-[box-shadow,transform] duration-(--duration-fast) hover:shadow-md active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100 ${linkFocus}`}
-                >
-                  <span aria-hidden className="mb-2 block h-1 w-8 rounded-full bg-brand-brass" />
-                  <span className="font-heading text-2xl text-brand-heading">{o.name}</span>
-                  <span className="text-muted-foreground">{o.blurb}</span>
-                  <span className="mt-2 text-sm font-medium text-primary underline-offset-4 group-hover:underline">
-                    Start this invitation
+                <Link href={`/create/${o.slug}`} className={`group block rounded-3xl ${linkFocus}`}>
+                  <span
+                    className={`relative block aspect-[7/8] overflow-hidden rounded-3xl ring-1 ring-border ${o.backdrop}`}
+                  >
+                    <CardArt
+                      name={o.art}
+                      className={`top-1/2 left-1/2 w-[40%] -translate-x-1/2 -translate-y-1/2 transition-transform duration-(--duration-base) group-hover:-translate-y-[53%] motion-reduce:transition-none ${o.tilt}`}
+                    />
+                  </span>
+                  <span className="mt-3 flex flex-col gap-0.5 px-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
+                    <span className="font-heading text-xl text-brand-heading sm:text-2xl">{o.name}</span>
+                    <span className="text-sm text-muted-foreground">{o.caption}</span>
                   </span>
                 </Link>
               </li>
@@ -112,7 +208,7 @@ export default function HomePage() {
           </ul>
         </section>
 
-        <section className="bg-brand-linen py-14 sm:py-20" aria-labelledby="how-title">
+        <section id="how" className="scroll-mt-4 bg-brand-linen py-14 sm:py-20" aria-labelledby="how-title">
           <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
             <h2 id="how-title" className="font-heading text-3xl text-brand-heading sm:text-4xl">
               How it works
@@ -140,7 +236,7 @@ export default function HomePage() {
           </h2>
           <p className="mt-3 text-muted-foreground">Pick an occasion and start your invitation.</p>
           <Button size="lg" className="mt-6" render={<Link href="/create" />} nativeButton={false}>
-            Create an event
+            Create an invite
           </Button>
         </section>
       </main>
