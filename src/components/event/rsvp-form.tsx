@@ -31,7 +31,7 @@ export type RsvpFormProps = {
  * ring and thicken the rule to the accent ink; every control stays >= 44px tall.
  */
 const UNDERLINE_FIELD =
-  "in-data-[ev-fields=underline]:rounded-none in-data-[ev-fields=underline]:border-0 in-data-[ev-fields=underline]:border-b in-data-[ev-fields=underline]:border-(--ev-text)/55 in-data-[ev-fields=underline]:bg-transparent in-data-[ev-fields=underline]:px-0.5 in-data-[ev-fields=underline]:focus-visible:border-b-2 in-data-[ev-fields=underline]:focus-visible:border-(--ev-accent-ink)";
+  "in-data-[ev-engine=2]:border-(--ev-text)/35 in-data-[ev-engine=2]:bg-(--ev-bg) in-data-[ev-engine=2]:text-(--ev-text) in-data-[ev-fields=underline]:rounded-none in-data-[ev-fields=underline]:border-0 in-data-[ev-fields=underline]:border-b in-data-[ev-fields=underline]:border-(--ev-text)/55! in-data-[ev-fields=underline]:bg-transparent! in-data-[ev-fields=underline]:px-0.5 in-data-[ev-fields=underline]:focus-visible:border-b-2 in-data-[ev-fields=underline]:focus-visible:border-(--ev-accent-ink)";
 const FOIL_BUTTON =
   "in-data-[ev-buttons=foil]:bg-[image:var(--ev-foil,none)] in-data-[ev-buttons=foil]:bg-[length:160%_100%] in-data-[ev-buttons=foil]:focus-visible:outline-2 in-data-[ev-buttons=foil]:focus-visible:outline-offset-2 in-data-[ev-buttons=foil]:focus-visible:outline-(--ev-accent-ink)";
 const V2_OPTION = "in-data-[ev-engine=2]:min-h-11";
