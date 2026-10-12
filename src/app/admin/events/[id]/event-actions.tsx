@@ -9,7 +9,15 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { api, ApiError, type Event } from "@/lib/api";
 
-export function EventActions({ event, viewerRoles }: { event: Event & { owner_email: string }; viewerRoles: string[] }) {
+import { DeleteEventDialog } from "./delete-event-dialog";
+
+export function EventActions({
+  event,
+  viewerRoles,
+}: {
+  event: Event & { owner_email: string };
+  viewerRoles: string[];
+}) {
   const router = useRouter();
   const [reason, setReason] = useState("");
   const [removeBranding, setRemoveBranding] = useState(event.remove_branding);
@@ -78,6 +86,18 @@ export function EventActions({ event, viewerRoles }: { event: Event & { owner_em
             onCheckedChange={saveFlags}
           />
           <Label htmlFor="remove-branding">Remove &ldquo;Made with See You There&rdquo; branding</Label>
+        </div>
+      )}
+
+      {isSuperAdmin && (
+        <div className="grid gap-2 border-t pt-3">
+          <span className="text-sm font-medium">Delete event</span>
+          <p className="text-sm text-muted-foreground">
+            Removes the event, its guests, RSVPs and photos for good. Use take down if you might restore it.
+          </p>
+          <div>
+            <DeleteEventDialog eventId={event.id} slug={event.slug} />
+          </div>
         </div>
       )}
     </div>

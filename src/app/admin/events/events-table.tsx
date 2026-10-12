@@ -49,6 +49,7 @@ export function EventsTable({
             <TableHead>Owner</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Created</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -59,11 +60,16 @@ export function EventsTable({
                   {e.title || "(untitled)"}
                 </Link>
               </TableCell>
-              <TableCell className="text-muted-foreground">{e.owner_email}</TableCell>
+              <TableCell className="max-w-56 truncate text-muted-foreground" title={e.owner_email}>{e.owner_email}</TableCell>
               <TableCell>
                 <Badge variant={e.status === "taken_down" ? "destructive" : "secondary"}>{e.status}</Badge>
               </TableCell>
               <TableCell className="text-muted-foreground">{formatDateTime(e.created_at)}</TableCell>
+              <TableCell className="text-right">
+                <Button size="sm" variant="outline" render={<Link href={`/admin/events/${e.id}`} />} nativeButton={false}>
+                  Manage
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

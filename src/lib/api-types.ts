@@ -783,7 +783,12 @@ export type AdminUserDetail = {
   user: AdminUserSummary;
   counts: { events: number; sessions: number };
   audit: AdminAuditEntry[];
+  /** Set once an admin or the user deleted the account; the row is a scrubbed placeholder. */
+  deleted_at?: string | null;
 };
+
+export type AdminUserDeleteResponse = { events_queued: number };
+export type AdminUserUpdateResponse = { user: AdminUserSummary };
 
 export type ReportReason = "phishing" | "spam" | "harassment" | "illegal" | "other";
 export type ReportStatus = "open" | "reviewing" | "dismissed" | "taken_down" | "restored";

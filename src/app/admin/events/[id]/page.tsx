@@ -54,7 +54,10 @@ export default async function AdminEventDetailPage({ params }: PageProps<"/admin
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <EventActions event={event} viewerRoles={viewer.roles} />
+          <EventActions
+            event={event}
+            viewerRoles={viewer.roles}
+          />
         </CardContent>
       </Card>
 
