@@ -4,7 +4,8 @@ import type { GuestPhotosBlock as GuestPhotosBlockType, PhotoItem } from "@/lib/
 
 import { BlockHeading } from "../block-heading";
 import { PhotoGallery } from "../photo-gallery";
-import { PhotoUpload } from "../photo-upload";
+// Guest photo uploads are disabled for now; re-enable by restoring this import and the line below.
+// import { PhotoUpload } from "../photo-upload";
 
 export function GuestPhotosBlock({
   block,
@@ -26,7 +27,7 @@ export function GuestPhotosBlock({
     <section className="flex flex-col items-center gap-4 px-2 py-10 text-center">
       <BlockHeading kicker={block.kicker} heading={block.heading} />
       {block.body && <p className="max-w-prose whitespace-pre-line text-(--ev-muted)">{block.body}</p>}
-      {block.open && slug && <PhotoUpload slug={slug} mode={mode} />}
+      {/* {block.open && slug && <PhotoUpload slug={slug} mode={mode} />} */}
       {canPage ? (
         <PhotoGallery slug={slug!} initialItems={photos ?? []} initialCursor={photosNextCursor} />
       ) : (

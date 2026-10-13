@@ -284,13 +284,14 @@ export function HeroV2({ block, theme, media }: { block: HeroBlock; theme: Theme
       style={vars}
       className={cn(
         "relative isolate flex flex-col items-center px-[22px] text-center",
-        style === "spotlight" ? "min-h-[85svh] justify-center py-14" : "pb-2",
+        style === "spotlight" ? "pt-[max(3.5rem,var(--ev-pt,0px))] pb-8" : "pb-2",
         style === "spotlight"
           ? ""
           : onBlock
             ? "pt-[max(3.5rem,var(--ev-pt,0px))] pb-[84px]"
             : "pt-[max(4rem,var(--ev-pt,0px))]",
         !split && "@min-[900px]/ev:px-12",
+        !split && style === "spotlight" && "@min-[900px]/ev:pt-[max(3.5rem,var(--ev-ptw,0px))]",
         !split &&
           style !== "spotlight" &&
           (onBlock

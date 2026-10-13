@@ -12,14 +12,17 @@ export const BLOCK_TYPES: BlockType[] = [
   "datetime",
   "location",
   "schedule",
-  "image",
+  // The single Image section is hidden from the add list for now (use Gallery); existing Image blocks
+  // still render and stay editable. Re-enable by restoring the next line.
+  // "image",
   "gallery",
   "dress_code",
   "links",
   "faq",
   "countdown",
   "rsvp",
-  "guest_photos",
+  // Guest photo uploads are disabled for now; re-enable by restoring the next line.
+  // "guest_photos",
   "people",
   "video",
   "wishes",

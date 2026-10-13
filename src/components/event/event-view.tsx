@@ -102,6 +102,12 @@ export function EventView({
   const locationBlock = content.find((block): block is LocationBlockType => block.type === "location");
   const calendarLocation = locationBlock ? [locationBlock.name, locationBlock.address].filter(Boolean).join(", ") : "";
 
+  // The schema-1 hero closes with its own decoration divider, except the full-bleed photo hero; the
+  // section after it must not draw a second one. (The v2 hero draws none.)
+  const heroImage = heroBlock?.image ? media[heroBlock.image.media_id] : undefined;
+  const heroEndsWithDivider =
+    theme.engine !== 2 && Boolean(heroBlock) && theme.decoration !== "none" && !(theme.hero_style === "full_bleed" && heroImage);
+
   const blocks = (
     <ScrollReveal enabled={mode === "live"}>
       {rest.map((block, index) => (
@@ -114,7 +120,7 @@ export function EventView({
               <DecorationDivider decoration={theme.decoration} />
             )
           }
-          showDivider={index > 0 || Boolean(heroBlock)}
+          showDivider={index > 0 || (Boolean(heroBlock) && !heroEndsWithDivider)}
         >
           <RenderBlock
             block={block}

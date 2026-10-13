@@ -14,6 +14,7 @@ import { canAddBlock, createBlock } from "./blocks";
 import { DesignPanel } from "./design-panel";
 import { editorReducer, editorStateFromEvent } from "./reducer";
 import { SettingsPanel } from "./settings-panel";
+import { heroDrawsPhoto } from "./hero-fields";
 import { SharePanel } from "./share-image-panel";
 
 export function Editor({
@@ -259,6 +260,7 @@ export function Editor({
                       occasion={occasion}
                       eventId={state.id}
                       media={state.media}
+                      theme={state.theme}
                       onChange={(patch) => updateBlock(block.id, patch)}
                       onMediaUploaded={(id, ref) => dispatch({ type: "add_media", id, ref })}
                     />
@@ -288,6 +290,7 @@ export function Editor({
                   mediaId={state.shareImage.mediaId}
                   media={state.media}
                   hasHeroImage={state.content.some((b) => b.type === "hero" && b.image !== null)}
+                  heroDrawsPhoto={heroDrawsPhoto(state.theme)}
                   onSave={saveShareImageNow}
                   onUploaded={(id, ref) => dispatch({ type: "add_media", id, ref })}
                 />

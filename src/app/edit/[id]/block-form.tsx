@@ -36,10 +36,12 @@ import type {
   ScheduleBlock,
   ScheduleItem,
   TextBlock,
+  Theme,
   VideoBlock,
   WishesBlock,
 } from "@/lib/api-types";
 
+import { heroDrawsBadge, heroDrawsPhoto } from "./hero-fields";
 import { MediaField } from "./media-field";
 import { PeopleForm } from "./people-form";
 import { VideoForm } from "./video-form";
@@ -57,6 +59,7 @@ export function BlockForm({
   occasion,
   eventId,
   media,
+  theme,
   onChange,
   onMediaUploaded,
 }: {
@@ -64,12 +67,13 @@ export function BlockForm({
   occasion: Occasion | null;
   eventId: string;
   media: MediaMap;
+  theme: Theme;
   onChange: (patch: Partial<Block>) => void;
   onMediaUploaded: (id: string, ref: MediaRef) => void;
 }) {
   switch (block.type) {
     case "hero":
-      return <HeroForm block={block} onChange={onChange as OnChange<HeroBlock>} eventId={eventId} media={media} onMediaUploaded={onMediaUploaded} />;
+      return <HeroForm block={block} onChange={onChange as OnChange<HeroBlock>} eventId={eventId} media={media} theme={theme} onMediaUploaded={onMediaUploaded} />;
     case "text":
       return <TextForm block={block} onChange={onChange as OnChange<TextBlock>} />;
     case "datetime":
@@ -152,14 +156,25 @@ function HeroForm({
   onChange,
   eventId,
   media,
+  theme,
   onMediaUploaded,
 }: {
   block: HeroBlock;
   onChange: OnChange<HeroBlock>;
   eventId: string;
   media: MediaMap;
+  theme: Theme;
   onMediaUploaded: (id: string, ref: MediaRef) => void;
 }) {
+  // Only ask for what the selected template draws. A value that's already set stays editable (so it can be
+  // changed or removed) with a note that this design doesn't show it.
+  const hasPhoto = block.image !== null;
+  const hasBadge = Boolean(block.badge);
+  const drawsPhoto = heroDrawsPhoto(theme);
+  const drawsBadge = heroDrawsBadge(theme);
+  const showPhoto = drawsPhoto || hasPhoto;
+  const showBadge = drawsBadge || hasBadge;
+
   return (
     <div className="flex flex-col gap-3">
       <KickerField idPrefix="hero" value={block.kicker} onChange={(kicker) => onChange({ kicker })} />
@@ -175,45 +190,54 @@ function HeroForm({
       <Field label="Subtitle" htmlFor="hero-subtitle">
         <Input id="hero-subtitle" maxLength={200} value={block.subtitle} onChange={(e) => onChange({ subtitle: e.target.value })} />
       </Field>
-      <Field label="Badge text (optional)" htmlFor="hero-badge">
-        <Input
-          id="hero-badge"
-          autoComplete="off"
-          autoCapitalize="characters"
-          spellCheck={false}
-          aria-describedby="hero-badge-hint"
-          value={block.badge ?? ""}
-          onChange={(e) => onChange({ badge: sanitizeBadge(e.target.value) })}
-        />
-        <p id="hero-badge-hint" className="text-sm text-muted-foreground">
-          Up to {BADGE_MAX} characters, such as initials (A&amp;T) or an age (30). Letters, digits and &amp; · + - only.
-          Shown by themes with a monogram, numeral or seal.
-        </p>
-      </Field>
-      <div className="grid gap-1.5">
-        <Label>Photo</Label>
-        <MediaField
-          eventId={eventId}
-          preview={block.image ? media[block.image.media_id] ?? null : null}
-          onUploaded={(id, ref) => {
-            onMediaUploaded(id, ref);
-            onChange({ image: { media_id: id, alt: block.image?.alt ?? "" } });
-          }}
-        />
-        {block.image && (
-          <>
-            <Input
-              placeholder="Describe the photo (for screen readers)"
-              maxLength={200}
-              value={block.image.alt}
-              onChange={(e) => onChange({ image: { media_id: block.image!.media_id, alt: e.target.value } })}
-            />
-            <Button type="button" variant="ghost" size="sm" className="self-start" onClick={() => onChange({ image: null })}>
-              Remove photo
-            </Button>
-          </>
-        )}
-      </div>
+      {showBadge && (
+        <Field label="Badge text (optional)" htmlFor="hero-badge">
+          <Input
+            id="hero-badge"
+            autoComplete="off"
+            autoCapitalize="characters"
+            spellCheck={false}
+            aria-describedby="hero-badge-hint"
+            value={block.badge ?? ""}
+            onChange={(e) => onChange({ badge: sanitizeBadge(e.target.value) })}
+          />
+          <p id="hero-badge-hint" className="text-sm text-muted-foreground">
+            Up to {BADGE_MAX} characters, such as initials (A&amp;T) or an age (30). Letters, digits and &amp; · + - only.{" "}
+            {drawsBadge ? "Shown in the hero of this design." : "This design doesn’t show it on your page."}
+          </p>
+        </Field>
+      )}
+      {showPhoto && (
+        <div className="grid gap-1.5">
+          <Label>Photo</Label>
+          {!drawsPhoto && (
+            <p className="text-sm text-muted-foreground">
+              This design doesn’t show the photo on your page. It can still be your link preview image.
+            </p>
+          )}
+          <MediaField
+            eventId={eventId}
+            preview={block.image ? media[block.image.media_id] ?? null : null}
+            onUploaded={(id, ref) => {
+              onMediaUploaded(id, ref);
+              onChange({ image: { media_id: id, alt: block.image?.alt ?? "" } });
+            }}
+          />
+          {block.image && (
+            <>
+              <Input
+                placeholder="Describe the photo (for screen readers)"
+                maxLength={200}
+                value={block.image.alt}
+                onChange={(e) => onChange({ image: { media_id: block.image!.media_id, alt: e.target.value } })}
+              />
+              <Button type="button" variant="ghost" size="sm" className="self-start" onClick={() => onChange({ image: null })}>
+                Remove photo
+              </Button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -731,10 +755,13 @@ function GuestPhotosForm({ block, onChange }: { block: GuestPhotosBlock; onChang
       <Field label="Intro" htmlFor="gp-body">
         <Textarea id="gp-body" maxLength={500} value={block.body} onChange={(e) => onChange({ body: e.target.value })} />
       </Field>
+      {/* Guest photo uploads are disabled for now; re-enable by restoring this switch (and PhotoUpload in
+          components/event/blocks/guest-photos-block.tsx).
       <div className="flex items-center gap-3">
         <Switch id="gp-open" checked={block.open} onCheckedChange={(v) => onChange({ open: v })} />
         <Label htmlFor="gp-open">Let guests upload photos</Label>
       </div>
+      */}
     </div>
   );
 }
