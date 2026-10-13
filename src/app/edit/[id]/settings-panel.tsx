@@ -39,10 +39,12 @@ export function SettingsPanel({
   state,
   dispatch,
   canPublish,
+  flushContent,
 }: {
   state: EditorState;
   dispatch: (action: EditorAction) => void;
   canPublish: boolean;
+  flushContent: () => Promise<number | null>;
 }) {
   const router = useRouter();
 
@@ -62,7 +64,7 @@ export function SettingsPanel({
     return <p className="text-sm text-muted-foreground">Only the event owner can change settings, publish or delete it.</p>;
   }
 
-  return <OwnerSettings state={state} dispatch={dispatch} canPublish={canPublish} />;
+  return <OwnerSettings state={state} dispatch={dispatch} canPublish={canPublish} flushContent={flushContent} />;
 }
 
 /** Plain-language names for the fields the API reports as missing before publishing. */
@@ -77,10 +79,12 @@ function OwnerSettings({
   state,
   dispatch,
   canPublish,
+  flushContent,
 }: {
   state: EditorState;
   dispatch: (action: EditorAction) => void;
   canPublish: boolean;
+  flushContent: () => Promise<number | null>;
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -128,7 +132,9 @@ function OwnerSettings({
     setNotice(null);
     setPending(true);
     try {
-      const body: Record<string, unknown> = { version: state.version };
+      const version = await flushContent();
+      if (version === null) throw new ApiError(409, "unsaved_content", "Your latest edits couldn't be saved yet. Check the message at the top and try again.");
+      const body: Record<string, unknown> = { version };
       if (!slugLocked && slugInput.trim() !== (state.slug ?? "")) body.slug = slugInput.trim();
       if (visibility !== state.visibility) body.visibility = visibility;
       if (password) body.password = password;
@@ -160,7 +166,8 @@ function OwnerSettings({
     try {
       // A link typed above but not saved yet is saved first, so Publish never fails on a "missing" link
       // the host has already filled in.
-      let version = state.version;
+      let version = await flushContent();
+      if (version === null) throw new ApiError(409, "unsaved_content", "Your latest edits couldn't be saved yet. Check the message at the top and try again.");
       const wantedSlug = slugInput.trim();
       if (!slugLocked && wantedSlug !== "" && wantedSlug !== (state.slug ?? "")) {
         const saved = await api<{ event: Event }>(`/v1/events/${state.id}/settings`, { method: "PATCH", json: { version, slug: wantedSlug } });
@@ -191,7 +198,9 @@ function OwnerSettings({
     setNotice(null);
     setPending(true);
     try {
-      const { event } = await api<{ event: Event }>(`/v1/events/${state.id}/unpublish`, { method: "POST", json: { version: state.version } });
+      const version = await flushContent();
+      if (version === null) throw new ApiError(409, "unsaved_content", "Your latest edits couldn't be saved yet. Check the message at the top and try again.");
+      const { event } = await api<{ event: Event }>(`/v1/events/${state.id}/unpublish`, { method: "POST", json: { version } });
       dispatch({ type: "applied", event, templateSlug: event.template.slug });
       setNotice({ scope: "publish", text: event.status === "published" ? "Published. Your invitation is live." : "Unpublished. Guests can no longer open your invitation." });
     } catch (err) {

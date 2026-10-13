@@ -52,28 +52,50 @@ export function Editor({
     dispatch({ type: "save_error", message: "Couldn't reach the server. Please try again." });
   }
 
-  async function saveContent() {
+  // Saves the content and returns the new event version, or null when nothing was saved (already
+  // saving, conflict or error).
+  async function saveContent(): Promise<number | null> {
     if (savingContentRef.current) {
       retryContentRef.current = true;
-      return;
+      return null;
     }
     savingContentRef.current = true;
     dispatch({ type: "save_start" });
+    let saved: number | null = null;
     try {
       const { event } = await api<{ event: Event }>(`/v1/events/${stateRef.current.id}`, {
         method: "PATCH",
         json: { version: stateRef.current.version, content: stateRef.current.content, overrides: stateRef.current.overrides },
       });
       dispatch({ type: "applied", event, templateSlug: event.template.slug });
+      saved = event.version;
     } catch (err) {
       handleSaveError(err);
     } finally {
       savingContentRef.current = false;
       if (retryContentRef.current) {
         retryContentRef.current = false;
-        saveContent();
+        void saveContent();
       }
     }
+    return saved;
+  }
+
+  // Settings and publish PATCH the same event row, so any edit still waiting for autosave (or an
+  // autosave in flight) has to land first; otherwise the version moves under us and the server answers
+  // "changed since you loaded it", or the settings response replaces the unsaved edits. Returns the
+  // version to send, or null when the latest edits could not be saved.
+  async function flushContent(): Promise<number | null> {
+    for (let i = 0; i < 100 && savingContentRef.current; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    if (savingContentRef.current) return null;
+    if (!stateRef.current.dirty) {
+      // Let a just-applied save finish rendering so the ref holds its version.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      return stateRef.current.version;
+    }
+    return saveContent();
   }
 
   async function saveOverridesNow(overrides: Overrides): Promise<boolean> {
@@ -238,7 +260,7 @@ export function Editor({
 
               <section>
                 <h2 className="mb-2 font-heading text-base text-brand-heading">Settings</h2>
-                <SettingsPanel state={state} dispatch={dispatch} canPublish={canPublishNow} />
+                <SettingsPanel state={state} dispatch={dispatch} canPublish={canPublishNow} flushContent={flushContent} />
               </section>
             </fieldset>
           </div>
