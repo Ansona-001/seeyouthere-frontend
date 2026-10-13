@@ -19,19 +19,34 @@ const JPEG_QUALITY = 0.85;
  * can reuse the exact same client-side downscale before uploading host media
  * (build-out plan §11.4) instead of duplicating it.
  */
-export async function downscaleToJpeg(file: File): Promise<Blob> {
+export async function downscaleToJpeg(file: File, opts?: { aspect?: number }): Promise<Blob> {
   const bitmap = await createImageBitmap(file);
   try {
-    const scale = Math.min(1, MAX_DIMENSION / Math.max(bitmap.width, bitmap.height));
-    const width = Math.round(bitmap.width * scale);
-    const height = Math.round(bitmap.height * scale);
+    // With an aspect (width / height), centre-crop the source to it before scaling.
+    let sx = 0;
+    let sy = 0;
+    let sw = bitmap.width;
+    let sh = bitmap.height;
+    const aspect = opts?.aspect;
+    if (aspect && aspect > 0) {
+      if (sw / sh > aspect) {
+        sw = Math.max(1, Math.round(sh * aspect));
+        sx = Math.floor((bitmap.width - sw) / 2);
+      } else {
+        sh = Math.max(1, Math.round(sw / aspect));
+        sy = Math.floor((bitmap.height - sh) / 2);
+      }
+    }
+    const scale = Math.min(1, MAX_DIMENSION / Math.max(sw, sh));
+    const width = Math.max(1, Math.round(sw * scale));
+    const height = Math.max(1, Math.round(sh * scale));
 
     const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("Canvas is not supported");
-    ctx.drawImage(bitmap, 0, 0, width, height);
+    ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, width, height);
 
     return await new Promise<Blob>((resolve, reject) => {
       canvas.toBlob(

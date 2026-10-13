@@ -21,10 +21,16 @@ export function MediaField({
   eventId,
   preview,
   onUploaded,
+  aspect,
+  previewAspect,
 }: {
   eventId: string;
   preview: MediaRef | null;
-  onUploaded: (id: string, ref: MediaRef) => void;
+  onUploaded: (id: string, ref: MediaRef) => void | Promise<void>;
+  /** Centre-crop uploads to this width / height ratio. */
+  aspect?: number;
+  /** Shape of the preview box (width / height); defaults to 16:9. */
+  previewAspect?: number;
 }) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -37,13 +43,13 @@ export function MediaField({
     setError(null);
     setPending(true);
     try {
-      const jpeg = await downscaleToJpeg(file);
+      const jpeg = await downscaleToJpeg(file, { aspect });
       const { media } = await api<{ media: Media }>(`/v1/events/${eventId}/media`, {
         method: "POST",
         body: jpeg,
         headers: { "Content-Type": "image/jpeg" },
       });
-      onUploaded(media.id, { src: media.src, width: media.width, height: media.height });
+      await onUploaded(media.id, { src: media.src, width: media.width, height: media.height });
     } catch (err) {
       if (err instanceof ApiError && (err.status === 404 || err.status === 501)) {
         setError("Photo uploads aren't available yet. Please check back soon.");
@@ -59,7 +65,10 @@ export function MediaField({
   return (
     <div className="flex flex-col gap-2">
       {preview && (
-        <div className="aspect-video w-full max-w-xs overflow-hidden rounded-lg bg-muted">
+        <div
+          className={`w-full max-w-xs overflow-hidden rounded-lg bg-muted ${previewAspect ? "" : "aspect-video"}`}
+          style={previewAspect ? { aspectRatio: previewAspect } : undefined}
+        >
           <Image src={preview.src} alt="" width={480} height={270} className="size-full object-cover" />
         </div>
       )}

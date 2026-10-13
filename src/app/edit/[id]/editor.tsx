@@ -6,7 +6,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { EventView } from "@/components/event/event-view";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api, ApiError, type Event, type Occasion, type Overrides, type TemplateSummary, type ValidationIssue } from "@/lib/api";
+import { api, ApiError, type Event, type Occasion, type Overrides, type ShareImageSource, type TemplateSummary, type ValidationIssue } from "@/lib/api";
 
 import { BlockForm } from "./block-form";
 import { BlockList } from "./block-list";
@@ -14,6 +14,7 @@ import { canAddBlock, createBlock } from "./blocks";
 import { DesignPanel } from "./design-panel";
 import { editorReducer, editorStateFromEvent } from "./reducer";
 import { SettingsPanel } from "./settings-panel";
+import { SharePanel } from "./share-image-panel";
 
 export function Editor({
   initialEvent,
@@ -105,6 +106,28 @@ export function Editor({
       const { event } = await api<{ event: Event }>(`/v1/events/${stateRef.current.id}`, {
         method: "PATCH",
         json: { version: stateRef.current.version, overrides },
+      });
+      dispatch({ type: "applied", event, templateSlug: event.template.slug });
+      return true;
+    } catch (err) {
+      handleSaveError(err);
+      return false;
+    }
+  }
+
+  // Saves any pending content edits first (the response replaces editor state), then the link-preview
+  // image on its own so a rejected choice never blocks content autosave.
+  async function saveShareImageNow(next: { source: ShareImageSource; mediaId: string | null }): Promise<boolean> {
+    const version = await flushContent();
+    if (version === null) return false;
+    dispatch({ type: "save_start" });
+    try {
+      const { event } = await api<{ event: Event }>(`/v1/events/${stateRef.current.id}`, {
+        method: "PATCH",
+        json: {
+          version,
+          share_image: next.source === "custom" ? { source: "custom", media_id: next.mediaId } : { source: next.source },
+        },
       });
       dispatch({ type: "applied", event, templateSlug: event.template.slug });
       return true;
@@ -252,6 +275,19 @@ export function Editor({
                   onChangeTemplate={saveTemplateNow}
                   onChangeOverrides={saveOverridesNow}
                   onUpgradeTemplate={upgradeTemplateNow}
+                />
+              </section>
+
+              <section>
+                <h2 className="mb-2 font-heading text-base text-brand-heading">Link preview</h2>
+                <SharePanel
+                  eventId={state.id}
+                  source={state.shareImage.source}
+                  mediaId={state.shareImage.mediaId}
+                  media={state.media}
+                  hasHeroImage={state.content.some((b) => b.type === "hero" && b.image !== null)}
+                  onSave={saveShareImageNow}
+                  onUploaded={(id, ref) => dispatch({ type: "add_media", id, ref })}
                 />
               </section>
 

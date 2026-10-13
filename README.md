@@ -29,6 +29,7 @@ The API sets an HttpOnly `syt_session` cookie. Client components call the API di
 | Variable | Used by | Purpose |
 |---|---|---|
 | `NEXT_PUBLIC_API_URL` | browser (baked in at build) | Public API URL, e.g. `https://api.seeyouthere.at` |
+| `NEXT_PUBLIC_SITE_URL` | build (baked in) | Public site origin, e.g. `https://seeyouthere.at`; makes `og:image` links absolute. Required for production builds |
 | `API_INTERNAL_URL` | Next.js server | API URL from inside the network, e.g. `http://api:8080` |
 
 ## Adding UI components
