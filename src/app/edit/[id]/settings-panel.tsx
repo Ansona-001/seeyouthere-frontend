@@ -340,8 +340,10 @@ function OwnerSettings({
           </Button>
         )}
         {(state.status === "published" || state.status === "hidden") && (
-          <Button type="button" variant="outline" onClick={unpublish} disabled={pending}>
-            {state.status === "published" ? "Unpublish" : "Republish"}
+          // A hidden event is republished through the publish endpoint; the unpublish endpoint only
+          // accepts published events and answers a hidden one with a (misleading) version conflict.
+          <Button type="button" variant="outline" onClick={state.status === "published" ? unpublish : publish} disabled={pending}>
+            {pending ? (state.status === "published" ? "Unpublishing…" : "Republishing…") : state.status === "published" ? "Unpublish" : "Republish"}
           </Button>
         )}
         {state.status === "taken_down" && (
