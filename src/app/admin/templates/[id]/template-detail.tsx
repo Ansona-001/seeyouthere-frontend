@@ -8,6 +8,15 @@ import { previewSampleContent, previewSampleMedia, previewSampleStartsAt } from 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -17,10 +26,12 @@ import {
   type AdminTemplatePreviewResponse,
   type AdminTemplateVersion,
 } from "@/lib/api";
+import { templateErrorMessage } from "@/lib/admin-confirm";
 import { formatDateTime } from "@/lib/format";
 
 export function TemplateDetail({ template }: { template: AdminTemplateDetail }) {
   const router = useRouter();
+  const published = template.status === "published";
   const [isPremium, setIsPremium] = useState(template.is_premium);
   const [drafts, setDrafts] = useState<Record<number, string>>(
     Object.fromEntries(template.versions.map((v) => [v.version, JSON.stringify(v.manifest, null, 2)])),
@@ -37,7 +48,7 @@ export function TemplateDetail({ template }: { template: AdminTemplateDetail }) 
       await action();
       router.refresh();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Couldn't reach the server. Please try again.");
+      setError(templateErrorMessage(err instanceof ApiError ? err : null));
     } finally {
       setPending(null);
     }
@@ -46,6 +57,10 @@ export function TemplateDetail({ template }: { template: AdminTemplateDetail }) 
   function togglePremium(next: boolean) {
     setIsPremium(next);
     return run("premium", () => api(`/v1/admin/templates/${template.id}`, { method: "PATCH", json: { is_premium: next } }));
+  }
+
+  function setStatus(next: "draft" | "published") {
+    return run("status", () => api(`/v1/admin/templates/${template.id}`, { method: "PATCH", json: { status: next } }));
   }
 
   function saveVersion(version: number) {
@@ -96,7 +111,7 @@ export function TemplateDetail({ template }: { template: AdminTemplateDetail }) 
       );
       setPreviews((prev) => ({ ...prev, [version]: res.previews }));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Couldn't reach the server. Please try again.");
+      setError(templateErrorMessage(err instanceof ApiError ? err : null));
     } finally {
       setPending(null);
     }
@@ -106,15 +121,41 @@ export function TemplateDetail({ template }: { template: AdminTemplateDetail }) 
     <div className="flex flex-col gap-6">
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
 
+      <p className="text-sm text-muted-foreground">
+        A version is the design. The template is only visible to hosts once it is published.
+      </p>
+
       <Card>
         <CardHeader>
-          <CardTitle>Availability</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Availability
+            <Badge variant={published ? "secondary" : "outline"}>Template {template.status}</Badge>
+          </CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center gap-3">
-          <Switch id="premium" checked={isPremium} disabled={pending !== null} onCheckedChange={togglePremium} />
-          <label htmlFor="premium" className="text-sm font-medium">
-            Premium (hidden from the host picker; assign manually from an event&rsquo;s admin flags)
-          </label>
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <div>
+              <Button
+                variant={published ? "outline" : "default"}
+                disabled={pending !== null}
+                onClick={() => setStatus(published ? "draft" : "published")}
+              >
+                {pending === "status"
+                  ? published ? "Unpublishing…" : "Publishing…"
+                  : published ? "Unpublish template" : "Publish template"}
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Published templates appear in the host picker. Unpublishing hides it for new events; events already using
+              it keep working.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Switch id="premium" checked={isPremium} disabled={pending !== null} onCheckedChange={togglePremium} />
+            <label htmlFor="premium" className="text-sm font-medium">
+              Premium (hidden from the host picker; assign manually from an event&rsquo;s admin flags)
+            </label>
+          </div>
         </CardContent>
       </Card>
 
@@ -135,6 +176,7 @@ export function TemplateDetail({ template }: { template: AdminTemplateDetail }) 
             draft={drafts[v.version] ?? ""}
             onDraftChange={(text) => setDrafts((prev) => ({ ...prev, [v.version]: text }))}
             pending={pending}
+            templateId={template.id}
             onSave={() => saveVersion(v.version)}
             onPublish={() => publishVersion(v.version)}
             onUpload={() => uploadBackground(v.version)}
@@ -154,6 +196,7 @@ function VersionCard({
   draft,
   onDraftChange,
   pending,
+  templateId,
   onSave,
   onPublish,
   onUpload,
@@ -165,6 +208,7 @@ function VersionCard({
   draft: string;
   onDraftChange: (text: string) => void;
   pending: string | null;
+  templateId: string;
   onSave: () => void;
   onPublish: () => void;
   onUpload: () => void;
@@ -179,7 +223,9 @@ function VersionCard({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           Version {version.version}
-          <Badge variant={locked ? "default" : "outline"} className="capitalize">{version.status}</Badge>
+          <Badge variant={locked ? "default" : "outline"}>
+            Version {version.version} {version.status}
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
@@ -219,6 +265,7 @@ function VersionCard({
             <Button disabled={pending !== null} onClick={onPublish}>
               {pending === `publish:${version.version}` ? "Publishing…" : "Publish"}
             </Button>
+            <DeleteDraftDialog templateId={templateId} version={version.version} disabled={pending !== null} />
           </>
         )}
         <Button variant="ghost" disabled={pending !== null} onClick={onPreview}>
@@ -263,5 +310,59 @@ function ThemePreview({ previews }: { previews: AdminTemplatePreviewResponse["pr
         />
       </div>
     </div>
+  );
+}
+
+function DeleteDraftDialog({ templateId, version, disabled }: { templateId: string; version: number; disabled: boolean }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function onConfirm() {
+    if (pending) return;
+    setPending(true);
+    setError(null);
+    try {
+      await api(`/v1/admin/templates/${templateId}/versions/${version}`, { method: "DELETE" });
+      setOpen(false);
+      router.refresh();
+    } catch (err) {
+      setError(templateErrorMessage(err instanceof ApiError ? err : null));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (pending) return; // no Escape, backdrop or close while deleting
+        setOpen(next);
+        if (!next) setError(null);
+      }}
+    >
+      <DialogTrigger render={<Button variant="destructive" disabled={disabled} />}>Delete draft</DialogTrigger>
+      <DialogContent showCloseButton={!pending}>
+        <DialogHeader>
+          <DialogTitle>Delete draft version {version}?</DialogTitle>
+          <DialogDescription>This can&rsquo;t be undone.</DialogDescription>
+        </DialogHeader>
+        {error && (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
+        )}
+        <DialogFooter>
+          <Button type="button" variant="outline" disabled={pending} onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button type="button" variant="destructive" disabled={pending} onClick={onConfirm}>
+            {pending ? "Deleting…" : "Delete draft"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

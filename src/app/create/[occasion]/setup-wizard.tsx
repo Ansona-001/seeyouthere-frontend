@@ -1,40 +1,112 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useMemo, useState, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 
-import { themeStyle } from "@/components/event/theme";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api, ApiError, type Event } from "@/lib/api";
-import type { Occasion, Palette, TemplateSummary } from "@/lib/api-types";
+import type { Occasion, TemplateSummary } from "@/lib/api-types";
 import { fontCssVar } from "@/lib/fonts";
 
 type Step = "questions" | "design";
 
+// A visitor who isn't signed in keeps their choices across the login redirect in sessionStorage
+// (this tab only, cleared on restore). Everything read back is re-validated against the live
+// template/question lists, since storage is attacker-editable.
+const DRAFT_KEY = "syt:create-draft";
+
+type Restored = { answers: Record<string, string>; template: string };
+
+type SavedDraft = { occasion: string; answers: Record<string, string>; template: string };
+
+function saveDraft(draft: SavedDraft) {
+  try {
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  } catch {
+    // Storage can be blocked; the visitor just re-picks after logging in.
+  }
+}
+
+function readDraft(): string | null {
+  try {
+    return sessionStorage.getItem(DRAFT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function clearDraft() {
+  try {
+    sessionStorage.removeItem(DRAFT_KEY);
+  } catch {
+    // Nothing to clear if storage is blocked.
+  }
+}
+
+const noopSubscribe = () => () => {};
+
+/** Parses and validates a saved draft against the live occasion/templates; null if anything is off. */
+function restoreDraft(raw: string | null, occasion: Occasion, templates: TemplateSummary[]): Restored | null {
+  if (!raw) return null;
+  try {
+    const d: unknown = JSON.parse(raw);
+    if (typeof d !== "object" || d === null) return null;
+    const { occasion: o, answers, template } = d as Record<string, unknown>;
+    if (o !== occasion.slug || typeof template !== "string") return null;
+    if (typeof answers !== "object" || answers === null || Array.isArray(answers)) return null;
+    const tpl = templates.find((t) => t.slug === template);
+    if (!tpl) return null;
+    const restored: Record<string, string> = {};
+    for (const q of occasion.setup_questions) {
+      const v = (answers as Record<string, unknown>)[q.key];
+      if (typeof v === "string" && v.length <= 500) restored[q.key] = v;
+    }
+    return { answers: restored, template: tpl.slug };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Occasion setup wizard (build-out plan §11.1, §11.4): setup questions (when
- * the occasion has any), then template/palette/font, then `POST /v1/events`.
+ * the occasion has any), then the template, then `POST /v1/events`. Palette and fonts are
+ * chosen later in the editor's design panel.
  * `content.BuildInitialContent` on the server does all the placeholder-copy
  * and answer-substitution work, so this only needs to collect answers and a
  * design choice — the created event already has full, editable content.
  */
-export function SetupWizard({ occasion, templates }: { occasion: Occasion; templates: TemplateSummary[] }) {
+export function SetupWizard(props: { occasion: Occasion; templates: TemplateSummary[]; signedIn: boolean }) {
+  // Coming back from login (?resume=1): restore what the visitor had picked and land on the
+  // design step. The server renders without it, so the saved choices are read client-side.
+  const resume = useSearchParams().get("resume") === "1";
+  const raw = useSyncExternalStore(noopSubscribe, () => (resume && props.signedIn ? readDraft() : null), () => null);
+  const initial = restoreDraft(raw, props.occasion, props.templates);
+  return <SetupWizardInner key={initial ? "restored" : "fresh"} {...props} initial={initial} />;
+}
+
+function SetupWizardInner({
+  occasion,
+  templates,
+  signedIn,
+  initial,
+}: {
+  occasion: Occasion;
+  templates: TemplateSummary[];
+  signedIn: boolean;
+  initial: Restored | null;
+}) {
   const router = useRouter();
   const hasQuestions = occasion.setup_questions.length > 0;
-  const [step, setStep] = useState<Step>(hasQuestions ? "questions" : "design");
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [templateSlug, setTemplateSlug] = useState(templates[0].slug);
-  const [paletteId, setPaletteId] = useState(templates[0].defaults.palette);
-  const [fontId, setFontId] = useState(templates[0].defaults.font);
+  const [step, setStep] = useState<Step>(initial || !hasQuestions ? "design" : "questions");
+  const [answers, setAnswers] = useState<Record<string, string>>(initial?.answers ?? {});
+  const [templateSlug, setTemplateSlug] = useState(initial?.template ?? templates[0].slug);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const template = templates.find((t) => t.slug === templateSlug) ?? templates[0];
-  const palette = template.palettes.find((p) => p.id === paletteId) ?? template.palettes[0];
-  const fontPair = template.fonts.find((f) => f.id === fontId) ?? template.fonts[0];
 
   const browserTimezone = useMemo(() => {
     try {
@@ -53,8 +125,6 @@ export function SetupWizard({ occasion, templates }: { occasion: Occasion; templ
 
   function selectTemplate(next: TemplateSummary) {
     setTemplateSlug(next.slug);
-    setPaletteId(next.defaults.palette);
-    setFontId(next.defaults.font);
   }
 
   function answerFor(key: string, questionType: string): string {
@@ -72,34 +142,40 @@ export function SetupWizard({ occasion, templates }: { occasion: Occasion; templ
 
   async function create() {
     setError(null);
+    const finalAnswers: Record<string, string> = {};
+    for (const q of occasion.setup_questions) {
+      const value = answerFor(q.key, q.type).trim();
+      if (value) finalAnswers[q.key] = value;
+    }
+    if (!signedIn) {
+      saveDraft({ occasion: occasion.slug, answers: finalAnswers, template: template.slug });
+      const back = `/create/${occasion.slug}?resume=1`;
+      router.push(`/login?next=${encodeURIComponent(back)}`);
+      return;
+    }
     setPending(true);
     try {
-      const finalAnswers: Record<string, string> = {};
-      for (const q of occasion.setup_questions) {
-        const value = answerFor(q.key, q.type).trim();
-        if (value) finalAnswers[q.key] = value;
-      }
       const { event } = await api<{ event: Event }>("/v1/events", {
         method: "POST",
         json: { occasion_slug: occasion.slug, template_slug: template.slug, answers: finalAnswers },
       });
-      if (event.overrides.palette !== paletteId || event.overrides.font !== fontId) {
-        try {
-          await api(`/v1/events/${event.id}`, {
-            method: "PATCH",
-            json: { version: event.version, overrides: { palette: paletteId, font: fontId } },
-          });
-        } catch {
-          // The event itself was created fine; the design panel in the editor
-          // can still set the palette/font, so this isn't worth blocking on.
-        }
-      }
+      clearDraft();
       router.push(`/edit/${event.id}`);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't reach the server. Please try again.");
       setPending(false);
     }
   }
+
+  // Back from login with the choices restored: the visitor already pressed create, so finish the job.
+  // The ref keeps React's dev double-run from creating two events.
+  const autoCreated = useRef(false);
+  useEffect(() => {
+    if (!initial || !signedIn || autoCreated.current) return;
+    autoCreated.current = true;
+    void create();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once on arrival; create reads current state
+  }, []);
 
   return (
     <div className="flex flex-col gap-8">
@@ -154,52 +230,11 @@ export function SetupWizard({ occasion, templates }: { occasion: Occasion; templ
       ) : (
         <div className="flex flex-col gap-8">
           <section>
-            <h2 className="mb-3 font-heading text-xl text-brand-heading">Template</h2>
+            <h2 className="sr-only">Template</h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {templates.map((t) => (
                 <TemplateCard key={t.slug} template={t} occasionSlug={occasion.slug} selected={t.slug === templateSlug} onSelect={() => selectTemplate(t)} />
               ))}
-            </div>
-          </section>
-
-          <section>
-            <h2 className="mb-3 font-heading text-xl text-brand-heading">Palette</h2>
-            <div className="flex flex-wrap gap-2">
-              {template.palettes.map((p) => (
-                <PaletteSwatch key={p.id} palette={p} selected={p.id === paletteId} onSelect={() => setPaletteId(p.id)} />
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <h2 className="mb-3 font-heading text-xl text-brand-heading">Fonts</h2>
-            <div className="flex flex-wrap gap-2">
-              {template.fonts.map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setFontId(f.id)}
-                  aria-pressed={f.id === fontId}
-                  className={`${choiceBase} min-h-11 rounded-full px-4 py-2 text-left ${
-                    f.id === fontId ? choiceOn : choiceOff
-                  }`}
-                  style={{ fontFamily: fontCssVar(f.heading) }}
-                >
-                  {f.name}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section aria-label="Preview">
-            <div
-              style={themeStyle({ ...emptyTheme, layout: template.layout, hero_style: template.hero_style, decoration: template.decoration, palette: palette.colors, fonts: { heading: fontPair.heading, body: fontPair.body } })}
-              className="rounded-3xl bg-(--ev-bg) p-8 text-center ring-1 ring-foreground/10 sm:p-12"
-            >
-              <p className="text-3xl font-semibold text-(--ev-text) [font-family:var(--ev-font-heading)]">
-                {occasion.copy.title_template.replace(/\{[a-z0-9_]+\}/gi, "…")}
-              </p>
-              <p className="mt-2 text-(--ev-muted) [font-family:var(--ev-font-body)]">{occasion.copy.tagline}</p>
             </div>
           </section>
 
@@ -218,7 +253,7 @@ export function SetupWizard({ occasion, templates }: { occasion: Occasion; templ
               <span />
             )}
             <Button type="button" size="lg" onClick={create} disabled={pending}>
-              {pending ? "Creating…" : "Create my event"}
+              {pending ? "Creating…" : signedIn ? "Create my event" : "Log in to create my event"}
             </Button>
           </div>
         </div>
@@ -226,8 +261,6 @@ export function SetupWizard({ occasion, templates }: { occasion: Occasion; templ
     </div>
   );
 }
-
-const emptyTheme = { background: null } as const;
 
 const choiceBase =
   "inline-flex items-center border bg-card outline-none transition-[border-color,box-shadow,background-color] duration-(--duration-fast) focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none";
@@ -243,11 +276,16 @@ const PREVIEW_SLUGS: ReadonlySet<string> = new Set([
 
 /**
  * Occasion-specific previews at public/templates/<slug>--<occasion>.webp for the
- * photo-hero v1 templates. Keys are a static allowlist: the occasion comes from
+ * v1 templates. Keys are a static allowlist: the occasion comes from
  * the route, so it is never interpolated into a URL unless it is listed here.
  */
 const OCCASION_PREVIEWS: ReadonlySet<string> = new Set([
-  ...["wedding", "engagement", "birthday", "baby-shower", "housewarming", "party"].flatMap((o) => [`classic--${o}`, `modern--${o}`]),
+  ...["wedding", "engagement", "birthday", "baby-shower", "housewarming", "party"].flatMap((o) => [
+    `classic--${o}`,
+    `modern--${o}`,
+    `minimal--${o}`,
+  ]),
+  ...["birthday", "party", "baby-shower", "housewarming"].map((o) => `confetti--${o}`),
   ...["wedding", "engagement", "baby-shower"].map((o) => `garden--${o}`),
   ...["wedding", "engagement"].map((o) => `heirloom--${o}`),
 ]);
@@ -309,35 +347,6 @@ function TemplateCard({
           {template.layout} · {template.hero_style.replace("_", " ")}
         </span>
       </span>
-    </button>
-  );
-}
-
-function PaletteSwatch({
-  palette,
-  selected,
-  onSelect,
-}: {
-  palette: Palette;
-  selected: boolean;
-  onSelect: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-pressed={selected}
-      aria-label={palette.name}
-      title={palette.name}
-      className={`${choiceBase} min-h-11 min-w-11 justify-center gap-1.5 rounded-full px-3 ${selected ? choiceOn : choiceOff}`}
-    >
-      {(["background", "accent", "text"] as const).map((k) => (
-        <span
-          key={k}
-          className="size-5 rounded-full ring-1 ring-foreground/20"
-          style={{ backgroundColor: palette.colors[k] }}
-        />
-      ))}
     </button>
   );
 }

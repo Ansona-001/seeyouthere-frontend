@@ -1,11 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useReducer, useRef, useState } from "react";
 
 import { EventView } from "@/components/event/event-view";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api, ApiError, type Event, type Occasion, type Overrides, type TemplateSummary, type ValidationIssue } from "@/lib/api";
+import { api, ApiError, type Event, type Occasion, type Overrides, type ShareImageSource, type TemplateSummary, type ValidationIssue } from "@/lib/api";
 
 import { BlockForm } from "./block-form";
 import { BlockList } from "./block-list";
@@ -13,6 +14,7 @@ import { canAddBlock, createBlock } from "./blocks";
 import { DesignPanel } from "./design-panel";
 import { editorReducer, editorStateFromEvent } from "./reducer";
 import { SettingsPanel } from "./settings-panel";
+import { SharePanel } from "./share-image-panel";
 
 export function Editor({
   initialEvent,
@@ -51,28 +53,50 @@ export function Editor({
     dispatch({ type: "save_error", message: "Couldn't reach the server. Please try again." });
   }
 
-  async function saveContent() {
+  // Saves the content and returns the new event version, or null when nothing was saved (already
+  // saving, conflict or error).
+  async function saveContent(): Promise<number | null> {
     if (savingContentRef.current) {
       retryContentRef.current = true;
-      return;
+      return null;
     }
     savingContentRef.current = true;
     dispatch({ type: "save_start" });
+    let saved: number | null = null;
     try {
       const { event } = await api<{ event: Event }>(`/v1/events/${stateRef.current.id}`, {
         method: "PATCH",
         json: { version: stateRef.current.version, content: stateRef.current.content, overrides: stateRef.current.overrides },
       });
       dispatch({ type: "applied", event, templateSlug: event.template.slug });
+      saved = event.version;
     } catch (err) {
       handleSaveError(err);
     } finally {
       savingContentRef.current = false;
       if (retryContentRef.current) {
         retryContentRef.current = false;
-        saveContent();
+        void saveContent();
       }
     }
+    return saved;
+  }
+
+  // Settings and publish PATCH the same event row, so any edit still waiting for autosave (or an
+  // autosave in flight) has to land first; otherwise the version moves under us and the server answers
+  // "changed since you loaded it", or the settings response replaces the unsaved edits. Returns the
+  // version to send, or null when the latest edits could not be saved.
+  async function flushContent(): Promise<number | null> {
+    for (let i = 0; i < 100 && savingContentRef.current; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    if (savingContentRef.current) return null;
+    if (!stateRef.current.dirty) {
+      // Let a just-applied save finish rendering so the ref holds its version.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      return stateRef.current.version;
+    }
+    return saveContent();
   }
 
   async function saveOverridesNow(overrides: Overrides): Promise<boolean> {
@@ -82,6 +106,28 @@ export function Editor({
       const { event } = await api<{ event: Event }>(`/v1/events/${stateRef.current.id}`, {
         method: "PATCH",
         json: { version: stateRef.current.version, overrides },
+      });
+      dispatch({ type: "applied", event, templateSlug: event.template.slug });
+      return true;
+    } catch (err) {
+      handleSaveError(err);
+      return false;
+    }
+  }
+
+  // Saves any pending content edits first (the response replaces editor state), then the link-preview
+  // image on its own so a rejected choice never blocks content autosave.
+  async function saveShareImageNow(next: { source: ShareImageSource; mediaId: string | null }): Promise<boolean> {
+    const version = await flushContent();
+    if (version === null) return false;
+    dispatch({ type: "save_start" });
+    try {
+      const { event } = await api<{ event: Event }>(`/v1/events/${stateRef.current.id}`, {
+        method: "PATCH",
+        json: {
+          version,
+          share_image: next.source === "custom" ? { source: "custom", media_id: next.mediaId } : { source: next.source },
+        },
       });
       dispatch({ type: "applied", event, templateSlug: event.template.slug });
       return true;
@@ -178,7 +224,6 @@ export function Editor({
     window.location.reload();
   }
 
-  const selectedBlock = state.content.find((b) => b.id === selectedBlockId) ?? null;
   const editingDisabled = state.saveStatus === "conflict";
   const canPublishNow = Boolean(occasion);
 
@@ -202,23 +247,21 @@ export function Editor({
                 <BlockList
                   content={state.content}
                   selectedId={selectedBlockId}
-                  onSelect={setSelectedBlockId}
+                  onSelect={(id) => setSelectedBlockId((current) => (current === id ? null : id))}
                   onAdd={addBlock}
                   onRemove={removeBlock}
                   onMove={moveBlock}
-                />
-                {selectedBlock && (
-                  <div className="mt-4 rounded-xl bg-card p-4 ring-1 ring-border">
+                  renderForm={(block) => (
                     <BlockForm
-                      block={selectedBlock}
+                      block={block}
                       occasion={occasion}
                       eventId={state.id}
                       media={state.media}
-                      onChange={(patch) => updateBlock(selectedBlock.id, patch)}
+                      onChange={(patch) => updateBlock(block.id, patch)}
                       onMediaUploaded={(id, ref) => dispatch({ type: "add_media", id, ref })}
                     />
-                  </div>
-                )}
+                  )}
+                />
               </section>
 
               <section>
@@ -236,8 +279,21 @@ export function Editor({
               </section>
 
               <section>
+                <h2 className="mb-2 font-heading text-base text-brand-heading">Link preview</h2>
+                <SharePanel
+                  eventId={state.id}
+                  source={state.shareImage.source}
+                  mediaId={state.shareImage.mediaId}
+                  media={state.media}
+                  hasHeroImage={state.content.some((b) => b.type === "hero" && b.image !== null)}
+                  onSave={saveShareImageNow}
+                  onUploaded={(id, ref) => dispatch({ type: "add_media", id, ref })}
+                />
+              </section>
+
+              <section>
                 <h2 className="mb-2 font-heading text-base text-brand-heading">Settings</h2>
-                <SettingsPanel state={state} dispatch={dispatch} canPublish={canPublishNow} />
+                <SettingsPanel state={state} dispatch={dispatch} canPublish={canPublishNow} flushContent={flushContent} />
               </section>
             </fieldset>
           </div>
@@ -270,9 +326,19 @@ function EditorTopBar({
 }) {
   return (
     <header className="flex flex-wrap items-center justify-between gap-3 border-b bg-card px-4 py-3">
-      <div>
-        <p className="font-heading text-lg text-brand-heading">{state.title || "Untitled event"}</p>
-        <SaveIndicator state={state} />
+      <div className="flex items-center gap-3">
+        <Link
+          href={state.role === "anon" ? "/" : "/app"}
+          aria-label={state.role === "anon" ? "Back to the home page" : "Back to your events"}
+          className="inline-flex min-h-11 items-center gap-1 rounded-md pr-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+        >
+          <span aria-hidden="true">&larr;</span>
+          <span className="hidden sm:inline">{state.role === "anon" ? "Home" : "Your events"}</span>
+        </Link>
+        <div>
+          <p className="font-heading text-lg text-brand-heading">{state.title || "Untitled event"}</p>
+          <SaveIndicator state={state} />
+        </div>
       </div>
       <div className="flex items-center gap-2">
         {state.status !== "draft" && (

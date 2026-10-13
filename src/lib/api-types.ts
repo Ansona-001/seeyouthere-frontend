@@ -445,6 +445,8 @@ export type ThemeLayer = { region?: "page" | "hero" } & (
 export type MediaRef = { src: string; width: number; height: number };
 export type MediaMap = Record<string, MediaRef>;
 
+export type ShareImageSource = "hero" | "site" | "custom";
+
 // ---------------------------------------------------------------------------
 // Catalog (§4.2)
 // ---------------------------------------------------------------------------
@@ -546,6 +548,8 @@ export type Event = {
   overrides: Overrides;
   theme: Theme;
   media: MediaMap;
+  /** Which image link previews (chat apps, social) show. `media_id` is set only for `custom`. */
+  share_image: { source: ShareImageSource; media_id: string | null };
   /** null until a slug is set. */
   url: string | null;
 };
@@ -605,6 +609,8 @@ export type PublicEventData = {
   content: Block[];
   theme: Theme;
   media: MediaMap;
+  /** Resolved server-side; null means "use the site default image". */
+  share_image: MediaRef | null;
   rsvp: PublicRsvpConfig;
 };
 

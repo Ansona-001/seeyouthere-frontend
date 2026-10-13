@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, ResolvingMetadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
@@ -8,6 +8,7 @@ import { EventView } from "@/components/event/event-view";
 import { PasswordGate } from "@/components/event/password-gate";
 import { Button } from "@/components/ui/button";
 import type { HeroBlock, PublicEvent } from "@/lib/api-types";
+import { ogImageFor } from "@/lib/share-image";
 import { serverApi } from "@/lib/server-api";
 
 import { InviteRequired } from "./invite-required";
@@ -24,13 +25,7 @@ function normalizeSlug(raw: string): string {
 // gate decision (build-out plan §11.2).
 const getPublicEvent = cache((slug: string) => serverApi<PublicEvent>(`/v1/public/events/${encodeURIComponent(slug)}`));
 
-function findHeroImageUrl(event: PublicEvent["event"]): string | undefined {
-  const hero = event.content.find((block): block is HeroBlock => block.type === "hero");
-  const media = hero?.image && event.media[hero.image.media_id];
-  return media ? `${media.src}/1080.jpg` : undefined;
-}
-
-export async function generateMetadata({ params }: PageProps<"/[slug]">): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps<"/[slug]">, parent: ResolvingMetadata): Promise<Metadata> {
   const { slug: rawSlug } = await params;
   const result = await getPublicEvent(normalizeSlug(rawSlug));
 
@@ -43,7 +38,6 @@ export async function generateMetadata({ params }: PageProps<"/[slug]">): Promis
   const { event } = result.data;
   const hero = event.content.find((block): block is HeroBlock => block.type === "hero");
   const description = hero?.subtitle || "You're invited — see the details and RSVP.";
-  const imageUrl = findHeroImageUrl(event);
 
   return {
     title: event.title,
@@ -52,7 +46,9 @@ export async function generateMetadata({ params }: PageProps<"/[slug]">): Promis
     openGraph: {
       title: event.title,
       description,
-      images: imageUrl ? [{ url: imageUrl }] : undefined,
+      // An `openGraph` object replaces the parent's wholesale, so without a share image fall back to the
+      // site-wide one explicitly.
+      images: event.share_image ? [ogImageFor(event.share_image)] : ((await parent).openGraph?.images ?? []),
     },
   };
 }

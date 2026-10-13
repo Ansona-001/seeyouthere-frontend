@@ -39,10 +39,12 @@ export function SettingsPanel({
   state,
   dispatch,
   canPublish,
+  flushContent,
 }: {
   state: EditorState;
   dispatch: (action: EditorAction) => void;
   canPublish: boolean;
+  flushContent: () => Promise<number | null>;
 }) {
   const router = useRouter();
 
@@ -62,22 +64,35 @@ export function SettingsPanel({
     return <p className="text-sm text-muted-foreground">Only the event owner can change settings, publish or delete it.</p>;
   }
 
-  return <OwnerSettings state={state} dispatch={dispatch} canPublish={canPublish} />;
+  return <OwnerSettings state={state} dispatch={dispatch} canPublish={canPublish} flushContent={flushContent} />;
 }
+
+/** Plain-language names for the fields the API reports as missing before publishing. */
+const MISSING_LABELS: Record<string, string> = {
+  slug: "a link (choose one under Link above)",
+  title: "a title (in the Hero block)",
+  datetime: "a date and time (in the Date & time block)",
+  content: "some content",
+};
 
 function OwnerSettings({
   state,
   dispatch,
   canPublish,
+  flushContent,
 }: {
   state: EditorState;
   dispatch: (action: EditorAction) => void;
   canPublish: boolean;
+  flushContent: () => Promise<number | null>;
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorScope, setErrorScope] = useState<"save" | "publish">("save");
   const [notReady, setNotReady] = useState<string[] | null>(null);
+  // Success feedback for the last action, shown next to the buttons that triggered it.
+  const [notice, setNotice] = useState<{ scope: "save" | "publish"; text: string; slug?: string } | null>(null);
 
   const [slugInput, setSlugInput] = useState(state.slug ?? "");
   const [slugCheck, setSlugCheck] = useState<SlugAvailability | null>(null);
@@ -114,9 +129,12 @@ function OwnerSettings({
   async function saveSettings(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setNotice(null);
     setPending(true);
     try {
-      const body: Record<string, unknown> = { version: state.version };
+      const version = await flushContent();
+      if (version === null) throw new ApiError(409, "unsaved_content", "Your latest edits couldn't be saved yet. Check the message at the top and try again.");
+      const body: Record<string, unknown> = { version };
       if (!slugLocked && slugInput.trim() !== (state.slug ?? "")) body.slug = slugInput.trim();
       if (visibility !== state.visibility) body.visibility = visibility;
       if (password) body.password = password;
@@ -126,12 +144,14 @@ function OwnerSettings({
       const { event } = await api<{ event: Event }>(`/v1/events/${state.id}/settings`, { method: "PATCH", json: body });
       dispatch({ type: "applied", event, templateSlug: event.template.slug });
       setPassword("");
+      setNotice({ scope: "save", text: "Settings saved." });
     } catch (err) {
       if (err instanceof ApiError && err.code === "version_conflict") {
         const details = err.details as { current_version: number } | undefined;
         dispatch({ type: "conflict", currentVersion: details?.current_version ?? state.version });
       } else {
         setError(err instanceof ApiError ? err.message : "Couldn't reach the server. Please try again.");
+        setErrorScope("save");
       }
     } finally {
       setPending(false);
@@ -141,10 +161,22 @@ function OwnerSettings({
   async function publish() {
     setError(null);
     setNotReady(null);
+    setNotice(null);
     setPending(true);
     try {
-      const { event } = await api<{ event: Event }>(`/v1/events/${state.id}/publish`, { method: "POST", json: { version: state.version } });
+      // A link typed above but not saved yet is saved first, so Publish never fails on a "missing" link
+      // the host has already filled in.
+      let version = await flushContent();
+      if (version === null) throw new ApiError(409, "unsaved_content", "Your latest edits couldn't be saved yet. Check the message at the top and try again.");
+      const wantedSlug = slugInput.trim();
+      if (!slugLocked && wantedSlug !== "" && wantedSlug !== (state.slug ?? "")) {
+        const saved = await api<{ event: Event }>(`/v1/events/${state.id}/settings`, { method: "PATCH", json: { version, slug: wantedSlug } });
+        dispatch({ type: "applied", event: saved.event, templateSlug: saved.event.template.slug });
+        version = saved.event.version;
+      }
+      const { event } = await api<{ event: Event }>(`/v1/events/${state.id}/publish`, { method: "POST", json: { version } });
       dispatch({ type: "applied", event, templateSlug: event.template.slug });
+      setNotice({ scope: "publish", text: "Published. Your invitation is live.", slug: event.slug ?? undefined });
     } catch (err) {
       if (err instanceof ApiError && err.code === "not_ready") {
         const details = err.details as { missing: string[] } | undefined;
@@ -154,6 +186,7 @@ function OwnerSettings({
         dispatch({ type: "conflict", currentVersion: details?.current_version ?? state.version });
       } else {
         setError(err instanceof ApiError ? err.message : "Couldn't reach the server. Please try again.");
+        setErrorScope("publish");
       }
     } finally {
       setPending(false);
@@ -162,12 +195,17 @@ function OwnerSettings({
 
   async function unpublish() {
     setError(null);
+    setNotice(null);
     setPending(true);
     try {
-      const { event } = await api<{ event: Event }>(`/v1/events/${state.id}/unpublish`, { method: "POST", json: { version: state.version } });
+      const version = await flushContent();
+      if (version === null) throw new ApiError(409, "unsaved_content", "Your latest edits couldn't be saved yet. Check the message at the top and try again.");
+      const { event } = await api<{ event: Event }>(`/v1/events/${state.id}/unpublish`, { method: "POST", json: { version } });
       dispatch({ type: "applied", event, templateSlug: event.template.slug });
+      setNotice({ scope: "publish", text: event.status === "published" ? "Published. Your invitation is live." : "Unpublished. Guests can no longer open your invitation." });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't reach the server. Please try again.");
+      setErrorScope("publish");
     } finally {
       setPending(false);
     }
@@ -257,7 +295,7 @@ function OwnerSettings({
           <Label htmlFor="settings-notify" className="min-h-11">Email me when I get new RSVPs</Label>
         </div>
 
-        {error && (
+        {error && errorScope === "save" && (
           <p role="alert" className="text-sm text-destructive">
             {error}
           </p>
@@ -265,22 +303,47 @@ function OwnerSettings({
         <Button type="submit" disabled={pending || Boolean(currentSlugCheck && !currentSlugCheck.available)}>
           {pending ? "Saving…" : "Save settings"}
         </Button>
+        {notice?.scope === "save" && (
+          <p role="status" className="rounded-xl bg-secondary px-3 py-2 text-sm font-medium text-brand-heading">
+            {notice.text}
+          </p>
+        )}
       </form>
 
       <div className="flex flex-col gap-2 border-t pt-4">
         {notReady && (
           <div role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            This event isn&rsquo;t ready to publish yet. Missing: {notReady.join(", ")}.
+            This event isn&rsquo;t ready to publish yet. Missing: {notReady.map((m) => MISSING_LABELS[m] ?? m).join(", ")}.
           </div>
+        )}
+        {error && errorScope === "publish" && (
+          <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {error}
+          </p>
+        )}
+        {notice?.scope === "publish" && (
+          <p role="status" className="rounded-xl bg-secondary px-3 py-2 text-sm font-medium text-brand-heading">
+            {notice.text}
+            {notice.slug && state.status === "published" && (
+              <>
+                {" "}
+                <a href={`/${encodeURIComponent(notice.slug)}`} target="_blank" rel="noreferrer" className="underline underline-offset-4">
+                  View it
+                </a>
+              </>
+            )}
+          </p>
         )}
         {state.status === "draft" && (
           <Button type="button" onClick={publish} disabled={pending || !canPublish}>
-            Publish
+            {pending ? "Publishing…" : "Publish"}
           </Button>
         )}
         {(state.status === "published" || state.status === "hidden") && (
-          <Button type="button" variant="outline" onClick={unpublish} disabled={pending}>
-            {state.status === "published" ? "Unpublish" : "Republish"}
+          // A hidden event is republished through the publish endpoint; the unpublish endpoint only
+          // accepts published events and answers a hidden one with a (misleading) version conflict.
+          <Button type="button" variant="outline" onClick={state.status === "published" ? unpublish : publish} disabled={pending}>
+            {pending ? (state.status === "published" ? "Unpublishing…" : "Republishing…") : state.status === "published" ? "Unpublish" : "Republish"}
           </Button>
         )}
         {state.status === "taken_down" && (

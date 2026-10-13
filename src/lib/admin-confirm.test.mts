@@ -6,6 +6,7 @@ import {
   emailConfirmMatches,
   eventConfirmMatches,
   eventConfirmTarget,
+  templateErrorMessage,
 } from "./admin-confirm.ts";
 
 test("email match ignores case and surrounding space", () => {
@@ -40,4 +41,15 @@ test("error mapping", () => {
   assert.match(adminErrorMessage(e(503, "storage_unavailable")), /event wasn't deleted/);
   assert.equal(adminErrorMessage(e(400, "validation_failed")), "server text");
   assert.match(adminErrorMessage(null), /Couldn't reach/);
+});
+
+test("template error mapping", () => {
+  const e = (status: number, code: string) => ({ status, code, message: "server text" });
+  assert.equal(templateErrorMessage(e(409, "needs_published_version")), "Publish a version first.");
+  assert.match(templateErrorMessage(e(409, "version_published")), /can't be deleted/);
+  assert.match(templateErrorMessage(e(409, "last_version")), /at least one version/);
+  assert.match(templateErrorMessage(e(503, "storage_unavailable")), /Nothing was deleted/);
+  assert.match(templateErrorMessage(e(429, "rate_limited")), /Too many/);
+  assert.equal(templateErrorMessage(e(400, "validation_failed")), "server text");
+  assert.match(templateErrorMessage(null), /Couldn't reach/);
 });

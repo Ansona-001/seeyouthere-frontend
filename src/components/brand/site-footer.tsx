@@ -1,9 +1,16 @@
 import Link from "next/link";
 
+import { getCurrentUser } from "@/lib/session";
+
 import { Logo } from "./logo";
 
-/** Forest footer for public, non-invite pages. */
-export function SiteFooter() {
+/**
+ * Forest footer for public, non-invite pages. Signed-in visitors get an Account link instead of
+ * Log in; pages that already know the user can pass `signedIn` to skip the lookup (it is cached
+ * per request either way).
+ */
+export async function SiteFooter({ signedIn }: { signedIn?: boolean }) {
+  const isSignedIn = signedIn ?? (await getCurrentUser()) !== null;
   return (
     <footer className="mx-auto w-full max-w-6xl px-4 pb-4 sm:px-6 sm:pb-6">
       <div className="flex flex-col gap-6 rounded-2xl bg-brand-field px-6 py-8 text-brand-on-forest [--logo-dot:var(--brand-brass-bright)] sm:flex-row sm:items-center sm:justify-between sm:px-8">
@@ -18,9 +25,15 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
-              <Link href="/login" className="underline-offset-4 decoration-brand-brass-bright hover:underline">
-                Log in
-              </Link>
+              {isSignedIn ? (
+                <Link href="/account" className="underline-offset-4 decoration-brand-brass-bright hover:underline">
+                  Account
+                </Link>
+              ) : (
+                <Link href="/login" className="underline-offset-4 decoration-brand-brass-bright hover:underline">
+                  Log in
+                </Link>
+              )}
             </li>
           </ul>
         </nav>

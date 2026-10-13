@@ -9,6 +9,7 @@ import { SiteHeader } from "@/components/brand/site-header";
 import { Button } from "@/components/ui/button";
 import type { OccasionsResponse, TemplatesResponse } from "@/lib/api-types";
 import { serverApi } from "@/lib/server-api";
+import { getCurrentUser } from "@/lib/session";
 
 import { SetupWizard } from "./setup-wizard";
 
@@ -76,9 +77,11 @@ export default async function CreateOccasionPage({ params }: PageProps<"/create/
     );
   }
 
+  const signedIn = (await getCurrentUser()) !== null;
+
   return (
     <CreateShell wide>
-      <SetupWizard occasion={occasion} templates={templatesResult.data.templates} />
+      <SetupWizard occasion={occasion} templates={templatesResult.data.templates} signedIn={signedIn} />
     </CreateShell>
   );
 }

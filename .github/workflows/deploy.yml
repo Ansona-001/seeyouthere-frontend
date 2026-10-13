@@ -53,6 +53,7 @@ jobs:
           context: .
           build-args: |
             NEXT_PUBLIC_API_URL=https://api.seeyouthere.at
+            NEXT_PUBLIC_SITE_URL=https://seeyouthere.at
           platforms: linux/amd64
           push: true
           tags: |
