@@ -20,59 +20,73 @@ export function BlockList({
   onAdd,
   onRemove,
   onMove,
+  renderForm,
 }: {
   content: Block[];
   selectedId: string | null;
+  /** Called with the clicked block's id; the parent toggles it open or closed. */
   onSelect: (id: string) => void;
   onAdd: (type: BlockType) => void;
   onRemove: (id: string) => void;
   onMove: (id: string, direction: -1 | 1) => void;
+  /** Fields for a block, shown directly under its row while that block is selected. */
+  renderForm: (block: Block) => React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-3">
       <ol className="flex flex-col gap-1.5">
         {content.length === 0 && <li className="rounded-xl border border-dashed border-input px-3.5 py-3 text-sm text-muted-foreground">No sections yet. Add one below.</li>}
         {content.map((block, index) => (
-          <li key={block.id} className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => onSelect(block.id)}
-              aria-pressed={selectedId === block.id}
-              className={cn(
-                "min-h-11 min-w-0 flex-1 truncate rounded-xl border px-3.5 text-left text-sm font-medium transition-colors duration-(--duration-fast)",
-                selectedId === block.id
-                  ? "border-primary bg-secondary"
-                  : "border-input bg-card [@media(hover:hover)]:hover:bg-accent",
-              )}
-            >
-              {BLOCK_LABELS[block.type]}
-              {"heading" in block && block.heading ? ` — ${block.heading}` : ""}
-              {block.type === "hero" && block.title ? ` — ${block.title}` : ""}
-            </button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="Move up"
-              // The hero is always drawn first, whatever its position, so it stays pinned at the top.
-              disabled={index === 0 || block.type === "hero" || content[index - 1]?.type === "hero"}
-              onClick={() => onMove(block.id, -1)}
-            >
-              <ChevronUpIcon />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="Move down"
-              disabled={index === content.length - 1 || block.type === "hero"}
-              onClick={() => onMove(block.id, 1)}
-            >
-              <ChevronDownIcon />
-            </Button>
-            <Button type="button" variant="ghost" size="icon" aria-label="Remove block" onClick={() => onRemove(block.id)}>
-              <Trash2Icon />
-            </Button>
+          <li key={block.id} className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => onSelect(block.id)}
+                aria-expanded={selectedId === block.id}
+                aria-controls={`block-panel-${block.id}`}
+                className={cn(
+                  "flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-xl border px-3.5 text-left text-sm font-medium transition-colors duration-(--duration-fast)",
+                  selectedId === block.id
+                    ? "border-primary bg-secondary"
+                    : "border-input bg-card [@media(hover:hover)]:hover:bg-accent",
+                )}
+              >
+                <span className="min-w-0 flex-1 truncate">
+                  {BLOCK_LABELS[block.type]}
+                  {"heading" in block && block.heading ? ` — ${block.heading}` : ""}
+                  {block.type === "hero" && block.title ? ` — ${block.title}` : ""}
+                </span>
+                <ChevronDownIcon
+                  aria-hidden="true"
+                  className={cn("size-4 shrink-0 text-muted-foreground transition-transform duration-(--duration-fast) motion-reduce:transition-none", selectedId === block.id && "rotate-180")}
+                />
+              </button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Move up"
+                // The hero is always drawn first, whatever its position, so it stays pinned at the top.
+                disabled={index === 0 || block.type === "hero" || content[index - 1]?.type === "hero"}
+                onClick={() => onMove(block.id, -1)}
+              >
+                <ChevronUpIcon />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Move down"
+                disabled={index === content.length - 1 || block.type === "hero"}
+                onClick={() => onMove(block.id, 1)}
+              >
+                <ChevronDownIcon />
+              </Button>
+              <Button type="button" variant="ghost" size="icon" aria-label="Remove block" onClick={() => onRemove(block.id)}>
+                <Trash2Icon />
+              </Button>
+            </div>
+            {selectedId === block.id && <div id={`block-panel-${block.id}`} className="rounded-xl bg-card p-4 ring-1 ring-border">{renderForm(block)}</div>}
           </li>
         ))}
       </ol>

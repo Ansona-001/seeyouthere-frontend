@@ -201,7 +201,6 @@ export function Editor({
     window.location.reload();
   }
 
-  const selectedBlock = state.content.find((b) => b.id === selectedBlockId) ?? null;
   const editingDisabled = state.saveStatus === "conflict";
   const canPublishNow = Boolean(occasion);
 
@@ -225,23 +224,21 @@ export function Editor({
                 <BlockList
                   content={state.content}
                   selectedId={selectedBlockId}
-                  onSelect={setSelectedBlockId}
+                  onSelect={(id) => setSelectedBlockId((current) => (current === id ? null : id))}
                   onAdd={addBlock}
                   onRemove={removeBlock}
                   onMove={moveBlock}
-                />
-                {selectedBlock && (
-                  <div className="mt-4 rounded-xl bg-card p-4 ring-1 ring-border">
+                  renderForm={(block) => (
                     <BlockForm
-                      block={selectedBlock}
+                      block={block}
                       occasion={occasion}
                       eventId={state.id}
                       media={state.media}
-                      onChange={(patch) => updateBlock(selectedBlock.id, patch)}
+                      onChange={(patch) => updateBlock(block.id, patch)}
                       onMediaUploaded={(id, ref) => dispatch({ type: "add_media", id, ref })}
                     />
-                  </div>
-                )}
+                  )}
+                />
               </section>
 
               <section>
