@@ -185,9 +185,16 @@ export function EventSettingsForm({ event }: { event: Event }) {
                   value={slugInput}
                   onChange={(e) => setSlugInput(e.target.value.toLowerCase())}
                   maxLength={50}
+                  aria-describedby="settings-slug-help"
                   className="flex-1"
                 />
               </div>
+              <p id="settings-slug-help" className="text-sm text-muted-foreground">
+                Pick something short guests can type or remember, like <span className="font-medium text-foreground">aiko-and-ravi</span>,{" "}
+                <span className="font-medium text-foreground">priyas-baby-shower</span> or{" "}
+                <span className="font-medium text-foreground">sams-30th</span>. Use 3&ndash;50 lowercase letters, numbers and hyphens.
+                You can&rsquo;t change it after you publish.
+              </p>
               {checkingSlug && <p className="text-sm text-muted-foreground">Checking…</p>}
               {currentSlugCheck && !currentSlugCheck.available && (
                 <p className="text-sm text-destructive">

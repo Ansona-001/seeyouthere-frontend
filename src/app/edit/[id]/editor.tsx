@@ -14,6 +14,7 @@ import { canAddBlock, createBlock } from "./blocks";
 import { DesignPanel } from "./design-panel";
 import { editorReducer, editorStateFromEvent } from "./reducer";
 import { SettingsPanel } from "./settings-panel";
+import { heroDrawsPhoto } from "./hero-fields";
 import { SharePanel } from "./share-image-panel";
 
 export function Editor({
@@ -227,12 +228,14 @@ export function Editor({
   const editingDisabled = state.saveStatus === "conflict";
   const canPublishNow = Boolean(occasion);
 
+  // On desktop the editor is pinned to the window (out of document flow), so the page itself can never
+  // scroll; only the form and preview columns do. Anything in a theme that overflows is clipped here.
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh flex-col lg:fixed lg:inset-0 lg:min-h-0 lg:overflow-hidden">
       <EditorTopBar state={state} onReload={reload} onSaveNow={saveContent} />
 
-      <div className="flex flex-1 flex-col lg:flex-row">
-        <div className="flex flex-1 flex-col gap-6 border-b p-4 lg:w-[420px] lg:shrink-0 lg:border-r lg:border-b-0 lg:overflow-y-auto">
+      <div className="flex flex-1 flex-col lg:min-h-0 lg:flex-row">
+        <div className="flex flex-1 flex-col gap-6 border-b p-4 lg:w-[420px] lg:shrink-0 lg:min-h-0 lg:border-r lg:border-b-0 lg:overflow-y-auto lg:pb-10 lg:overscroll-contain lg:[scrollbar-gutter:stable] lg:[scrollbar-width:thin] lg:[scrollbar-color:var(--border)_transparent]">
           <Tabs value={mobileView} onValueChange={(v) => setMobileView((v as "edit" | "preview") ?? "edit")} className="lg:hidden">
             <TabsList className="w-full">
               <TabsTrigger value="edit">Edit</TabsTrigger>
@@ -257,6 +260,7 @@ export function Editor({
                       occasion={occasion}
                       eventId={state.id}
                       media={state.media}
+                      theme={state.theme}
                       onChange={(patch) => updateBlock(block.id, patch)}
                       onMediaUploaded={(id, ref) => dispatch({ type: "add_media", id, ref })}
                     />
@@ -286,6 +290,7 @@ export function Editor({
                   mediaId={state.shareImage.mediaId}
                   media={state.media}
                   hasHeroImage={state.content.some((b) => b.type === "hero" && b.image !== null)}
+                  heroDrawsPhoto={heroDrawsPhoto(state.theme)}
                   onSave={saveShareImageNow}
                   onUploaded={(id, ref) => dispatch({ type: "add_media", id, ref })}
                 />
@@ -299,7 +304,7 @@ export function Editor({
           </div>
         </div>
 
-        <div className={`flex-1 overflow-y-auto ${mobileView === "edit" ? "hidden lg:block" : ""}`}>
+        <div className={`flex-1 overflow-y-auto lg:min-h-0 lg:overscroll-contain lg:[scrollbar-gutter:stable] lg:[scrollbar-width:thin] lg:[scrollbar-color:var(--border)_transparent] ${mobileView === "edit" ? "hidden lg:block" : ""}`}>
           <EventView
             content={state.content}
             theme={state.theme}

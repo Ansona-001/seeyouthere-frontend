@@ -19,6 +19,7 @@ export function SharePanel({
   mediaId,
   media,
   hasHeroImage,
+  heroDrawsPhoto,
   onSave,
   onUploaded,
 }: {
@@ -27,6 +28,8 @@ export function SharePanel({
   mediaId: string | null;
   media: MediaMap;
   hasHeroImage: boolean;
+  /** Whether the selected template draws a hero photo (otherwise the Hero form doesn't ask for one). */
+  heroDrawsPhoto: boolean;
   onSave: (next: { source: ShareImageSource; mediaId: string | null }) => Promise<boolean>;
   onUploaded: (id: string, ref: MediaRef) => void;
 }) {
@@ -34,7 +37,10 @@ export function SharePanel({
   const [pending, setPending] = useState(false);
   // "Your own image" chosen but nothing uploaded yet; nothing has been sent to the server.
   const [choosingCustom, setChoosingCustom] = useState(false);
-  const selected: ShareImageSource = choosingCustom || source === "custom" ? "custom" : source;
+  // With no way to add a hero photo (template doesn't draw one and none is set), the hero option is hidden
+  // and a stored "hero" choice shows as our image, which is what the preview resolves to anyway.
+  const heroOption = hasHeroImage || heroDrawsPhoto;
+  const selected: ShareImageSource = choosingCustom || source === "custom" ? "custom" : source === "hero" && !heroOption ? "site" : source;
   const customPreview = source === "custom" && mediaId ? (media[mediaId] ?? null) : null;
 
   async function run(action: () => Promise<boolean>) {
@@ -66,11 +72,15 @@ export function SharePanel({
   }
 
   const options: { value: ShareImageSource; label: string; hint: string }[] = [
-    {
-      value: "hero",
-      label: "Cover photo",
-      hint: hasHeroImage ? "Uses your cover photo." : "You haven’t added a cover photo, so this uses our image.",
-    },
+    ...(heroOption
+      ? [
+          {
+            value: "hero" as const,
+            label: "Hero photo",
+            hint: hasHeroImage ? "Uses the photo from your Hero section." : "Your Hero section has no photo yet, so this uses our image.",
+          },
+        ]
+      : []),
     { value: "site", label: "See You There image", hint: "Our default image." },
     { value: "custom", label: "Your own image", hint: "Cropped to the shape link previews use." },
   ];

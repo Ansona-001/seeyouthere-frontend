@@ -19,7 +19,7 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
     <div className="flex flex-1 flex-col">
       <header className="border-b bg-card">
         <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <Link href="/app" aria-label="Your events" className="rounded-md text-brand-heading">
+          <Link href="/" aria-label="See You There, home" className="rounded-md text-brand-heading">
             <Logo title="" className="h-7" />
           </Link>
           <div className="flex items-center gap-3">

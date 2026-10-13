@@ -39,13 +39,12 @@ export function HeroBlock({
     );
   }
 
-  // `spotlight` (rich-blocks extension §4.3): full-screen centred text hero,
-  // an optional circular portrait above the kicker, and a bigger display
-  // title. `svh` (not `vh`) so mobile browser chrome collapsing doesn't
-  // clip the hero.
+  // `spotlight` (rich-blocks extension §4.3): centred text hero, an optional
+  // circular portrait above the kicker, and a bigger display title. Sized by
+  // its content (no forced viewport height) so no empty band sits below it.
   if (heroStyle === "spotlight") {
     return (
-      <div className="flex min-h-[85svh] flex-col items-center justify-center px-6 py-14 text-center">
+      <div className="flex flex-col items-center px-6 py-10 text-center">
         {image && (
           <div className="mb-6 size-40 overflow-hidden rounded-full ring-2 ring-(--ev-accent)/40">
             <Image

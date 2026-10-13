@@ -41,7 +41,14 @@ export function BlockList({
             <div className="flex items-center gap-1">
               <button
                 type="button"
-                onClick={() => onSelect(block.id)}
+                onClick={(e) => {
+                  // The accordion reflows when another section closes; keep the clicked row in view.
+                  const row = e.currentTarget;
+                  onSelect(block.id);
+                  requestAnimationFrame(() =>
+                    row.scrollIntoView({ block: "nearest", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }),
+                  );
+                }}
                 aria-expanded={selectedId === block.id}
                 aria-controls={`block-panel-${block.id}`}
                 className={cn(
