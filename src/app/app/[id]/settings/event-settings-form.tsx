@@ -276,7 +276,9 @@ export function EventSettingsForm({ event }: { event: Event }) {
           </Button>
         )}
         {(status === "published" || status === "hidden") && (
-          <Button type="button" variant="outline" onClick={unpublish} disabled={pending} className="self-start">
+          // A hidden event is republished through the publish endpoint; the unpublish endpoint only
+          // accepts published events and answers a hidden one with a (misleading) version conflict.
+          <Button type="button" variant="outline" onClick={status === "published" ? unpublish : publish} disabled={pending} className="self-start">
             {status === "published" ? "Unpublish" : "Republish"}
           </Button>
         )}
