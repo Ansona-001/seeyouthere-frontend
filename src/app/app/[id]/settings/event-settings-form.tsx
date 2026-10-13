@@ -109,9 +109,21 @@ export function EventSettingsForm({ event }: { event: Event }) {
     setNotReady(null);
     setPending(true);
     try {
+      // A link typed above but not saved yet is saved first, so Publish never fails on a "missing" link
+      // the host has already filled in.
+      let publishVersion = version;
+      const wantedSlug = slugInput.trim();
+      if (!slugLocked && wantedSlug !== "" && wantedSlug !== (event.slug ?? "")) {
+        const saved = await api<{ event: Event }>(`/v1/events/${event.id}/settings`, {
+          method: "PATCH",
+          json: { version, slug: wantedSlug },
+        });
+        publishVersion = saved.event.version;
+        setVersion(publishVersion);
+      }
       const { event: updated } = await api<{ event: Event }>(`/v1/events/${event.id}/publish`, {
         method: "POST",
-        json: { version },
+        json: { version: publishVersion },
       });
       setVersion(updated.version);
       setStatus(updated.status);
@@ -267,7 +279,7 @@ export function EventSettingsForm({ event }: { event: Event }) {
         <CardContent className="flex flex-col gap-3">
         {notReady && (
           <div role="alert" className="rounded-xl bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
-            This event isn&rsquo;t ready to publish yet. Missing: {notReady.join(", ")}.
+            This event isn&rsquo;t ready to publish yet. Missing: {notReady.map((m) => (m === "slug" ? "a link (choose one under Link above)" : m)).join(", ")}.
           </div>
         )}
         {status === "draft" && (
