@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,9 @@ import { api, ApiError, type User } from "@/lib/api";
 
 type Step = "email" | "code";
 
+// Seconds before a new code can be requested; keeps the resend button from being hammered.
+const RESEND_COOLDOWN_SECONDS = 30;
+
 export function LoginForm({ nextPath = "/app" }: { nextPath?: string }) {
   const router = useRouter();
   const [step, setStep] = useState<Step>("email");
@@ -18,6 +21,13 @@ export function LoginForm({ nextPath = "/app" }: { nextPath?: string }) {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setTimeout(() => setCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
 
   async function run(action: () => Promise<void>) {
     setError(null);
@@ -37,6 +47,7 @@ export function LoginForm({ nextPath = "/app" }: { nextPath?: string }) {
       await api("/v1/auth/code", { method: "POST", json: { email } });
       setCode("");
       setStep("code");
+      setCooldown(RESEND_COOLDOWN_SECONDS);
     });
   }
 
@@ -121,10 +132,10 @@ export function LoginForm({ nextPath = "/app" }: { nextPath?: string }) {
               <button
                 type="button"
                 className="min-h-11 rounded-md px-1 text-muted-foreground underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
-                disabled={pending}
+                disabled={pending || cooldown > 0}
                 onClick={() => requestCode()}
               >
-                Resend code
+                {cooldown > 0 ? `Resend code in ${cooldown}s` : "Resend code"}
               </button>
             </div>
           </form>
