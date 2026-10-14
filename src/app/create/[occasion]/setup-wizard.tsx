@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 
+import { FutureDateTimeInput } from "@/components/future-datetime-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -132,6 +133,9 @@ function SetupWizardInner({
     return questionType === "timezone" ? browserTimezone : "";
   }
 
+  // The date picker takes the chosen time zone, so "not in the past" is judged on that zone's clock.
+  const tzQuestion = occasion.setup_questions.find((q) => q.type === "timezone");
+
   const missingRequired = occasion.setup_questions.some((q) => q.required && !answerFor(q.key, q.type).trim());
 
   function goToDesign(e: FormEvent) {
@@ -210,10 +214,19 @@ function SetupWizardInner({
                     </option>
                   ))}
                 </select>
+              ) : q.type === "date_time" ? (
+                <FutureDateTimeInput
+                  id={`q-${q.key}`}
+                  timeZone={tzQuestion ? answerFor(tzQuestion.key, "timezone") : browserTimezone}
+                  value={answerFor(q.key, q.type)}
+                  onValueChange={(value) => setAnswers((a) => ({ ...a, [q.key]: value }))}
+                  required={q.required}
+                  autoFocus={occasion.setup_questions[0].key === q.key}
+                />
               ) : (
                 <Input
                   id={`q-${q.key}`}
-                  type={q.type === "date_time" ? "datetime-local" : "text"}
+                  type="text"
                   value={answerFor(q.key, q.type)}
                   onChange={(e) => setAnswers((a) => ({ ...a, [q.key]: e.target.value }))}
                   required={q.required}

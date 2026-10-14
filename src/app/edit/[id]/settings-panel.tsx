@@ -67,6 +67,10 @@ export function SettingsPanel({
   return <OwnerSettings state={state} dispatch={dispatch} canPublish={canPublish} flushContent={flushContent} />;
 }
 
+/** Shown when a settings change or publish can't go ahead because the content behind it didn't save. */
+const UNSAVED_MESSAGE =
+  "We couldn't save your latest changes. Fix any sections marked “Needs attention” under Content (or check your connection), then try again.";
+
 /** Plain-language names for the fields the API reports as missing before publishing. */
 const MISSING_LABELS: Record<string, string> = {
   slug: "a link (choose one under Link above)",
@@ -133,7 +137,7 @@ function OwnerSettings({
     setPending(true);
     try {
       const version = await flushContent();
-      if (version === null) throw new ApiError(409, "unsaved_content", "Your latest edits couldn't be saved yet. Check the message at the top and try again.");
+      if (version === null) throw new ApiError(409, "unsaved_content", UNSAVED_MESSAGE);
       const body: Record<string, unknown> = { version };
       if (!slugLocked && slugInput.trim() !== (state.slug ?? "")) body.slug = slugInput.trim();
       if (visibility !== state.visibility) body.visibility = visibility;
@@ -167,7 +171,7 @@ function OwnerSettings({
       // A link typed above but not saved yet is saved first, so Publish never fails on a "missing" link
       // the host has already filled in.
       let version = await flushContent();
-      if (version === null) throw new ApiError(409, "unsaved_content", "Your latest edits couldn't be saved yet. Check the message at the top and try again.");
+      if (version === null) throw new ApiError(409, "unsaved_content", UNSAVED_MESSAGE);
       const wantedSlug = slugInput.trim();
       if (!slugLocked && wantedSlug !== "" && wantedSlug !== (state.slug ?? "")) {
         const saved = await api<{ event: Event }>(`/v1/events/${state.id}/settings`, { method: "PATCH", json: { version, slug: wantedSlug } });
@@ -199,7 +203,7 @@ function OwnerSettings({
     setPending(true);
     try {
       const version = await flushContent();
-      if (version === null) throw new ApiError(409, "unsaved_content", "Your latest edits couldn't be saved yet. Check the message at the top and try again.");
+      if (version === null) throw new ApiError(409, "unsaved_content", UNSAVED_MESSAGE);
       const { event } = await api<{ event: Event }>(`/v1/events/${state.id}/unpublish`, { method: "POST", json: { version } });
       dispatch({ type: "applied", event, templateSlug: event.template.slug });
       setNotice({ scope: "publish", text: event.status === "published" ? "Published. Your invitation is live." : "Unpublished. Guests can no longer open your invitation." });

@@ -3,6 +3,7 @@
 import { PlusIcon, Trash2Icon } from "lucide-react";
 import { useId, useMemo, useRef, useState, type ReactNode } from "react";
 
+import { FutureDateTimeInput } from "@/components/future-datetime-input";
 import { downscaleToJpeg } from "@/components/event/photo-upload";
 import { BADGE_MAX, sanitizeBadge } from "@/components/event/theme-engine/ornament-keys";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ import type {
   WishesBlock,
 } from "@/lib/api-types";
 
+import { useFieldError } from "./block-issues";
 import { heroDrawsBadge, heroDrawsPhoto } from "./hero-fields";
 import { MediaField } from "./media-field";
 import { PeopleForm } from "./people-form";
@@ -125,11 +127,18 @@ export function BlockForm({
   }
 }
 
-export function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: ReactNode }) {
+/** `field` is the block property this input edits; a save error for it is shown right under the input. */
+export function Field({ label, htmlFor, field, children }: { label: string; htmlFor: string; field?: string; children: ReactNode }) {
+  const error = useFieldError(field);
   return (
     <div className="grid gap-1.5">
       <Label htmlFor={htmlFor}>{label}</Label>
       {children}
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -145,7 +154,7 @@ export function KickerField({
   onChange: (kicker: string) => void;
 }) {
   return (
-    <Field label="Small label above the heading" htmlFor={`${idPrefix}-kicker`}>
+    <Field label="Small label above the heading" htmlFor={`${idPrefix}-kicker`} field="kicker">
       <Input id={`${idPrefix}-kicker`} maxLength={60} value={value} onChange={(e) => onChange(e.target.value)} />
     </Field>
   );
@@ -178,7 +187,7 @@ function HeroForm({
   return (
     <div className="flex flex-col gap-3">
       <KickerField idPrefix="hero" value={block.kicker} onChange={(kicker) => onChange({ kicker })} />
-      <Field label="Title" htmlFor="hero-title">
+      <Field label="Title" htmlFor="hero-title" field="title">
         <Input
           id="hero-title"
           required
@@ -187,7 +196,7 @@ function HeroForm({
           onChange={(e) => onChange({ title: e.target.value })}
         />
       </Field>
-      <Field label="Subtitle" htmlFor="hero-subtitle">
+      <Field label="Subtitle" htmlFor="hero-subtitle" field="subtitle">
         <Input id="hero-subtitle" maxLength={200} value={block.subtitle} onChange={(e) => onChange({ subtitle: e.target.value })} />
       </Field>
       {showBadge && (
@@ -246,10 +255,10 @@ function TextForm({ block, onChange }: { block: TextBlock; onChange: OnChange<Te
   return (
     <div className="flex flex-col gap-3">
       <KickerField idPrefix="text" value={block.kicker} onChange={(kicker) => onChange({ kicker })} />
-      <Field label="Heading" htmlFor="text-heading">
+      <Field label="Heading" htmlFor="text-heading" field="heading">
         <Input id="text-heading" maxLength={120} value={block.heading} onChange={(e) => onChange({ heading: e.target.value })} />
       </Field>
-      <Field label="Body" htmlFor="text-body">
+      <Field label="Body" htmlFor="text-body" field="body">
         <Textarea
           id="text-body"
           required
@@ -281,22 +290,28 @@ function DatetimeForm({
   return (
     <div className="flex flex-col gap-3">
       <KickerField idPrefix="dt" value={block.kicker} onChange={(kicker) => onChange({ kicker })} />
-      <Field label="Heading" htmlFor="dt-heading">
+      <Field label="Heading" htmlFor="dt-heading" field="heading">
         <Input id="dt-heading" maxLength={120} value={block.heading} onChange={(e) => onChange({ heading: e.target.value })} />
       </Field>
-      <Field label="Starts" htmlFor="dt-start">
-        <Input
+      <Field label="Starts" htmlFor="dt-start" field="start_local">
+        <FutureDateTimeInput
           id="dt-start"
-          type="datetime-local"
           required
+          timeZone={block.timezone}
           value={block.start_local}
-          onChange={(e) => onChange({ start_local: e.target.value })}
+          onValueChange={(start_local) => onChange({ start_local })}
         />
       </Field>
-      <Field label="Ends (optional)" htmlFor="dt-end">
-        <Input id="dt-end" type="datetime-local" value={block.end_local} onChange={(e) => onChange({ end_local: e.target.value })} />
+      <Field label="Ends (optional)" htmlFor="dt-end" field="end_local">
+        <FutureDateTimeInput
+          id="dt-end"
+          timeZone={block.timezone}
+          notBefore={block.start_local}
+          value={block.end_local}
+          onValueChange={(end_local) => onChange({ end_local })}
+        />
       </Field>
-      <Field label="Time zone" htmlFor="dt-tz">
+      <Field label="Time zone" htmlFor="dt-tz" field="timezone">
         <NativeSelect
           id="dt-tz"
           value={block.timezone}
@@ -321,16 +336,16 @@ function LocationForm({ block, onChange }: { block: LocationBlock; onChange: OnC
   return (
     <div className="flex flex-col gap-3">
       <KickerField idPrefix="loc" value={block.kicker} onChange={(kicker) => onChange({ kicker })} />
-      <Field label="Heading" htmlFor="loc-heading">
+      <Field label="Heading" htmlFor="loc-heading" field="heading">
         <Input id="loc-heading" maxLength={120} value={block.heading} onChange={(e) => onChange({ heading: e.target.value })} />
       </Field>
-      <Field label="Venue name" htmlFor="loc-name">
+      <Field label="Venue name" htmlFor="loc-name" field="name">
         <Input id="loc-name" required maxLength={120} value={block.name} onChange={(e) => onChange({ name: e.target.value })} />
       </Field>
-      <Field label="Address" htmlFor="loc-address">
+      <Field label="Address" htmlFor="loc-address" field="address">
         <Input id="loc-address" maxLength={300} value={block.address} onChange={(e) => onChange({ address: e.target.value })} />
       </Field>
-      <Field label="Map link (optional, https)" htmlFor="loc-map">
+      <Field label="Map link (optional, https)" htmlFor="loc-map" field="map_url">
         <Input
           id="loc-map"
           type="url"
@@ -341,7 +356,7 @@ function LocationForm({ block, onChange }: { block: LocationBlock; onChange: OnC
           onChange={(e) => onChange({ map_url: e.target.value })}
         />
       </Field>
-      <Field label="Notes" htmlFor="loc-notes">
+      <Field label="Notes" htmlFor="loc-notes" field="notes">
         <Textarea id="loc-notes" maxLength={500} value={block.notes} onChange={(e) => onChange({ notes: e.target.value })} />
       </Field>
     </div>
@@ -815,11 +830,10 @@ function RsvpBlockForm({
         <Textarea id="rsvp-body" maxLength={1000} value={block.body} onChange={(e) => onChange({ body: e.target.value })} />
       </Field>
       <Field label="RSVP deadline (optional)" htmlFor="rsvp-deadline">
-        <Input
+        <FutureDateTimeInput
           id="rsvp-deadline"
-          type="datetime-local"
           value={block.deadline_local}
-          onChange={(e) => onChange({ deadline_local: e.target.value })}
+          onValueChange={(deadline_local) => onChange({ deadline_local })}
         />
       </Field>
       <Field label="Guest capacity (heads, optional)" htmlFor="rsvp-capacity">

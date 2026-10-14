@@ -25,6 +25,16 @@ export async function SiteFooter({ signedIn }: { signedIn?: boolean }) {
               </Link>
             </li>
             <li>
+              <Link href="/help" className="underline-offset-4 decoration-brand-brass-bright hover:underline">
+                Help
+              </Link>
+            </li>
+            <li>
+              <Link href="/help#contact" className="underline-offset-4 decoration-brand-brass-bright hover:underline">
+                Contact us
+              </Link>
+            </li>
+            <li>
               {isSignedIn ? (
                 <Link href="/account" className="underline-offset-4 decoration-brand-brass-bright hover:underline">
                   Account
