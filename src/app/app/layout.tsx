@@ -24,6 +24,9 @@ export default async function AppLayout({ children }: LayoutProps<"/app">) {
           </Link>
           <div className="flex items-center gap-3">
             <span className="hidden text-sm text-muted-foreground sm:inline">{user.email}</span>
+            <Link href="/help" className="rounded-md px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground">
+              Help
+            </Link>
             <Link href="/account" className="rounded-md px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground">
               Account
             </Link>

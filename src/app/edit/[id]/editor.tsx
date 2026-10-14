@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api, ApiError, type Event, type Occasion, type Overrides, type ShareImageSource, type TemplateSummary, type ValidationIssue } from "@/lib/api";
 
 import { BlockForm } from "./block-form";
+import { BlockIssuesProvider, groupIssuesByBlock, uninlinedIssues } from "./block-issues";
 import { BlockList } from "./block-list";
 import { canAddBlock, createBlock } from "./blocks";
 import { DesignPanel } from "./design-panel";
@@ -44,11 +45,14 @@ export function Editor({
         dispatch({ type: "conflict", currentVersion: details?.current_version ?? stateRef.current.version });
         return;
       }
-      dispatch({
-        type: "save_error",
-        message: err.message,
-        issues: Array.isArray(err.details) && err.code === "validation_failed" ? (err.details as ValidationIssue[]) : undefined,
-      });
+      const issues = Array.isArray(err.details) && err.code === "validation_failed" ? (err.details as ValidationIssue[]) : undefined;
+      dispatch({ type: "save_error", message: err.message, issues });
+      // Open the first block with a problem so the message is in view next to the field.
+      const first = groupIssuesByBlock(stateRef.current.content, issues ?? null).keys().next();
+      if (!first.done) {
+        setSelectedBlockId(first.value);
+        setMobileView("edit");
+      }
       return;
     }
     dispatch({ type: "save_error", message: "Couldn't reach the server. Please try again." });
@@ -225,6 +229,7 @@ export function Editor({
     window.location.reload();
   }
 
+  const issuesByBlock = groupIssuesByBlock(state.content, state.saveIssues);
   const editingDisabled = state.saveStatus === "conflict";
   const canPublishNow = Boolean(occasion);
 
@@ -254,17 +259,31 @@ export function Editor({
                   onAdd={addBlock}
                   onRemove={removeBlock}
                   onMove={moveBlock}
-                  renderForm={(block) => (
-                    <BlockForm
-                      block={block}
-                      occasion={occasion}
-                      eventId={state.id}
-                      media={state.media}
-                      theme={state.theme}
-                      onChange={(patch) => updateBlock(block.id, patch)}
-                      onMediaUploaded={(id, ref) => dispatch({ type: "add_media", id, ref })}
-                    />
-                  )}
+                  issuesByBlock={issuesByBlock}
+                  renderForm={(block) => {
+                    const issues = issuesByBlock.get(block.id) ?? [];
+                    const other = uninlinedIssues(block.type, issues);
+                    return (
+                      <BlockIssuesProvider value={issues}>
+                        {other.length > 0 && (
+                          <ul role="alert" className="mb-3 list-inside list-disc rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                            {other.map((issue, i) => (
+                              <li key={i}>{issue.field ? `${issue.field}: ${issue.message}` : issue.message}</li>
+                            ))}
+                          </ul>
+                        )}
+                        <BlockForm
+                          block={block}
+                          occasion={occasion}
+                          eventId={state.id}
+                          media={state.media}
+                          theme={state.theme}
+                          onChange={(patch) => updateBlock(block.id, patch)}
+                          onMediaUploaded={(id, ref) => dispatch({ type: "add_media", id, ref })}
+                        />
+                      </BlockIssuesProvider>
+                    );
+                  }}
                 />
               </section>
 
@@ -346,6 +365,15 @@ function EditorTopBar({
         </div>
       </div>
       <div className="flex items-center gap-2">
+        {/* New tab so opening Help never interrupts editing. */}
+        <Link
+          href="/help"
+          target="_blank"
+          rel="noopener"
+          className="inline-flex min-h-11 items-center rounded-md px-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+        >
+          Help
+        </Link>
         {state.status !== "draft" && (
           <Button onClick={onSaveNow} disabled={!state.dirty || state.saveStatus === "saving" || state.saveStatus === "conflict"}>
             {state.saveStatus === "saving" ? "Saving…" : "Save changes"}
@@ -364,15 +392,6 @@ function EditorTopBar({
       {state.saveStatus === "error" && state.saveMessage && (
         <div role="alert" className="w-full rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {state.saveMessage}
-          {state.saveIssues && state.saveIssues.length > 0 && (
-            <ul className="mt-1 list-inside list-disc">
-              {state.saveIssues.map((issue, i) => (
-                <li key={i}>
-                  {issue.path}: {issue.message}
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
       )}
     </header>

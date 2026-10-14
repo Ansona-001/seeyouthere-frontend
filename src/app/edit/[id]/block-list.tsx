@@ -21,8 +21,11 @@ export function BlockList({
   onRemove,
   onMove,
   renderForm,
+  issuesByBlock,
 }: {
   content: Block[];
+  /** Blocks the last save rejected; their rows are flagged so the problem is visible even when collapsed. */
+  issuesByBlock: Map<string, unknown[]>;
   selectedId: string | null;
   /** Called with the clicked block's id; the parent toggles it open or closed. */
   onSelect: (id: string) => void;
@@ -53,9 +56,11 @@ export function BlockList({
                 aria-controls={`block-panel-${block.id}`}
                 className={cn(
                   "flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-xl border px-3.5 text-left text-sm font-medium transition-colors duration-(--duration-fast)",
-                  selectedId === block.id
-                    ? "border-primary bg-secondary"
-                    : "border-input bg-card [@media(hover:hover)]:hover:bg-accent",
+                  issuesByBlock.has(block.id)
+                    ? "border-destructive bg-destructive/5"
+                    : selectedId === block.id
+                      ? "border-primary bg-secondary"
+                      : "border-input bg-card [@media(hover:hover)]:hover:bg-accent",
                 )}
               >
                 <span className="min-w-0 flex-1 truncate">
@@ -63,6 +68,7 @@ export function BlockList({
                   {"heading" in block && block.heading ? ` — ${block.heading}` : ""}
                   {block.type === "hero" && block.title ? ` — ${block.title}` : ""}
                 </span>
+                {issuesByBlock.has(block.id) && <span className="shrink-0 text-xs font-semibold text-destructive">Needs attention</span>}
                 <ChevronDownIcon
                   aria-hidden="true"
                   className={cn("size-4 shrink-0 text-muted-foreground transition-transform duration-(--duration-fast) motion-reduce:transition-none", selectedId === block.id && "rotate-180")}
