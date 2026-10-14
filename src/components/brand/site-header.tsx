@@ -6,6 +6,10 @@ import { getCurrentUser } from "@/lib/session";
 
 import { Logo } from "./logo";
 
+// The lockup's wordmark sits on the doorway's base, ~17% of the logo height below the SVG's centre, so the
+// nav is nudged down (17% of h-6 / h-8) to share the wordmark's text line instead of the box's centre.
+const TEXT_LINE = "translate-y-1 sm:translate-y-[5px]";
+
 /**
  * Header for public, non-invite pages. The invite pages keep their own chrome.
  * `links` are optional in-page section links, shown from the md breakpoint up.
@@ -18,11 +22,11 @@ export async function SiteHeader({ links }: { links?: ReactNode }) {
         <Logo title="" className="h-6 sm:h-8" />
       </Link>
       {links ? (
-        <nav aria-label="Sections" className="mr-auto ml-2 hidden items-center gap-1 md:flex">
+        <nav aria-label="Sections" className={`mr-auto ml-2 hidden items-center gap-1 md:flex ${TEXT_LINE}`}>
           {links}
         </nav>
       ) : null}
-      <nav aria-label="Account" className="flex items-center gap-1 sm:gap-2">
+      <nav aria-label="Account" className={`flex items-center gap-1 sm:gap-2 ${TEXT_LINE}`}>
         {user ? (
           <Button variant="ghost" size="sm" render={<Link href="/app" />} nativeButton={false}>
             Your events
