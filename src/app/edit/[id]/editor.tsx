@@ -9,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api, ApiError, type Event, type Occasion, type Overrides, type ShareImageSource, type TemplateSummary, type ValidationIssue } from "@/lib/api";
 
 import { BlockForm } from "./block-form";
-import { BlockIssuesProvider, groupIssuesByBlock, uninlinedIssues } from "./block-issues";
+import { BlockIssuesProvider, blockIssues, groupIssuesByBlock, uninlinedIssues } from "./block-issues";
 import { BlockList } from "./block-list";
 import { canAddBlock, createBlock } from "./blocks";
 import { DesignPanel } from "./design-panel";
@@ -229,7 +229,7 @@ export function Editor({
     window.location.reload();
   }
 
-  const issuesByBlock = groupIssuesByBlock(state.content, state.saveIssues);
+  const issuesByBlock = blockIssues(state.content, state.saveIssues);
   const editingDisabled = state.saveStatus === "conflict";
   const canPublishNow = Boolean(occasion);
 

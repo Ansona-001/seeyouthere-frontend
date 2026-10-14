@@ -293,7 +293,7 @@ function DatetimeForm({
       <Field label="Heading" htmlFor="dt-heading" field="heading">
         <Input id="dt-heading" maxLength={120} value={block.heading} onChange={(e) => onChange({ heading: e.target.value })} />
       </Field>
-      <Field label="Starts" htmlFor="dt-start" field="start_local">
+      <Field label="Starts (required)" htmlFor="dt-start" field="start_local">
         <FutureDateTimeInput
           id="dt-start"
           required
@@ -339,7 +339,7 @@ function LocationForm({ block, onChange }: { block: LocationBlock; onChange: OnC
       <Field label="Heading" htmlFor="loc-heading" field="heading">
         <Input id="loc-heading" maxLength={120} value={block.heading} onChange={(e) => onChange({ heading: e.target.value })} />
       </Field>
-      <Field label="Venue name" htmlFor="loc-name" field="name">
+      <Field label="Venue name (required)" htmlFor="loc-name" field="name">
         <Input id="loc-name" required maxLength={120} value={block.name} onChange={(e) => onChange({ name: e.target.value })} />
       </Field>
       <Field label="Address" htmlFor="loc-address" field="address">
