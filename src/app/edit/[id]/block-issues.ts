@@ -21,6 +21,29 @@ export function groupIssuesByBlock(content: Block[], issues: ValidationIssue[] |
   return grouped;
 }
 
+/**
+ * Required fields the server insists on, checked locally so an empty one is flagged in the content list
+ * before any save or publish fails: a start time on the Date & time block, a venue name on Location.
+ */
+function missingRequired(block: Block): BlockIssue | null {
+  if (block.type === "datetime" && block.start_local.trim() === "") return { field: "start_local", message: "Choose a date and time." };
+  if (block.type === "location" && block.name.trim() === "") return { field: "name", message: "Enter the venue name." };
+  return null;
+}
+
+/** Server issues from the last save plus locally detected missing required fields, grouped by block id. */
+export function blockIssues(content: Block[], saveIssues: ValidationIssue[] | null): Map<string, BlockIssue[]> {
+  const grouped = groupIssuesByBlock(content, saveIssues);
+  for (const block of content) {
+    const missing = missingRequired(block);
+    if (!missing) continue;
+    const list = grouped.get(block.id) ?? [];
+    if (!list.some((i) => i.field === missing.field)) list.push(missing);
+    grouped.set(block.id, list);
+  }
+  return grouped;
+}
+
 /** Top-level fields whose form renders its own inline error; every other issue is listed above the block's form. */
 const INLINE_FIELDS: Partial<Record<BlockType, readonly string[]>> = {
   hero: ["kicker", "title", "subtitle"],

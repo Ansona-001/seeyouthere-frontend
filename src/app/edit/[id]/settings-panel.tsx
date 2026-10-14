@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { api, ApiError, type Event, type RsvpMode, type SlugAvailability, type Visibility } from "@/lib/api";
+import { suggestSlug } from "@/lib/slug";
 
 import type { EditorAction, EditorState } from "./reducer";
 
@@ -98,7 +99,9 @@ function OwnerSettings({
   // Success feedback for the last action, shown next to the buttons that triggered it.
   const [notice, setNotice] = useState<{ scope: "save" | "publish"; text: string; slug?: string } | null>(null);
 
-  const [slugInput, setSlugInput] = useState(state.slug ?? "");
+  // A draft without a link starts from one suggested from its title; it is only saved when the host
+  // saves settings or publishes, and the availability check below runs on it like any typed link.
+  const [slugInput, setSlugInput] = useState(state.slug ?? suggestSlug(state.title));
   const [slugCheck, setSlugCheck] = useState<SlugAvailability | null>(null);
   const [checkingSlug, setCheckingSlug] = useState(false);
   const slugLocked = state.publishedAt !== null;
