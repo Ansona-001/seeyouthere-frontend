@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useReducer, useRef, useState } from "react";
 
 import { EventView } from "@/components/event/event-view";
+import { ShareLinks } from "@/components/share-links";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api, ApiError, type Event, type Occasion, type Overrides, type ShareImageSource, type TemplateSummary, type ValidationIssue } from "@/lib/api";
@@ -321,6 +322,13 @@ export function Editor({
                 <h2 className="mb-2 font-heading text-base text-brand-heading">Settings</h2>
                 <SettingsPanel state={state} dispatch={dispatch} canPublish={canPublishNow} flushContent={flushContent} />
               </section>
+
+              {state.status === "published" && state.url && (
+                <section>
+                  <h2 className="mb-2 font-heading text-base text-brand-heading">Share your invite</h2>
+                  <ShareLinks url={state.url} title={state.title} />
+                </section>
+              )}
             </fieldset>
           </div>
         </div>
