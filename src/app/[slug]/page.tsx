@@ -84,7 +84,7 @@ export default async function PublicEventPage({ params }: PageProps<"/[slug]">) 
     );
   }
 
-  const { event, viewer, photos } = result.data;
+  const { event, viewer, photos, wishes } = result.data;
 
   return (
     <EventView
@@ -107,6 +107,7 @@ export default async function PublicEventPage({ params }: PageProps<"/[slug]">) 
       }}
       photos={photos.items}
       photosNextCursor={photos.next_cursor}
+      wishes={wishes}
     />
   );
 }

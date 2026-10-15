@@ -144,6 +144,7 @@ export const fixtureContent: Block[] = [
     type: "wishes",
     kicker: "For the couple",
     heading: "Wishes",
+    open: true,
     items: [
       { message: "Wishing you a lifetime of laughter and terrible puns.\nCan't wait to celebrate!", author: "Priya & Sam" },
       { message: "Two of the kindest people I know, finally making it official.", author: "Dev" },

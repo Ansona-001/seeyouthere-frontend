@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { ShareLinks } from "@/components/share-links";
 import { Button } from "@/components/ui/button";
 import { api, ApiError, type Event } from "@/lib/api";
 
@@ -15,13 +16,12 @@ const STATUS_LABEL: Record<Event["status"], string> = {
   taken_down: "Taken down",
 };
 
-/** Key stats header: status, share link + copy, publish/preview/edit (§4.3, §11.1). */
+/** Key stats header: status, share links, publish/preview/edit (§4.3, §11.1). */
 export function OverviewActions({ event }: { event: Event }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notReady, setNotReady] = useState<string[] | null>(null);
-  const [copied, setCopied] = useState(false);
 
   const canEdit = event.role === "owner" || event.role === "editor";
   const canPublish = event.role === "owner";
@@ -45,35 +45,20 @@ export function OverviewActions({ event }: { event: Event }) {
     }
   }
 
-  async function copyLink() {
-    if (!event.url) return;
-    try {
-      await navigator.clipboard.writeText(event.url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard access can be denied by the browser; the URL is still
-      // visible as text for the host to copy by hand.
-    }
-  }
-
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant={event.status === "taken_down" ? "destructive" : event.status === "published" ? "default" : "outline"}>{STATUS_LABEL[event.status]}</Badge>
         {event.url ? (
-          <div className="flex items-center gap-1.5 text-sm">
-            <a href={event.url} target="_blank" rel="noopener noreferrer" className="break-all font-medium text-primary underline-offset-4 hover:underline">
-              {event.url}
-            </a>
-            <Button type="button" variant="ghost" onClick={copyLink}>
-              {copied ? "Copied" : "Copy link"}
-            </Button>
-          </div>
+          <a href={event.url} target="_blank" rel="noopener noreferrer" className="break-all text-sm font-medium text-primary underline-offset-4 hover:underline">
+            {event.url}
+          </a>
         ) : (
           <span className="text-sm text-muted-foreground">No link set yet</span>
         )}
       </div>
+
+      {event.url && event.status === "published" && <ShareLinks url={event.url} title={event.title} />}
 
       {notReady && (
         <div role="alert" className="rounded-xl bg-destructive/10 px-3 py-2.5 text-sm text-destructive">

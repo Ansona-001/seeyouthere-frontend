@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 
@@ -10,18 +9,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api, ApiError, type Event } from "@/lib/api";
 import type { Occasion, TemplateSummary } from "@/lib/api-types";
-import { fontCssVar } from "@/lib/fonts";
 
-type Step = "questions" | "design";
-
-// A visitor who isn't signed in keeps their choices across the login redirect in sessionStorage
+// A visitor who isn't signed in keeps their answers across the login redirect in sessionStorage
 // (this tab only, cleared on restore). Everything read back is re-validated against the live
-// template/question lists, since storage is attacker-editable.
+// question list, since storage is attacker-editable.
 const DRAFT_KEY = "syt:create-draft";
 
-type Restored = { answers: Record<string, string>; template: string };
+type Restored = { answers: Record<string, string> };
 
-type SavedDraft = { occasion: string; answers: Record<string, string>; template: string };
+type SavedDraft = { occasion: string; answers: Record<string, string> };
 
 function saveDraft(draft: SavedDraft) {
   try {
@@ -49,42 +45,40 @@ function clearDraft() {
 
 const noopSubscribe = () => () => {};
 
-/** Parses and validates a saved draft against the live occasion/templates; null if anything is off. */
-function restoreDraft(raw: string | null, occasion: Occasion, templates: TemplateSummary[]): Restored | null {
+/** Parses and validates a saved draft against the live occasion; null if anything is off. */
+function restoreDraft(raw: string | null, occasion: Occasion): Restored | null {
   if (!raw) return null;
   try {
     const d: unknown = JSON.parse(raw);
     if (typeof d !== "object" || d === null) return null;
-    const { occasion: o, answers, template } = d as Record<string, unknown>;
-    if (o !== occasion.slug || typeof template !== "string") return null;
+    const { occasion: o, answers } = d as Record<string, unknown>;
+    if (o !== occasion.slug) return null;
     if (typeof answers !== "object" || answers === null || Array.isArray(answers)) return null;
-    const tpl = templates.find((t) => t.slug === template);
-    if (!tpl) return null;
     const restored: Record<string, string> = {};
     for (const q of occasion.setup_questions) {
       const v = (answers as Record<string, unknown>)[q.key];
       if (typeof v === "string" && v.length <= 500) restored[q.key] = v;
     }
-    return { answers: restored, template: tpl.slug };
+    return { answers: restored };
   } catch {
     return null;
   }
 }
 
 /**
- * Occasion setup wizard (build-out plan §11.1, §11.4): setup questions (when
- * the occasion has any), then the template, then `POST /v1/events`. Palette and fonts are
- * chosen later in the editor's design panel.
+ * Occasion setup (build-out plan §11.1): setup questions (when the occasion has
+ * any), then `POST /v1/events`. Template, palette and fonts are chosen later in
+ * the editor's design panel.
  * `content.BuildInitialContent` on the server does all the placeholder-copy
- * and answer-substitution work, so this only needs to collect answers and a
- * design choice — the created event already has full, editable content.
+ * and answer-substitution work, so this only needs to collect answers — the
+ * created event already has full, editable content.
  */
 export function SetupWizard(props: { occasion: Occasion; templates: TemplateSummary[]; signedIn: boolean }) {
   // Coming back from login (?resume=1): restore what the visitor had picked and land on the
   // design step. The server renders without it, so the saved choices are read client-side.
   const resume = useSearchParams().get("resume") === "1";
   const raw = useSyncExternalStore(noopSubscribe, () => (resume && props.signedIn ? readDraft() : null), () => null);
-  const initial = restoreDraft(raw, props.occasion, props.templates);
+  const initial = restoreDraft(raw, props.occasion);
   return <SetupWizardInner key={initial ? "restored" : "fresh"} {...props} initial={initial} />;
 }
 
@@ -101,13 +95,12 @@ function SetupWizardInner({
 }) {
   const router = useRouter();
   const hasQuestions = occasion.setup_questions.length > 0;
-  const [step, setStep] = useState<Step>(initial || !hasQuestions ? "design" : "questions");
   const [answers, setAnswers] = useState<Record<string, string>>(initial?.answers ?? {});
-  const [templateSlug, setTemplateSlug] = useState(initial?.template ?? templates[0].slug);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const template = templates.find((t) => t.slug === templateSlug) ?? templates[0];
+  // The look is chosen in the editor; new events start from the occasion's first template.
+  const template = templates[0];
 
   const browserTimezone = useMemo(() => {
     try {
@@ -124,10 +117,6 @@ function SetupWizardInner({
     }
   }, [browserTimezone]);
 
-  function selectTemplate(next: TemplateSummary) {
-    setTemplateSlug(next.slug);
-  }
-
   function answerFor(key: string, questionType: string): string {
     if (answers[key] !== undefined) return answers[key];
     return questionType === "timezone" ? browserTimezone : "";
@@ -138,10 +127,10 @@ function SetupWizardInner({
 
   const missingRequired = occasion.setup_questions.some((q) => q.required && !answerFor(q.key, q.type).trim());
 
-  function goToDesign(e: FormEvent) {
+  function submit(e: FormEvent) {
     e.preventDefault();
     if (missingRequired) return;
-    setStep("design");
+    void create();
   }
 
   async function create() {
@@ -152,7 +141,7 @@ function SetupWizardInner({
       if (value) finalAnswers[q.key] = value;
     }
     if (!signedIn) {
-      saveDraft({ occasion: occasion.slug, answers: finalAnswers, template: template.slug });
+      saveDraft({ occasion: occasion.slug, answers: finalAnswers });
       const back = `/create/${occasion.slug}?resume=1`;
       router.push(`/login?next=${encodeURIComponent(back)}`);
       return;
@@ -181,19 +170,28 @@ function SetupWizardInner({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once on arrival; create reads current state
   }, []);
 
+  const submitLabel = pending ? "Creating…" : signedIn ? "Create my event" : "Log in to create my event";
+
   return (
     <div className="flex flex-col gap-8">
       <header className="text-center">
-        <p className="text-sm font-medium text-brand-brass-ink">
-          {hasQuestions ? `Step ${step === "questions" ? 1 : 2} of 2` : "Almost there"}
-        </p>
+        <p className="text-sm font-medium text-brand-brass-ink">Almost there</p>
         <h1 className="mt-1 font-heading text-4xl text-brand-heading sm:text-5xl">
-          {step === "questions" ? "Tell us a bit more" : "Pick a look"}
+          {hasQuestions ? "Tell us a bit more" : "Ready to start?"}
         </h1>
+        {!hasQuestions && (
+          <p className="mt-2 text-muted-foreground">You can pick the template and colours in the editor.</p>
+        )}
       </header>
 
-      {step === "questions" ? (
-        <form onSubmit={goToDesign} className="mx-auto flex w-full max-w-md flex-col gap-5 rounded-3xl bg-card p-6 shadow-sm ring-1 ring-border">
+      {error && (
+        <p role="alert" className="text-center text-sm font-medium text-destructive">
+          {error}
+        </p>
+      )}
+
+      {hasQuestions ? (
+        <form onSubmit={submit} className="mx-auto flex w-full max-w-md flex-col gap-5 rounded-3xl bg-card p-6 shadow-sm ring-1 ring-border">
           {occasion.setup_questions.map((q) => (
             <div key={q.key} className="grid gap-1.5">
               <Label htmlFor={`q-${q.key}`}>
@@ -236,130 +234,17 @@ function SetupWizardInner({
               )}
             </div>
           ))}
-          <Button type="submit" size="lg" disabled={missingRequired}>
-            Continue
+          <Button type="submit" size="lg" disabled={missingRequired || pending}>
+            {submitLabel}
           </Button>
         </form>
       ) : (
-        <div className="flex flex-col gap-8">
-          <section>
-            <h2 className="sr-only">Template</h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {templates.map((t) => (
-                <TemplateCard key={t.slug} template={t} occasionSlug={occasion.slug} selected={t.slug === templateSlug} onSelect={() => selectTemplate(t)} />
-              ))}
-            </div>
-          </section>
-
-          {error && (
-            <p role="alert" className="text-center text-sm font-medium text-destructive">
-              {error}
-            </p>
-          )}
-
-          <div className="flex flex-wrap justify-between gap-3">
-            {hasQuestions ? (
-              <Button type="button" size="lg" variant="outline" onClick={() => setStep("questions")} disabled={pending}>
-                Back
-              </Button>
-            ) : (
-              <span />
-            )}
-            <Button type="button" size="lg" onClick={create} disabled={pending}>
-              {pending ? "Creating…" : signedIn ? "Create my event" : "Log in to create my event"}
-            </Button>
-          </div>
+        <div className="flex justify-center">
+          <Button type="button" size="lg" onClick={create} disabled={pending}>
+            {submitLabel}
+          </Button>
         </div>
       )}
     </div>
-  );
-}
-
-const choiceBase =
-  "inline-flex items-center border bg-card outline-none transition-[border-color,box-shadow,background-color] duration-(--duration-fast) focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none";
-const choiceOn = "border-primary bg-secondary ring-2 ring-primary/30";
-const choiceOff = "border-input hover:bg-accent";
-
-/** Slugs that ship a preview at public/templates/<slug>.webp; anything else (e.g. admin-created) gets the swatch. */
-const PREVIEW_SLUGS: ReadonlySet<string> = new Set([
-  "olive-grove", "letterpress", "velvet-foil", "sunlit", "sprinkles", "risograph",
-  "cloud-nine", "gingham", "open-door", "terrazzo", "gilt-noir", "mirror-ball",
-  "heirloom", "confetti", "classic", "garden", "modern", "minimal",
-]);
-
-/**
- * Occasion-specific previews at public/templates/<slug>--<occasion>.webp for the
- * v1 templates. Keys are a static allowlist: the occasion comes from
- * the route, so it is never interpolated into a URL unless it is listed here.
- */
-const OCCASION_PREVIEWS: ReadonlySet<string> = new Set([
-  ...["wedding", "engagement", "birthday", "baby-shower", "housewarming", "party"].flatMap((o) => [
-    `classic--${o}`,
-    `modern--${o}`,
-    `minimal--${o}`,
-  ]),
-  ...["birthday", "party", "baby-shower", "housewarming"].map((o) => `confetti--${o}`),
-  ...["wedding", "engagement", "baby-shower"].map((o) => `garden--${o}`),
-  ...["wedding", "engagement"].map((o) => `heirloom--${o}`),
-]);
-
-/** Template option: a preview of the invite (or a palette/font swatch when none exists), plus its name. */
-function TemplateCard({
-  template,
-  occasionSlug,
-  selected,
-  onSelect,
-}: {
-  template: TemplateSummary;
-  occasionSlug: string;
-  selected: boolean;
-  onSelect: () => void;
-}) {
-  const palette = template.palettes.find((p) => p.id === template.defaults.palette) ?? template.palettes[0];
-  const font = template.fonts.find((f) => f.id === template.defaults.font) ?? template.fonts[0];
-  const variant = `${template.slug}--${occasionSlug}`;
-  const previewSrc = OCCASION_PREVIEWS.has(variant) ? `/templates/${variant}.webp` : `/templates/${template.slug}.webp`;
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-pressed={selected}
-      className={`${choiceBase} flex-col items-stretch gap-2 rounded-2xl p-2 focus-visible:ring-3 text-left ${selected ? choiceOn : choiceOff}`}
-    >
-      {PREVIEW_SLUGS.has(template.slug) ? (
-        // Decorative: the name caption below already identifies the template.
-        <Image
-          src={previewSrc}
-          alt=""
-          width={390}
-          height={520}
-          // Static, pre-compressed files; the site's custom loader only serves media renditions.
-          unoptimized
-          loading="lazy"
-          className="aspect-3/4 w-full rounded-xl object-cover object-top ring-1 ring-foreground/10"
-          style={{ backgroundColor: palette.colors.background }}
-        />
-      ) : (
-        <span
-          aria-hidden
-          className="grid aspect-3/4 place-items-center rounded-xl text-3xl ring-1 ring-foreground/10"
-          style={{
-            backgroundColor: palette.colors.background,
-            color: palette.colors.text,
-            fontFamily: fontCssVar(font.heading),
-          }}
-        >
-          <span>
-            Aa<span style={{ color: palette.colors.accent }}>.</span>
-          </span>
-        </span>
-      )}
-      <span className="px-1 pb-1">
-        <span className="block font-heading text-base text-brand-heading">{template.name}</span>
-        <span className="block text-xs text-muted-foreground capitalize">
-          {template.layout} · {template.hero_style.replace("_", " ")}
-        </span>
-      </span>
-    </button>
   );
 }

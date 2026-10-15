@@ -62,6 +62,7 @@ export function BlockForm({
   eventId,
   media,
   theme,
+  canModerate,
   onChange,
   onMediaUploaded,
 }: {
@@ -70,6 +71,8 @@ export function BlockForm({
   eventId: string;
   media: MediaMap;
   theme: Theme;
+  /** Owner/editor only: shows the guest-wish moderation list in the wishes form. */
+  canModerate: boolean;
   onChange: (patch: Partial<Block>) => void;
   onMediaUploaded: (id: string, ref: MediaRef) => void;
 }) {
@@ -121,19 +124,37 @@ export function BlockForm({
         />
       );
     case "wishes":
-      return <WishesForm block={block} onChange={onChange as OnChange<WishesBlock>} />;
+      return <WishesForm block={block} eventId={eventId} canModerate={canModerate} onChange={onChange as OnChange<WishesBlock>} />;
     default:
       return null;
   }
 }
 
 /** `field` is the block property this input edits; a save error for it is shown right under the input. */
-export function Field({ label, htmlFor, field, children }: { label: string; htmlFor: string; field?: string; children: ReactNode }) {
+export function Field({
+  label,
+  htmlFor,
+  field,
+  hint,
+  children,
+}: {
+  label: string;
+  htmlFor: string;
+  field?: string;
+  /** Helper text under the input; give the input `aria-describedby={`${htmlFor}-hint`}`. */
+  hint?: string;
+  children: ReactNode;
+}) {
   const error = useFieldError(field);
   return (
     <div className="grid gap-1.5">
       <Label htmlFor={htmlFor}>{label}</Label>
       {children}
+      {hint && (
+        <p id={`${htmlFor}-hint`} className="text-sm text-muted-foreground">
+          {hint}
+        </p>
+      )}
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}
@@ -342,12 +363,29 @@ function LocationForm({ block, onChange }: { block: LocationBlock; onChange: OnC
       <Field label="Venue name (required)" htmlFor="loc-name" field="name">
         <Input id="loc-name" required maxLength={120} value={block.name} onChange={(e) => onChange({ name: e.target.value })} />
       </Field>
-      <Field label="Address" htmlFor="loc-address" field="address">
-        <Input id="loc-address" maxLength={300} value={block.address} onChange={(e) => onChange({ address: e.target.value })} />
+      <Field
+        label="Address"
+        htmlFor="loc-address"
+        field="address"
+        hint="Enter the full street address, with the city, e.g. “12 High Street, Bath BA1 1AA”. Guests see a map of this address, so the more complete it is, the more accurate the pin."
+      >
+        <Input
+          id="loc-address"
+          maxLength={300}
+          aria-describedby="loc-address-hint"
+          value={block.address}
+          onChange={(e) => onChange({ address: e.target.value })}
+        />
       </Field>
-      <Field label="Map link (optional, https)" htmlFor="loc-map" field="map_url">
+      <Field
+        label="Map link (optional, https)"
+        htmlFor="loc-map"
+        field="map_url"
+        hint="Only needed if the address doesn't find the right spot (a park, a hall, a private venue). Share a link from Google Maps or Apple Maps and it's used for the “Open in Maps” button. Leave it empty to search the address instead."
+      >
         <Input
           id="loc-map"
+          aria-describedby="loc-map-hint"
           type="url"
           pattern="https://.*"
           maxLength={2048}

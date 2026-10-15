@@ -8,6 +8,7 @@ import type {
   LocationBlock as LocationBlockType,
   MediaMap,
   PhotoItem,
+  PublicWish,
   Rsvp,
   Theme,
 } from "@/lib/api-types";
@@ -75,6 +76,8 @@ export type EventViewProps = {
   photos?: PhotoItem[];
   /** Cursor for the guest-photos block's "load more" (§4.4); ignored when `photos` is omitted. */
   photosNextCursor?: string | null;
+  /** Approved guest wishes for the wishes block (live mode only). */
+  wishes?: PublicWish[];
 };
 
 /**
@@ -96,6 +99,7 @@ export function EventView({
   rsvp,
   photos,
   photosNextCursor = null,
+  wishes,
 }: EventViewProps) {
   const heroBlock = content.find((block): block is HeroBlockType => block.type === "hero");
   const rest = content.filter((block) => block.type !== "hero");
@@ -134,6 +138,7 @@ export function EventView({
             rsvp={rsvp}
             photos={photos}
             photosNextCursor={photosNextCursor}
+            wishes={wishes}
             badge={
               theme.engine === 2 ? <BadgeOrnament badge={theme.ornament?.badge} text={heroBlock?.badge} /> : undefined
             }
@@ -226,6 +231,7 @@ function RenderBlock({
   rsvp,
   photos,
   photosNextCursor,
+  wishes,
   badge,
 }: {
   block: Block;
@@ -239,6 +245,7 @@ function RenderBlock({
   rsvp?: EventViewRsvpProps;
   photos?: PhotoItem[];
   photosNextCursor?: string | null;
+  wishes?: PublicWish[];
   /** Schema-2 badge ornament, laid over the RSVP section. */
   badge?: ReactNode;
 }) {
@@ -310,7 +317,7 @@ function RenderBlock({
     case "video":
       return <VideoBlock block={block} media={media} interactive={mode === "live"} />;
     case "wishes":
-      return <WishesBlock block={block} interactive={mode === "live"} />;
+      return <WishesBlock block={block} mode={mode} slug={slug} guestWishes={wishes} />;
     default:
       return null;
   }

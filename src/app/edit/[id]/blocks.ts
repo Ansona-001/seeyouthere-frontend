@@ -145,7 +145,7 @@ export function createBlock(type: BlockType): Block {
         poster_media_id: "",
       };
     case "wishes":
-      return { id, type, kicker: "", heading: "Wishes", items: [{ message: "", author: "" }] };
+      return { id, type, kicker: "", heading: "Wishes", open: true, items: [] };
   }
 }
 

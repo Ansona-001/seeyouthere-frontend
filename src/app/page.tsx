@@ -40,8 +40,7 @@ const ICON_PATHS: Record<IconName, string> = {
 };
 
 const STEPS = [
-  { title: "Pick an occasion", body: "Start from a page built for the kind of event you are hosting." },
-  { title: "Choose a look", body: "Pick a template, palette and fonts, then fill in your details." },
+  { title: "Pick an occasion", body: "Answer a couple of questions, then tweak the template, colours and details in the editor." },
   { title: "Share one link", body: "Send the link to your guests and see their replies as they arrive." },
 ] as const;
 
@@ -213,7 +212,7 @@ export default function HomePage() {
             <h2 id="how-title" className="font-heading text-3xl text-brand-heading sm:text-4xl">
               How it works
             </h2>
-            <ol className="mt-8 grid gap-6 sm:grid-cols-3">
+            <ol className="mt-8 grid gap-6 sm:grid-cols-2">
               {STEPS.map((s, i) => (
                 <li key={s.title} className="grid content-start gap-2">
                   <span

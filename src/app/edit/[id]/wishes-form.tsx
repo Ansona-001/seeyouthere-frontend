@@ -4,19 +4,31 @@ import { ChevronDownIcon, ChevronUpIcon, PlusIcon, Trash2Icon } from "lucide-rea
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type { Wish, WishesBlock } from "@/lib/api-types";
 
 import { Field, KickerField } from "./block-form";
+import { WishesModeration } from "./wishes-moderation";
 
 const MAX_WISHES = 30;
 
 /**
- * Editor form for the `wishes` block (build-out plan rich-blocks §6.7).
- * Host-curated only — there is no public write endpoint for this block
- * type, so every item is entered here.
+ * Editor form for the `wishes` block. Host-written items are edited here;
+ * when `open` is on, guests can also submit wishes, moderated below.
  */
-export function WishesForm({ block, onChange }: { block: WishesBlock; onChange: (patch: Partial<WishesBlock>) => void }) {
+export function WishesForm({
+  block,
+  eventId,
+  canModerate,
+  onChange,
+}: {
+  block: WishesBlock;
+  eventId: string;
+  canModerate: boolean;
+  onChange: (patch: Partial<WishesBlock>) => void;
+}) {
   function updateItem(index: number, patch: Partial<Wish>) {
     onChange({ items: block.items.map((it, i) => (i === index ? { ...it, ...patch } : it)) });
   }
@@ -35,6 +47,11 @@ export function WishesForm({ block, onChange }: { block: WishesBlock; onChange: 
       <Field label="Heading" htmlFor="wishes-heading">
         <Input id="wishes-heading" maxLength={120} value={block.heading} onChange={(e) => onChange({ heading: e.target.value })} />
       </Field>
+
+      <div className="flex items-center gap-3">
+        <Switch id="wishes-open" checked={block.open} onCheckedChange={(open) => onChange({ open })} />
+        <Label htmlFor="wishes-open">Let guests send wishes</Label>
+      </div>
 
       <div className="flex flex-col gap-3">
         {block.items.map((item, i) => (
@@ -60,7 +77,7 @@ export function WishesForm({ block, onChange }: { block: WishesBlock; onChange: 
                   variant="ghost"
                   size="icon-sm"
                   aria-label="Remove this wish"
-                  disabled={block.items.length <= 1}
+                  disabled={block.items.length <= 1 && !block.open}
                   onClick={() => onChange({ items: block.items.filter((_, idx) => idx !== i) })}
                 >
                   <Trash2Icon />
@@ -101,6 +118,8 @@ export function WishesForm({ block, onChange }: { block: WishesBlock; onChange: 
         <PlusIcon data-icon="inline-start" />
         Add wish
       </Button>
+
+      {canModerate &&<WishesModeration eventId={eventId} />}
     </div>
   );
 }
