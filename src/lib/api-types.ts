@@ -318,7 +318,7 @@ export type Decoration = "none" | "line" | "floral" | "dots" | "heart";
 /** Rich-blocks theme knobs (additive, manifest schema stays `1`). */
 export type Surface = "plain" | "card" | "glass";
 export type Texture = "none" | "grid" | "dots";
-export type HeadingScale = "regular" | "display";
+export type HeadingScale = "regular" | "display" | "classic";
 
 export type PaletteColors = {
   background: string;

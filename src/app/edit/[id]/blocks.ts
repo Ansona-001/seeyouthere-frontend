@@ -84,14 +84,14 @@ export function createBlock(type: BlockType): Block {
   const id = newBlockId();
   switch (type) {
     case "hero":
-      return { id, type, kicker: "", title: "Join us!", subtitle: "", image: null };
+      return { id, type, kicker: "You're invited", title: "Join us!", subtitle: "", image: null };
     case "text":
       return { id, type, kicker: "", heading: "", body: "" };
     case "datetime":
       return {
         id,
         type,
-        kicker: "",
+        kicker: "Save the date",
         heading: "Date & time",
         start_local: "",
         end_local: "",
@@ -99,13 +99,13 @@ export function createBlock(type: BlockType): Block {
         all_day: false,
       };
     case "location":
-      return { id, type, kicker: "", heading: "Venue", name: "", address: "", map_url: "", notes: "" };
+      return { id, type, kicker: "Find us", heading: "Venue", name: "", address: "", map_url: "", notes: "" };
     case "schedule":
-      return { id, type, kicker: "", heading: "Schedule", items: [{ time: "", title: "", description: "" }] };
+      return { id, type, kicker: "The plan", heading: "Schedule", items: [{ time: "", title: "", description: "" }] };
     case "image":
       return { id, type, media_id: "", alt: "", caption: "" };
     case "gallery":
-      return { id, type, kicker: "", heading: "Gallery", images: [], display: "grid" };
+      return { id, type, kicker: "Moments", heading: "Gallery", images: [], display: "grid" };
     case "dress_code":
       return { id, type, kicker: "", heading: "What to wear", body: "" };
     case "links":
@@ -118,7 +118,7 @@ export function createBlock(type: BlockType): Block {
       return {
         id,
         type,
-        kicker: "",
+        kicker: "Kindly reply",
         heading: "Will you be there?",
         body: "",
         deadline_local: "",

@@ -52,9 +52,41 @@ const INLINE_FIELDS: Partial<Record<BlockType, readonly string[]>> = {
   location: ["kicker", "heading", "name", "address", "map_url", "notes"],
 };
 
+/** Per-person fields of the People block, each rendered with its own inline error (`people[0].name`). */
+const PERSON_FIELD = /^people\[\d+\]\.(name|role|family_label|family_names|place|bio)$/;
+
 export function uninlinedIssues(type: BlockType, issues: BlockIssue[]): BlockIssue[] {
   const inline = INLINE_FIELDS[type] ?? [];
-  return issues.filter((i) => !inline.includes(i.field));
+  return issues.filter((i) => !inline.includes(i.field) && !(type === "people" && PERSON_FIELD.test(i.field)));
+}
+
+/** What one row of a repeatable list is called in a given block ("Person 1", "Question 2"). */
+const ROW_NOUN: Partial<Record<BlockType, string>> = {
+  people: "Person",
+  schedule: "Schedule item",
+  links: "Link",
+  faq: "Question",
+  wishes: "Wish",
+  gallery: "Photo",
+  rsvp: "Question",
+};
+
+const ITEM_PATH = /^(\w+)\[(\d+)\]\.?(.*)$/;
+
+function humanise(field: string): string {
+  const text = field.replace(/[_.]+/g, " ").trim();
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/**
+ * Reader-friendly label for an issue's field path: "people[0].name" becomes "Person 1 – Name" and
+ * "heading" becomes "Heading". An empty path (a whole-block issue) has no label.
+ */
+export function issueLabel(type: BlockType, field: string): string {
+  const item = ITEM_PATH.exec(field);
+  if (!item) return humanise(field);
+  const row = `${ROW_NOUN[type] ?? "Item"} ${Number(item[2]) + 1}`;
+  return item[3] ? `${row} – ${humanise(item[3])}` : row;
 }
 
 const BlockIssuesContext = createContext<BlockIssue[]>([]);
