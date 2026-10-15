@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ShareLinks } from "@/components/share-links";
 import { Button } from "@/components/ui/button";
 import { api, ApiError, type Event } from "@/lib/api";
+import { displayUrl } from "@/lib/urls";
 
 const STATUS_LABEL: Record<Event["status"], string> = {
   draft: "Draft",
@@ -51,7 +52,7 @@ export function OverviewActions({ event }: { event: Event }) {
         <Badge variant={event.status === "taken_down" ? "destructive" : event.status === "published" ? "default" : "outline"}>{STATUS_LABEL[event.status]}</Badge>
         {event.url ? (
           <a href={event.url} target="_blank" rel="noopener noreferrer" className="break-all text-sm font-medium text-primary underline-offset-4 hover:underline">
-            {event.url}
+            {displayUrl(event.url)}
           </a>
         ) : (
           <span className="text-sm text-muted-foreground">No link set yet</span>

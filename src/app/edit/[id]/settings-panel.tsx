@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { api, ApiError, type Event, type RsvpMode, type SlugAvailability, type Visibility } from "@/lib/api";
 import { suggestSlug } from "@/lib/slug";
+import { displayUrl } from "@/lib/urls";
 
 import type { EditorAction, EditorState } from "./reducer";
 
@@ -229,7 +230,7 @@ function OwnerSettings({
           <Label htmlFor="settings-slug">Link</Label>
           {slugLocked ? (
             <p className="text-sm text-muted-foreground">
-              {state.url ?? "seeyouthere.at/" + (state.slug ?? "…")} <span className="text-sm">(can&rsquo;t be changed after publishing)</span>
+              {state.url ? displayUrl(state.url) : "seeyouthere.at/" + (state.slug ?? "…")} <span className="text-sm">(can&rsquo;t be changed after publishing)</span>
             </p>
           ) : (
             <>

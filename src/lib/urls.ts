@@ -14,6 +14,11 @@ export function isSafeHttpsUrl(value: string | null | undefined): value is strin
   }
 }
 
+/** A public link without its scheme, for showing and sharing ("https://seeyouthere.at/a-wedding" -> "seeyouthere.at/a-wedding"). */
+export function displayUrl(url: string): string {
+  return url.replace(/^https?:\/\//i, "");
+}
+
 /** Fallback map link when a location block has no (or an invalid) `map_url`. */
 export function googleMapsSearchUrl(address: string): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;

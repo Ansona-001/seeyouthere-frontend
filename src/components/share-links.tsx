@@ -4,6 +4,7 @@ import { CheckIcon, CopyIcon, Share2Icon } from "lucide-react";
 import { useState, type ComponentProps } from "react";
 
 import { Button } from "@/components/ui/button";
+import { displayUrl } from "@/lib/urls";
 
 // lucide-react dropped brand icons, so WhatsApp is an inline outline SVG in the same 24px stroke style.
 function WhatsAppIcon(props: ComponentProps<"svg">) {
@@ -69,7 +70,7 @@ export function ShareLinks({ url, title }: { url: string; title: string }) {
           size="lg"
           render={
             <a
-              href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${title} ${url}`)}`}
+              href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${title} ${displayUrl(url)}`)}`}
               target="_blank"
               rel="noopener noreferrer"
             />

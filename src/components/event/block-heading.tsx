@@ -31,8 +31,8 @@ export function BlockHeading({
         <h2
           className={cn(
             "text-2xl font-medium [font-family:var(--ev-font-heading)]",
-            "in-data-[ev-headings=display]:text-[clamp(1.75rem,5vw,2.75rem)] in-data-[ev-headings=display]:leading-[1.1] in-data-[ev-headings=display]:font-semibold in-data-[ev-headings=display]:[text-shadow:0_0_24px_color-mix(in_srgb,currentColor_15%,transparent)]",
-            "in-data-[ev-headings=classic]:text-[clamp(2rem,6vw,3rem)] in-data-[ev-headings=classic]:leading-[1.1] in-data-[ev-headings=classic]:font-normal",
+            "in-data-[ev-headings=display]:text-[clamp(1.5rem,4.5vw,2.25rem)] in-data-[ev-headings=display]:leading-[1.1] in-data-[ev-headings=display]:font-semibold in-data-[ev-headings=display]:[text-shadow:0_0_24px_color-mix(in_srgb,currentColor_15%,transparent)]",
+            "in-data-[ev-headings=classic]:text-[clamp(1.75rem,5vw,2.5rem)] in-data-[ev-headings=classic]:leading-[1.1] in-data-[ev-headings=classic]:font-normal",
           )}
         >
           {heading}

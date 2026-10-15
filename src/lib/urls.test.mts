@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { googleMapsEmbedUrl, googleMapsSearchUrl, isSafeHttpsUrl } from "./urls.ts";
+import { googleMapsEmbedUrl, googleMapsSearchUrl, isSafeHttpsUrl, displayUrl } from "./urls.ts";
 
 test("isSafeHttpsUrl accepts plain https URLs and rejects everything else", () => {
   assert.equal(isSafeHttpsUrl("https://example.com/maps"), true);
@@ -33,4 +33,10 @@ test("googleMapsEmbedUrl returns null instead of throwing on a lone surrogate", 
   // throw a URIError — this can happen from a paste mid-edit in the editor's
   // address field, so the caller must get null, not a crash.
   assert.equal(googleMapsEmbedUrl("Main St \uD800 Springfield"), null);
+});
+
+test("displayUrl drops the scheme only", () => {
+  assert.equal(displayUrl("https://seeyouthere.at/alex-and-sam-wedding"), "seeyouthere.at/alex-and-sam-wedding");
+  assert.equal(displayUrl("http://localhost:3100/a-b"), "localhost:3100/a-b");
+  assert.equal(displayUrl("seeyouthere.at/x"), "seeyouthere.at/x");
 });
