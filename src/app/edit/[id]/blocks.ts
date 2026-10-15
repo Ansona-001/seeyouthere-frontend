@@ -92,14 +92,14 @@ export function createBlock(type: BlockType): Block {
         id,
         type,
         kicker: "",
-        heading: "When",
+        heading: "Date & time",
         start_local: "",
         end_local: "",
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         all_day: false,
       };
     case "location":
-      return { id, type, kicker: "", heading: "Where", name: "", address: "", map_url: "", notes: "" };
+      return { id, type, kicker: "", heading: "Venue", name: "", address: "", map_url: "", notes: "" };
     case "schedule":
       return { id, type, kicker: "", heading: "Schedule", items: [{ time: "", title: "", description: "" }] };
     case "image":

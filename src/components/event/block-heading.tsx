@@ -29,7 +29,7 @@ export function BlockHeading({
         <h2
           className={cn(
             "text-2xl font-medium [font-family:var(--ev-font-heading)]",
-            "in-data-[ev-headings=display]:text-[clamp(2.25rem,7vw,4rem)] in-data-[ev-headings=display]:leading-[1.05] in-data-[ev-headings=display]:font-semibold in-data-[ev-headings=display]:[text-shadow:0_0_24px_color-mix(in_srgb,currentColor_15%,transparent)]",
+            "in-data-[ev-headings=display]:text-[clamp(1.75rem,5vw,2.75rem)] in-data-[ev-headings=display]:leading-[1.1] in-data-[ev-headings=display]:font-semibold in-data-[ev-headings=display]:[text-shadow:0_0_24px_color-mix(in_srgb,currentColor_15%,transparent)]",
           )}
         >
           {heading}
