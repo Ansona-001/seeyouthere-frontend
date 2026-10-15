@@ -1,11 +1,11 @@
 "use client";
 
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, Share2Icon } from "lucide-react";
 import { useState, type ComponentProps } from "react";
 
 import { Button } from "@/components/ui/button";
 
-// lucide-react dropped brand icons, so these two are inline outline SVGs in the same 24px stroke style.
+// lucide-react dropped brand icons, so WhatsApp is an inline outline SVG in the same 24px stroke style.
 function WhatsAppIcon(props: ComponentProps<"svg">) {
   return (
     <svg
@@ -24,26 +24,7 @@ function WhatsAppIcon(props: ComponentProps<"svg">) {
   );
 }
 
-function InstagramIcon(props: ComponentProps<"svg">) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      {...props}
-    >
-      <rect width="20" height="20" x="2" y="2" rx="5" />
-      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-      <path d="M17.5 6.5h.01" />
-    </svg>
-  );
-}
-
-/** Copy link, WhatsApp and Instagram share actions for a published event's public URL. */
+/** Copy link, WhatsApp and native share actions for a published event's public URL. */
 export function ShareLinks({ url, title }: { url: string; title: string }) {
   const [notice, setNotice] = useState("");
 
@@ -63,9 +44,8 @@ export function ShareLinks({ url, title }: { url: string; title: string }) {
     }
   }
 
-  // Instagram has no web share URL for links. On phones the native share sheet lists it;
-  // elsewhere we copy the link so it can be pasted into a story, bio or message.
-  async function shareToInstagram() {
+  // The device's share sheet (phones, some desktops); falls back to copying the link elsewhere.
+  async function share() {
     if (typeof navigator.share === "function") {
       try {
         await navigator.share({ title, url });
@@ -74,7 +54,7 @@ export function ShareLinks({ url, title }: { url: string; title: string }) {
       }
       return;
     }
-    await copyLink("Link copied. Paste it into an Instagram story, message or your bio.");
+    await copyLink();
   }
 
   return (
@@ -89,7 +69,7 @@ export function ShareLinks({ url, title }: { url: string; title: string }) {
           size="lg"
           render={
             <a
-              href={`https://wa.me/?text=${encodeURIComponent(`${title} ${url}`)}`}
+              href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${title} ${url}`)}`}
               target="_blank"
               rel="noopener noreferrer"
             />
@@ -99,9 +79,9 @@ export function ShareLinks({ url, title }: { url: string; title: string }) {
           <WhatsAppIcon className="size-4" data-icon="inline-start" />
           WhatsApp
         </Button>
-        <Button type="button" variant="outline" size="lg" onClick={shareToInstagram}>
-          <InstagramIcon className="size-4" data-icon="inline-start" />
-          Instagram
+        <Button type="button" variant="outline" size="lg" onClick={share}>
+          <Share2Icon data-icon="inline-start" />
+          Share
         </Button>
       </div>
       <p role="status" className="min-h-5 text-sm text-muted-foreground">
