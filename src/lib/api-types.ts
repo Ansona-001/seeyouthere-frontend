@@ -239,14 +239,32 @@ export type VideoBlock = {
 
 export type Wish = { message: string; author: string };
 
-/** <=1 per event, host-curated only — no public write endpoint exists for this block. */
+/** <=1 per event. `items` are host-curated; when `open`, guests may also submit wishes for approval. */
 export type WishesBlock = {
   id: string;
   type: "wishes";
   kicker: string;
   heading: string;
+  /** Guests may submit wishes (held for host approval). `items` may be empty when open. */
+  open: boolean;
   items: Wish[];
 };
+
+/** An approved guest wish on the public page (newest first, max 30). */
+export type PublicWish = { id: string; author: string; message: string };
+
+export type WishStatus = "pending" | "approved" | "hidden";
+
+export type HostWish = {
+  id: string;
+  author: string;
+  message: string;
+  status: WishStatus;
+  created_at: string;
+  updated_at: string;
+};
+
+export type WishListResponse = { wishes: HostWish[]; next_cursor: string | null };
 
 export type Block =
   | HeroBlock
@@ -623,6 +641,7 @@ export type PublicEvent = {
     rsvp: Rsvp | null;
   };
   photos: { items: PhotoItem[]; next_cursor: string | null };
+  wishes: PublicWish[];
 };
 
 export type PublicPhotosResponse = { items: PhotoItem[]; next_cursor: string | null };
