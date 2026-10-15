@@ -83,7 +83,7 @@ export function PeopleForm({
               </div>
             </div>
 
-            <Field label="Name" htmlFor={`people-${i}-name`}>
+            <Field label="Name" htmlFor={`people-${i}-name`} field={`people[${i}].name`}>
               <Input
                 id={`people-${i}-name`}
                 required
@@ -92,7 +92,7 @@ export function PeopleForm({
                 onChange={(e) => updatePerson(i, { name: e.target.value })}
               />
             </Field>
-            <Field label="Role" htmlFor={`people-${i}-role`}>
+            <Field label="Role" htmlFor={`people-${i}-role`} field={`people[${i}].role`}>
               <Input
                 id={`people-${i}-role`}
                 maxLength={60}
@@ -127,7 +127,7 @@ export function PeopleForm({
               )}
             </div>
 
-            <Field label="Family label" htmlFor={`people-${i}-family-label`}>
+            <Field label="Family label" htmlFor={`people-${i}-family-label`} field={`people[${i}].family_label`}>
               <Input
                 id={`people-${i}-family-label`}
                 maxLength={40}
@@ -136,7 +136,7 @@ export function PeopleForm({
                 onChange={(e) => updatePerson(i, { family_label: e.target.value })}
               />
             </Field>
-            <Field label="Family names" htmlFor={`people-${i}-family-names`}>
+            <Field label="Family names" htmlFor={`people-${i}-family-names`} field={`people[${i}].family_names`}>
               <Input
                 id={`people-${i}-family-names`}
                 maxLength={160}
@@ -145,7 +145,7 @@ export function PeopleForm({
                 onChange={(e) => updatePerson(i, { family_names: e.target.value })}
               />
             </Field>
-            <Field label="Place" htmlFor={`people-${i}-place`}>
+            <Field label="Place" htmlFor={`people-${i}-place`} field={`people[${i}].place`}>
               <Input
                 id={`people-${i}-place`}
                 maxLength={120}
@@ -154,7 +154,7 @@ export function PeopleForm({
                 onChange={(e) => updatePerson(i, { place: e.target.value })}
               />
             </Field>
-            <Field label="Bio" htmlFor={`people-${i}-bio`}>
+            <Field label="Bio" htmlFor={`people-${i}-bio`} field={`people[${i}].bio`}>
               <Textarea
                 id={`people-${i}-bio`}
                 maxLength={300}

@@ -10,7 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api, ApiError, type Event, type Occasion, type Overrides, type ShareImageSource, type TemplateSummary, type ValidationIssue } from "@/lib/api";
 
 import { BlockForm } from "./block-form";
-import { BlockIssuesProvider, blockIssues, groupIssuesByBlock, uninlinedIssues } from "./block-issues";
+import { BlockIssuesProvider, blockIssues, groupIssuesByBlock, issueLabel, uninlinedIssues } from "./block-issues";
 import { BlockList } from "./block-list";
 import { canAddBlock, createBlock } from "./blocks";
 import { DesignPanel } from "./design-panel";
@@ -269,7 +269,7 @@ export function Editor({
                         {other.length > 0 && (
                           <ul role="alert" className="mb-3 list-inside list-disc rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
                             {other.map((issue, i) => (
-                              <li key={i}>{issue.field ? `${issue.field}: ${issue.message}` : issue.message}</li>
+                              <li key={i}>{issue.field ? `${issueLabel(block.type, issue.field)}: ${issue.message}` : issue.message}</li>
                             ))}
                           </ul>
                         )}
@@ -320,7 +320,7 @@ export function Editor({
 
               <section>
                 <h2 className="mb-2 font-heading text-base text-brand-heading">Settings</h2>
-                <SettingsPanel state={state} dispatch={dispatch} canPublish={canPublishNow} flushContent={flushContent} />
+                <SettingsPanel state={state} occasionSlug={initialEvent.occasion_slug} dispatch={dispatch} canPublish={canPublishNow} flushContent={flushContent} />
               </section>
 
               {state.status === "published" && state.url && (

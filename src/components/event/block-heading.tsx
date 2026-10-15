@@ -9,7 +9,9 @@ import { Kicker } from "./kicker";
  *
  * `heading_scale: "display"` (via the ancestor `data-ev-headings`
  * attribute) scales the heading up with a subtle glow, matching the
- * reference design; `"regular"` (the default) keeps today's size exactly.
+ * reference design; `"classic"` is the same size in a light, glow-free
+ * serif for script-accent themes (Heirloom); `"regular"` (the default)
+ * keeps today's size exactly.
  */
 export function BlockHeading({
   kicker,
@@ -29,7 +31,8 @@ export function BlockHeading({
         <h2
           className={cn(
             "text-2xl font-medium [font-family:var(--ev-font-heading)]",
-            "in-data-[ev-headings=display]:text-[clamp(2.25rem,7vw,4rem)] in-data-[ev-headings=display]:leading-[1.05] in-data-[ev-headings=display]:font-semibold in-data-[ev-headings=display]:[text-shadow:0_0_24px_color-mix(in_srgb,currentColor_15%,transparent)]",
+            "in-data-[ev-headings=display]:text-[clamp(1.75rem,5vw,2.75rem)] in-data-[ev-headings=display]:leading-[1.1] in-data-[ev-headings=display]:font-semibold in-data-[ev-headings=display]:[text-shadow:0_0_24px_color-mix(in_srgb,currentColor_15%,transparent)]",
+            "in-data-[ev-headings=classic]:text-[clamp(2rem,6vw,3rem)] in-data-[ev-headings=classic]:leading-[1.1] in-data-[ev-headings=classic]:font-normal",
           )}
         >
           {heading}

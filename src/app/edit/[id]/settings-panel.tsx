@@ -38,11 +38,13 @@ const VISIBILITY_LABEL: Record<Visibility, string> = {
  */
 export function SettingsPanel({
   state,
+  occasionSlug,
   dispatch,
   canPublish,
   flushContent,
 }: {
   state: EditorState;
+  occasionSlug: string;
   dispatch: (action: EditorAction) => void;
   canPublish: boolean;
   flushContent: () => Promise<number | null>;
@@ -65,7 +67,7 @@ export function SettingsPanel({
     return <p className="text-sm text-muted-foreground">Only the event owner can change settings, publish or delete it.</p>;
   }
 
-  return <OwnerSettings state={state} dispatch={dispatch} canPublish={canPublish} flushContent={flushContent} />;
+  return <OwnerSettings state={state} occasionSlug={occasionSlug} dispatch={dispatch} canPublish={canPublish} flushContent={flushContent} />;
 }
 
 /** Shown when a settings change or publish can't go ahead because the content behind it didn't save. */
@@ -82,11 +84,13 @@ const MISSING_LABELS: Record<string, string> = {
 
 function OwnerSettings({
   state,
+  occasionSlug,
   dispatch,
   canPublish,
   flushContent,
 }: {
   state: EditorState;
+  occasionSlug: string;
   dispatch: (action: EditorAction) => void;
   canPublish: boolean;
   flushContent: () => Promise<number | null>;
@@ -101,7 +105,7 @@ function OwnerSettings({
 
   // A draft without a link starts from one suggested from its title; it is only saved when the host
   // saves settings or publishes, and the availability check below runs on it like any typed link.
-  const [slugInput, setSlugInput] = useState(state.slug ?? suggestSlug(state.title));
+  const [slugInput, setSlugInput] = useState(state.slug ?? suggestSlug(state.title, occasionSlug));
   const [slugCheck, setSlugCheck] = useState<SlugAvailability | null>(null);
   const [checkingSlug, setCheckingSlug] = useState(false);
   const slugLocked = state.publishedAt !== null;

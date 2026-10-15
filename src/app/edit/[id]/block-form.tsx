@@ -175,8 +175,19 @@ export function KickerField({
   onChange: (kicker: string) => void;
 }) {
   return (
-    <Field label="Small label above the heading" htmlFor={`${idPrefix}-kicker`} field="kicker">
-      <Input id={`${idPrefix}-kicker`} maxLength={60} value={value} onChange={(e) => onChange(e.target.value)} />
+    <Field
+      label="Small label above the heading"
+      htmlFor={`${idPrefix}-kicker`}
+      field="kicker"
+      hint="A short line above the heading, like “Save the date”. Your template styles it: script lettering on some, small capitals on others."
+    >
+      <Input
+        id={`${idPrefix}-kicker`}
+        maxLength={60}
+        aria-describedby={`${idPrefix}-kicker-hint`}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
     </Field>
   );
 }
