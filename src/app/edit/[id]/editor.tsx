@@ -278,6 +278,7 @@ export function Editor({
                           eventId={state.id}
                           media={state.media}
                           theme={state.theme}
+                          canModerate={state.role === "owner" || state.role === "editor"}
                           onChange={(patch) => updateBlock(block.id, patch)}
                           onMediaUploaded={(id, ref) => dispatch({ type: "add_media", id, ref })}
                         />
@@ -291,6 +292,7 @@ export function Editor({
                 <h2 className="mb-2 font-heading text-base text-brand-heading">Design</h2>
                 <DesignPanel
                   templates={templates}
+                  occasionSlug={initialEvent.occasion_slug}
                   templateSlug={state.templateSlug}
                   templateVersion={state.templateVersion}
                   templateLatestVersion={state.templateLatestVersion}

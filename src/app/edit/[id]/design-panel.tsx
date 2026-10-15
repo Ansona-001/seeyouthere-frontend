@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ const CHOICE_OFF = "border-input [@media(hover:hover)]:hover:bg-accent";
  */
 export function DesignPanel({
   templates,
+  occasionSlug,
   templateSlug,
   templateVersion,
   templateLatestVersion,
@@ -28,6 +30,7 @@ export function DesignPanel({
   onUpgradeTemplate,
 }: {
   templates: TemplateSummary[];
+  occasionSlug: string;
   templateSlug: string;
   templateVersion: number;
   templateLatestVersion: number;
@@ -63,17 +66,14 @@ export function DesignPanel({
         <p id="design-template" className="mb-2 text-sm font-semibold">Template</p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {templates.map((t) => (
-            <button
+            <TemplateCard
               key={t.slug}
-              type="button"
+              template={t}
+              occasionSlug={occasionSlug}
+              selected={t.slug === templateSlug}
               disabled={pending}
-              aria-pressed={t.slug === templateSlug}
-              onClick={() => t.slug !== templateSlug && run(() => onChangeTemplate(t.slug))}
-              className={cn(CHOICE, "flex flex-col gap-2 p-2", t.slug === templateSlug ? CHOICE_ON : CHOICE_OFF)}
-            >
-              <TemplateSwatch template={t} />
-              <span className="px-0.5">{t.name}</span>
-            </button>
+              onSelect={() => t.slug !== templateSlug && run(() => onChangeTemplate(t.slug))}
+            />
           ))}
         </div>
       </div>
@@ -149,16 +149,89 @@ function PaletteSwatch({
   );
 }
 
-/** Strip of the template's default palette so themes are recognisable at a glance. */
-function TemplateSwatch({ template }: { template: TemplateSummary }) {
+/** Slugs that ship a preview at public/templates/<slug>.webp; anything else (e.g. admin-created) gets a swatch. */
+const PREVIEW_SLUGS: ReadonlySet<string> = new Set([
+  "olive-grove", "letterpress", "velvet-foil", "sunlit", "sprinkles", "risograph",
+  "cloud-nine", "gingham", "open-door", "terrazzo", "gilt-noir", "mirror-ball",
+  "heirloom", "confetti", "classic", "garden", "modern", "minimal",
+]);
+
+/**
+ * Occasion-specific previews at public/templates/<slug>--<occasion>.webp for the
+ * v1 templates. Keys are a static allowlist: the occasion comes from
+ * the event, so it is never interpolated into a URL unless it is listed here.
+ */
+const OCCASION_PREVIEWS: ReadonlySet<string> = new Set([
+  ...["wedding", "engagement", "birthday", "baby-shower", "housewarming", "party"].flatMap((o) => [
+    `classic--${o}`,
+    `modern--${o}`,
+    `minimal--${o}`,
+  ]),
+  ...["birthday", "party", "baby-shower", "housewarming"].map((o) => `confetti--${o}`),
+  ...["wedding", "engagement", "baby-shower"].map((o) => `garden--${o}`),
+  ...["wedding", "engagement"].map((o) => `heirloom--${o}`),
+]);
+
+/** Template option: a preview of the full invite (or a palette/font swatch when none exists), plus its name. */
+function TemplateCard({
+  template,
+  occasionSlug,
+  selected,
+  disabled,
+  onSelect,
+}: {
+  template: TemplateSummary;
+  occasionSlug: string;
+  selected: boolean;
+  disabled: boolean;
+  onSelect: () => void;
+}) {
   const palette = template.palettes.find((p) => p.id === template.defaults.palette) ?? template.palettes[0];
-  if (!palette) return <span aria-hidden className="h-8 rounded-lg bg-muted" />;
-  const { background, surface, accent, text } = palette.colors;
+  const font = template.fonts.find((f) => f.id === template.defaults.font) ?? template.fonts[0];
+  const variant = `${template.slug}--${occasionSlug}`;
+  const previewSrc = OCCASION_PREVIEWS.has(variant) ? `/templates/${variant}.webp` : `/templates/${template.slug}.webp`;
   return (
-    <span aria-hidden className="flex h-8 overflow-hidden rounded-lg ring-1 ring-border">
-      {[background, surface, accent, text].map((color, i) => (
-        <span key={i} className="flex-1" style={{ backgroundColor: color }} />
-      ))}
-    </span>
+    <button
+      type="button"
+      disabled={disabled}
+      aria-pressed={selected}
+      onClick={onSelect}
+      className={cn(CHOICE, "flex flex-col items-stretch gap-2 rounded-2xl p-2", selected ? CHOICE_ON : CHOICE_OFF)}
+    >
+      {PREVIEW_SLUGS.has(template.slug) ? (
+        // Decorative: the name caption below already identifies the template.
+        <Image
+          src={previewSrc}
+          alt=""
+          width={390}
+          height={520}
+          // Static, pre-compressed files; the site's custom loader only serves media renditions.
+          unoptimized
+          loading="lazy"
+          className="aspect-3/4 w-full rounded-xl object-cover object-top ring-1 ring-foreground/10"
+          style={{ backgroundColor: palette?.colors.background }}
+        />
+      ) : (
+        <span
+          aria-hidden
+          className="grid aspect-3/4 place-items-center rounded-xl text-3xl ring-1 ring-foreground/10"
+          style={{
+            backgroundColor: palette?.colors.background,
+            color: palette?.colors.text,
+            fontFamily: font ? fontCssVar(font.heading) : undefined,
+          }}
+        >
+          <span>
+            Aa<span style={{ color: palette?.colors.accent }}>.</span>
+          </span>
+        </span>
+      )}
+      <span className="px-1 pb-1">
+        <span className="block font-heading text-base text-brand-heading">{template.name}</span>
+        <span className="block text-xs font-normal text-muted-foreground capitalize">
+          {template.layout} · {template.hero_style.replace("_", " ")}
+        </span>
+      </span>
+    </button>
   );
 }
