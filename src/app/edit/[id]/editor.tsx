@@ -320,7 +320,7 @@ export function Editor({
 
               <section>
                 <h2 className="mb-2 font-heading text-base text-brand-heading">Settings</h2>
-                <SettingsPanel state={state} dispatch={dispatch} canPublish={canPublishNow} flushContent={flushContent} />
+                <SettingsPanel state={state} occasionSlug={initialEvent.occasion_slug} dispatch={dispatch} canPublish={canPublishNow} flushContent={flushContent} />
               </section>
 
               {state.status === "published" && state.url && (
