@@ -55,6 +55,13 @@ export function badgeOrnamentKey(value: unknown): BadgeOrnamentKey | null {
   return ownKey(BADGE_ORNAMENTS, value);
 }
 
+const DATE_ORNAMENTS = { bars: 0 } as const;
+
+/** A known date-line ornament key (`bars`), or `null`. */
+export function dateOrnamentKey(value: unknown): "bars" | null {
+  return ownKey(DATE_ORNAMENTS, value);
+}
+
 /** Longest hero badge the API accepts (runes). */
 export const BADGE_MAX = 4;
 
@@ -95,9 +102,9 @@ export function splitTitle(title: string): TitlePart[] {
 }
 
 /** Space the text column keeps clear of art drawn at the page edges, in px at phone width. */
-export type ArtClearance = { top: number; bottom: number; reserve: number };
+export type ArtClearance = { top: number; topFluid: number; bottom: number; reserve: number };
 
-const CLEARANCE: Record<string, { top?: number; bottom?: number; reserve?: number }> = {
+const CLEARANCE: Record<string, { top?: number; topFluid?: number; bottom?: number; reserve?: number }> = {
   olive_branches: { top: 118, bottom: 70 },
   botanical_wash: { top: 150, bottom: 60 },
   printers_corners: { top: 96, bottom: 40 },
@@ -107,6 +114,8 @@ const CLEARANCE: Record<string, { top?: number; bottom?: number; reserve?: numbe
   open_door_plants: { bottom: 170 },
   clouds: { top: 120 },
   mirror_ball: { reserve: 236 },
+  // The canopy is 42.5% as tall as it is wide, so its clearance is a share of the page width.
+  mimosa: { topFluid: 27 },
 };
 
 const TOP_PLACEMENTS = new Set(["corners", "top_corners", "top"]);
@@ -114,20 +123,25 @@ const BOTTOM_PLACEMENTS = new Set(["corners", "bottom_corners"]);
 
 /**
  * How far the hero text must sit below the top of the page (`top`, art in the
- * corners or a top band), how much room the end of the page needs (`bottom`),
+ * corners or a top band; `topFluid` is the same for art that grows with the
+ * page, as a percentage of the page width up to 1280px, where that art stops
+ * growing), how much room the end of the page needs (`bottom`),
  * and how much a `hero_top` piece reserves above the hero text (`reserve`).
  * `drawn` says whether the art component for a key exists, so nothing is
  * reserved for art that does not render.
  */
 export function artClearance(layers: readonly ThemeLayer[] | undefined, drawn: (key: string) => boolean): ArtClearance {
-  const out: ArtClearance = { top: 0, bottom: 0, reserve: 0 };
+  const out: ArtClearance = { top: 0, topFluid: 0, bottom: 0, reserve: 0 };
   for (const layer of layers ?? []) {
     if (layer.kind !== "art" || !drawn(layer.art)) continue;
     const c = ownKey(CLEARANCE, layer.art);
     if (!c) continue;
     const spec = CLEARANCE[c];
     const page = (layer.region ?? "page") === "page";
-    if (page && TOP_PLACEMENTS.has(layer.placement)) out.top = Math.max(out.top, spec.top ?? 0);
+    if (page && TOP_PLACEMENTS.has(layer.placement)) {
+      out.top = Math.max(out.top, spec.top ?? 0);
+      out.topFluid = Math.max(out.topFluid, spec.topFluid ?? 0);
+    }
     if (page && BOTTOM_PLACEMENTS.has(layer.placement)) out.bottom = Math.max(out.bottom, spec.bottom ?? 0);
     if (layer.placement === "hero_top") out.reserve = Math.max(out.reserve, spec.reserve ?? 0);
   }

@@ -4,6 +4,7 @@ import type { CalendarInfo } from "@/lib/calendar";
 import { AddToCalendar } from "../add-to-calendar";
 import { BlockHeading } from "../block-heading";
 import { EvCard } from "../surface";
+import { dateParts } from "./date-parts";
 
 const LOCAL_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/;
 
@@ -39,7 +40,34 @@ function zoneAbbreviation(timezone: string): string {
   }
 }
 
-export function DatetimeBlock({ block, calendar }: { block: DatetimeBlockType; calendar?: CalendarInfo }) {
+function BarsDate({ parts, label }: { parts: { month: string; day: string; year: string }; label: string }) {
+  const bar = (
+    <span aria-hidden="true" className="inline-block h-[1.1em] w-[2px] bg-(--ev-hero-ink,var(--ev-accent-ink))" />
+  );
+  return (
+    <p className="my-1 text-(--ev-text)">
+      <span className="sr-only">{label}</span>
+      <span aria-hidden="true" className="flex items-center justify-center gap-3.5 text-2xl font-semibold tracking-wide">
+        <span>{parts.month}</span>
+        {bar}
+        <span>{parts.day}</span>
+        {bar}
+        <span>{parts.year}</span>
+      </span>
+    </p>
+  );
+}
+
+export function DatetimeBlock({
+  block,
+  calendar,
+  bars = false,
+}: {
+  block: DatetimeBlockType;
+  calendar?: CalendarInfo;
+  bars?: boolean;
+}) {
+  const parts = bars ? dateParts(block.start_local) : null;
   const dateLabel = formatLocal(block.start_local, {
     weekday: "long",
     month: "long",
@@ -54,7 +82,8 @@ export function DatetimeBlock({ block, calendar }: { block: DatetimeBlockType; c
     <section className="flex flex-col items-center px-2 py-8 text-center">
       <EvCard className="flex flex-col items-center gap-1">
         <BlockHeading kicker={block.kicker} heading={block.heading} />
-        {dateLabel && <p className="text-lg text-(--ev-text)">{dateLabel}</p>}
+        {dateLabel && parts && <BarsDate parts={parts} label={dateLabel} />}
+        {dateLabel && !parts && <p className="text-lg text-(--ev-text)">{dateLabel}</p>}
         {timeLabel && (
           <p className="text-(--ev-muted)">
             {timeLabel}

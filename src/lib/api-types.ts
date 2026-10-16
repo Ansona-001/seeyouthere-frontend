@@ -309,10 +309,11 @@ export type FontKey =
   | "pinyon_script"
   | "bagel_fat_one"
   | "limelight"
-  | "josefin_sans";
+  | "josefin_sans"
+  | "dancing_script";
 
 export type Layout = "centered" | "split" | "stacked";
-export type HeroStyle = "full_bleed" | "framed" | "text_only" | "spotlight" | "color_block";
+export type HeroStyle = "full_bleed" | "framed" | "text_only" | "spotlight" | "color_block" | "invitation";
 export type Decoration = "none" | "line" | "floral" | "dots" | "heart";
 
 /** Rich-blocks theme knobs (additive, manifest schema stays `1`). */
@@ -381,7 +382,7 @@ export type Theme = {
   motion?: Motion;
 };
 
-export type Motion = "none" | "draw_on" | "pop_and_settle" | "foil_sheen";
+export type Motion = "none" | "draw_on" | "pop_and_settle" | "foil_sheen" | "sway";
 
 /**
  * Plain strings on purpose: the runtime treats every value as untrusted and
@@ -389,7 +390,8 @@ export type Motion = "none" | "draw_on" | "pop_and_settle" | "foil_sheen";
  * - hero: none | wreath_monogram | sticker_numeral | foil_numeral | ring | cloud | doorway | monogram_rule
  * - divider: none | line | floral | dots | heart | olive_sprig | squiggle | deco_diamond | wave | sparkle_rule
  * - badge: none | starburst_sticker | wax_seal | foil_seal
- * - ampersand: none | script
+ * - ampersand: none | script | word
+ * - date: none | bars
  * - hero_ink: resolved HEX colour
  */
 export type ThemeOrnament = {
@@ -397,6 +399,8 @@ export type ThemeOrnament = {
   divider: string;
   badge: string;
   ampersand: string;
+  /** Absent on older themes. */
+  date?: string;
   hero_ink: string;
 };
 
@@ -437,7 +441,7 @@ export type ThemeLayer = { region?: "page" | "hero" } & (
     }
   | {
       kind: "texture";
-      texture: "grain" | "fibers" | "linen" | "wood" | "watercolour" | "foil" | "marble" | "velvet";
+      texture: "grain" | "fibers" | "linen" | "wood" | "watercolour" | "foil" | "marble" | "velvet" | "cold_press";
       opacity: number;
       blend: string;
       colors?: string[];

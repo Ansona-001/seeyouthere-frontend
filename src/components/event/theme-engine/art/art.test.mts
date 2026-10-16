@@ -27,12 +27,15 @@ const BACKEND: Record<string, { min: number; max: number; foil: boolean; placeme
   sparkles: { min: 1, max: 2, foil: true, placements: ["scatter", "hero"] },
   printers_corners: { min: 1, max: 1, foil: true, placements: ["corners"] },
   daisies: { min: 2, max: 3, foil: false, placements: ["corners", "edges"] },
+  mimosa: { min: 0, max: 0, foil: false, placements: ["top"] },
 };
 const ALL_PLACEMENTS = ["hero", "hero_top", "top", "edges", "scatter", "corners", "top_corners", "bottom_corners"];
 const PALETTE = ["#112233", "#445566", "#778899", "#AABBCC", "#DDEEFF", "#102030", "#405060", "#708090"];
 
+// React 19 hoists a preload hint for the raster's constant src; it is the only markup outside the layer box.
+const PRELOAD = '<link rel="preload" as="image" href="/themes/mimosa-canopy.webp"/>';
 function render(key: string, placement: string, colors: readonly string[], extra: Record<string, unknown> = {}): string {
-  return renderToStaticMarkup(createElement(ART[key], { placement, colors, region: "page", density: "dense", ...extra }));
+  return renderToStaticMarkup(createElement(ART[key], { placement, colors, region: "page", density: "dense", ...extra })).replace(PRELOAD, "");
 }
 const count = (s: string, re: RegExp) => (s.match(re) ?? []).length;
 
@@ -60,7 +63,7 @@ test("every key renders every placement at every palette size without throwing",
       for (let n = spec.min; n <= spec.max; n++) {
         const html = render(key, placement, PALETTE.slice(0, n));
         assert.ok(html.startsWith("<div"), `${key}/${placement}/${n}`);
-        assert.ok(html.includes("<svg"), `${key}/${placement}/${n}`);
+        assert.ok(html.includes(key === "mimosa" ? "<img" : "<svg"), `${key}/${placement}/${n}`);
         assert.ok(html.includes('aria-hidden="true"'), `${key}/${placement}`);
         // Colours reach the drawing only through the --aN custom properties on the root.
         assert.ok(!html.replace(/^<div[^>]*>/, "").includes("#112233"), `${key}/${placement}/${n}`);
@@ -172,9 +175,26 @@ test("every drawing paints only through --aN, --hl, --sh or the foil gradient", 
 test("clearance reaches the text column for the keys that reserve it", () => {
   const drawn = (key: string) => Object.hasOwn(ART, key);
   const layer = (art: string, placement: string, region: "page" | "hero" = "page") => ({ kind: "art", art, placement, region, colors: [] }) as never;
-  assert.deepEqual(artClearance([layer("olive_branches", "corners")], drawn), { top: 118, bottom: 70, reserve: 0 });
-  assert.deepEqual(artClearance([layer("mirror_ball", "hero_top", "hero")], drawn), { top: 0, bottom: 0, reserve: 236 });
-  assert.deepEqual(artClearance([layer("open_door_plants", "bottom_corners")], drawn), { top: 0, bottom: 170, reserve: 0 });
-  assert.deepEqual(artClearance([layer("clouds", "top")], drawn), { top: 120, bottom: 0, reserve: 0 });
-  assert.deepEqual(artClearance([layer("balloons", "hero_top", "hero")], drawn), { top: 0, bottom: 0, reserve: 0 });
+  const none = { top: 0, topFluid: 0, bottom: 0, reserve: 0 };
+  assert.deepEqual(artClearance([layer("olive_branches", "corners")], drawn), { ...none, top: 118, bottom: 70 });
+  assert.deepEqual(artClearance([layer("mirror_ball", "hero_top", "hero")], drawn), { ...none, reserve: 236 });
+  assert.deepEqual(artClearance([layer("open_door_plants", "bottom_corners")], drawn), { ...none, bottom: 170 });
+  assert.deepEqual(artClearance([layer("clouds", "top")], drawn), { ...none, top: 120 });
+  assert.deepEqual(artClearance([layer("mimosa", "top")], drawn), { ...none, topFluid: 27 });
+  assert.deepEqual(artClearance([layer("mimosa", "top", "hero")], drawn), none);
+  assert.deepEqual(artClearance([layer("mimosa", "top"), layer("olive_branches", "corners")], drawn), { top: 118, topFluid: 27, bottom: 70, reserve: 0 });
+  assert.deepEqual(artClearance([layer("balloons", "hero_top", "hero")], drawn), none);
+});
+
+test("mimosa is one constant same-origin raster: a single img, nothing else, never animated", () => {
+  const html = render("mimosa", "top", []);
+  assert.equal(count(html, /<img\b/g), 1);
+  assert.match(html, /^<div class="absolute inset-0" aria-hidden="true"><div class="[^"]*"><img src="\/themes\/mimosa-canopy\.webp" alt="" width="1130" height="480" decoding="async" loading="eager" class="[^"]*"\/><\/div><\/div>$/);
+  assert.ok(!/<script|<svg|\bhref\b|\bon\w+=|style=|ev-sway/i.test(html), html);
+  assert.ok(html.startsWith('<div class="absolute inset-0" aria-hidden="true">'));
+  for (const placement of ALL_PLACEMENTS.filter((p) => p !== "top")) assert.equal(render("mimosa", placement, []), "", placement);
+  for (const [key, spec] of Object.entries(BACKEND)) {
+    if (key === "mimosa") continue;
+    for (const placement of spec.placements) assert.ok(!render(key, placement, PALETTE.slice(0, spec.max)).includes("<img"), `${key}/${placement}`);
+  }
 });

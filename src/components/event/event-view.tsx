@@ -38,7 +38,7 @@ import { ScrollReveal } from "./scroll-reveal";
 import { EventTheme } from "./theme";
 import { HeroV2 } from "./theme-engine/hero";
 import { ART } from "./theme-engine/art/registry";
-import { artClearance } from "./theme-engine/ornament-keys";
+import { artClearance, dateOrnamentKey } from "./theme-engine/ornament-keys";
 import { LayerStack } from "./theme-engine/layers";
 import { LayoutV2 } from "./theme-engine/layout";
 import { BadgeOrnament, DividerOrnament } from "./theme-engine/ornaments";
@@ -139,6 +139,7 @@ export function EventView({
             photos={photos}
             photosNextCursor={photosNextCursor}
             wishes={wishes}
+            dateBars={theme.engine === 2 && dateOrnamentKey(theme.ornament?.date) === "bars"}
             badge={
               theme.engine === 2 ? <BadgeOrnament badge={theme.ornament?.badge} text={heroBlock?.badge} /> : undefined
             }
@@ -233,6 +234,7 @@ function RenderBlock({
   photosNextCursor,
   wishes,
   badge,
+  dateBars = false,
 }: {
   block: Block;
   media: MediaMap;
@@ -248,6 +250,8 @@ function RenderBlock({
   wishes?: PublicWish[];
   /** Schema-2 badge ornament, laid over the RSVP section. */
   badge?: ReactNode;
+  /** Schema-2 `ornament.date: bars`: the date as `Nov | 7th | 2026`. */
+  dateBars?: boolean;
 }) {
   switch (block.type) {
     case "hero":
@@ -274,7 +278,7 @@ function RenderBlock({
               location: calendarLocation,
             }
           : undefined;
-      return <DatetimeBlock block={block} calendar={calendar} />;
+      return <DatetimeBlock block={block} calendar={calendar} bars={dateBars} />;
     }
     case "location":
       return <LocationBlock block={block} interactive={mode === "live"} />;

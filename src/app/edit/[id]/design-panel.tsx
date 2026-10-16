@@ -153,7 +153,7 @@ function PaletteSwatch({
 const PREVIEW_SLUGS: ReadonlySet<string> = new Set([
   "olive-grove", "letterpress", "velvet-foil", "sunlit", "sprinkles", "risograph",
   "cloud-nine", "gingham", "open-door", "terrazzo", "gilt-noir", "mirror-ball",
-  "heirloom", "confetti", "classic", "garden", "modern", "minimal",
+  "heirloom", "confetti", "classic", "garden", "modern", "minimal", "mimosa",
 ]);
 
 /**

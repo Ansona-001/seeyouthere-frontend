@@ -40,7 +40,7 @@ export function WishesBlock({
                 <EvCard className="flex flex-col items-center gap-4 overflow-hidden px-6 py-8 text-center">
                   <span
                     aria-hidden="true"
-                    className="text-5xl leading-none text-(--ev-accent)/40 [font-family:var(--ev-font-heading)]"
+                    className="block h-5 text-5xl leading-none text-(--ev-accent)/40 [font-family:var(--ev-font-heading)]"
                   >
                     &ldquo;
                   </span>

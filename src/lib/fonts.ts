@@ -4,6 +4,7 @@ import {
   Bodoni_Moda,
   Bricolage_Grotesque,
   Cormorant_Garamond,
+  Dancing_Script,
   DM_Serif_Display,
   Figtree,
   Fraunces,
@@ -19,7 +20,7 @@ import {
 import type { FontKey } from "./api-types";
 
 /**
- * The fifteen font families a template manifest may reference (build-out plan
+ * The sixteen font families a template manifest may reference (build-out plan
  * §3.4; rich-blocks extension §4.4 added `birthstone`/`montserrat`). This
  * list MUST match the Go allowlist in `internal/content/manifest.go` on the
  * backend — the server validates every manifest against it, so this file
@@ -30,7 +31,7 @@ import type { FontKey } from "./api-types";
  *
  * All are loaded once at module scope (a next/font requirement). Figtree and
  * Bricolage Grotesque double as the site's own UI font (`font-sans`/
- * `font-heading` in globals.css) so they're preloaded; the other thirteen are
+ * `font-heading` in globals.css) so they're preloaded; the other fourteen are
  * only used by whichever event theme is on screen, so `preload: false` keeps
  * a page paying for just the two or three fonts its theme actually needs.
  */
@@ -66,6 +67,13 @@ const greatVibes = Great_Vibes({
   subsets: ["latin"],
   weight: "400",
   variable: "--font-great-vibes",
+  preload: false,
+  display: "swap",
+});
+const dancingScript = Dancing_Script({
+  subsets: ["latin"],
+  weight: "600",
+  variable: "--font-dancing-script",
   preload: false,
   display: "swap",
 });
@@ -130,6 +138,7 @@ const FONT_VARIABLE: Record<FontKey, string> = {
   fraunces: fraunces.variable,
   great_vibes: greatVibes.variable,
   birthstone: birthstone.variable,
+  dancing_script: dancingScript.variable,
   montserrat: montserrat.variable,
   bodoni_moda: bodoniModa.variable,
   pinyon_script: pinyonScript.variable,
@@ -148,6 +157,7 @@ const FONT_CSS_VAR: Record<FontKey, string> = {
   fraunces: "var(--font-fraunces)",
   great_vibes: "var(--font-great-vibes)",
   birthstone: "var(--font-birthstone)",
+  dancing_script: "var(--font-dancing-script)",
   montserrat: "var(--font-montserrat)",
   bodoni_moda: "var(--font-bodoni-moda)",
   pinyon_script: "var(--font-pinyon-script)",
@@ -162,7 +172,7 @@ const FONT_CSS_VAR: Record<FontKey, string> = {
  * script vs. small tracked-uppercase label); the backend enforces that
  * these are never a valid `body` font.
  */
-export const SCRIPT_FONTS: ReadonlySet<FontKey> = new Set(["great_vibes", "birthstone", "pinyon_script"]);
+export const SCRIPT_FONTS: ReadonlySet<FontKey> = new Set(["great_vibes", "birthstone", "pinyon_script", "dancing_script"]);
 
 /**
  * Space-separated class list of every allowlisted font's CSS variable. Add
