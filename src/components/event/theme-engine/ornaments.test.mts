@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   artClearance,
   badgeOrnamentKey,
+  dateOrnamentKey,
   dividerOrnamentKey,
   heroOrnamentKey,
   sanitizeBadge,
@@ -54,7 +55,12 @@ test("artClearance reserves space only for drawn art", () => {
     { kind: "art", art: "__proto__", placement: "corners", colors: [], opacity: 1 },
     { kind: "paper", tone: "#FFFFFF" },
   ] as never;
-  assert.deepEqual(artClearance(layers, () => false), { top: 0, bottom: 0, reserve: 0 });
-  assert.deepEqual(artClearance(layers, () => true), { top: 118, bottom: 70, reserve: 236 });
-  assert.deepEqual(artClearance(undefined, () => true), { top: 0, bottom: 0, reserve: 0 });
+  assert.deepEqual(artClearance(layers, () => false), { top: 0, topFluid: 0, bottom: 0, reserve: 0 });
+  assert.deepEqual(artClearance(layers, () => true), { top: 118, topFluid: 0, bottom: 70, reserve: 236 });
+  assert.deepEqual(artClearance(undefined, () => true), { top: 0, topFluid: 0, bottom: 0, reserve: 0 });
+});
+
+test("dateOrnamentKey allows bars only", () => {
+  assert.equal(dateOrnamentKey("bars"), "bars");
+  for (const bad of ["none", "", "__proto__", "Bars", 1, null, undefined, {}]) assert.equal(dateOrnamentKey(bad), null, String(bad));
 });

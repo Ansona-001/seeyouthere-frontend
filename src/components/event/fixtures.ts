@@ -26,7 +26,7 @@ export const fixtureContent: Block[] = [
     id: "dt1",
     type: "datetime",
     kicker: "",
-    heading: "Date & time",
+    heading: "Mark your calendar",
     start_local: "2026-06-14T16:00",
     end_local: "2026-06-14T22:00",
     timezone: "America/Los_Angeles",

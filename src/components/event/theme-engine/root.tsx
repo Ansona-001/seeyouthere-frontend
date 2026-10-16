@@ -31,6 +31,7 @@ const MOTIONS = {
   draw_on: 0,
   pop_and_settle: 0,
   foil_sheen: 0,
+  sway: 0,
 } as const;
 const HEADING_SCALES = { regular: 0, display: 0, classic: 0 } as const;
 
@@ -92,9 +93,11 @@ export function ThemeRootV2({ theme, className, children }: { theme: Theme; clas
       data-ev-fields={fields}
       data-ev-buttons={buttons}
       data-ev-motion={motion}
+      data-ev-hero={theme.hero_style === "invitation" ? "invitation" : undefined}
       data-ev-surface={surfaceFor(cardStyle)}
       data-ev-headings={headings}
       data-ev-accent-script={SCRIPT_FONTS.has(accentFont) ? "" : undefined}
+      data-ev-heading-script={SCRIPT_FONTS.has(theme.fonts.heading) ? "" : undefined}
       style={themeStyleV2(theme, foil)}
       className={cn(
         "@container/ev relative isolate bg-(--ev-bg) text-(--ev-text) [font-family:var(--ev-font-body)]",

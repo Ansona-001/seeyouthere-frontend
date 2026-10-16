@@ -29,6 +29,8 @@ export type ArtSpec = {
   edges?: SvgNode;
   /** A tile repeated over the page, or (unless `surface`) over two side gutters from 900px. */
   scatter?: { shape: SvgNode; surface?: boolean };
+  /** Gently rotates each top/corner copy (`.ev-sway`, motion `sway` only). */
+  sway?: boolean;
   /** An `id` the drawing defines and references, made unique per mount. */
   scopedId?: string;
 };
@@ -73,6 +75,12 @@ function tile(shape: SvgNode, patternId: string, className: string): ReactElemen
 
 const FILL = "block h-auto w-full overflow-visible";
 
+/** The drawing, optionally inside the swaying wrapper. The rotation lives inside any flipped parent so it never fights `-scale-x-100`. */
+function swayed(shape: SvgNode, sway: boolean | undefined, origin: string, n: number): ReactElement {
+  const svg = svgEl(shape, { className: FILL });
+  return sway ? div({ className: `ev-sway ${origin}`, style: { "--i": n } as CSSProperties }, svg) : svg;
+}
+
 /** Builds the Server Component for one registry key. */
 export function makeArt(spec: ArtSpec): (props: ArtProps) => ReactElement | null {
   const allowed = Object.fromEntries(spec.placements.map((p) => [p, 0]));
@@ -92,7 +100,7 @@ export function makeArt(spec: ArtSpec): (props: ArtProps) => ReactElement | null
       for (const at of PLACEMENT_KINDS[place]) {
         // TL and BR are the big copies; a bottom pair drawn from the bottom-left puts the big one on the left.
         const big = native === "bl" && place === "bottom_corners" ? at === "bl" : at === "tl" || at === "br";
-        kids.push(div({ key: at, className: `absolute ${cornerClass(at, native)} ${big ? c.big : c.small}` }, svgEl(c.shape, { className: FILL })));
+        kids.push(div({ key: at, className: `absolute ${cornerClass(at, native)} ${big ? c.big : c.small}` }, swayed(c.shape, spec.sway, "origin-top-left", kids.length)));
       }
     } else if (place === "hero" && spec.hero) {
       kids.push(div({ key: place, className: "absolute inset-y-0 left-1/2 w-[min(100%,720px)] -translate-x-1/2" }, svgEl(spec.hero, { className: "block h-full w-full overflow-visible" })));
@@ -102,8 +110,8 @@ export function makeArt(spec: ArtSpec): (props: ArtProps) => ReactElement | null
       kids.push(
         div(
           { key: place, className: "absolute inset-x-0 top-0 @min-[900px]/ev:flex @min-[900px]/ev:justify-between" },
-          div({ className: "w-full @min-[900px]/ev:w-[min(46%,600px)]" }, svgEl(spec.top, { className: FILL })),
-          div({ className: "hidden @min-[900px]/ev:block @min-[900px]/ev:w-[min(46%,600px)] -scale-x-100" }, svgEl(spec.top, { className: FILL })),
+          div({ className: "w-full @min-[900px]/ev:w-[min(46%,600px)]" }, swayed(spec.top, spec.sway, "origin-top", 0)),
+          div({ className: "hidden @min-[900px]/ev:block @min-[900px]/ev:w-[min(46%,600px)] -scale-x-100" }, swayed(spec.top, spec.sway, "origin-top", 1)),
         ),
       );
     } else if (place === "edges" && spec.edges) {

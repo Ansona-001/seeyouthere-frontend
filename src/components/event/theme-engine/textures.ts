@@ -1,6 +1,15 @@
 import { safeHexList } from "./safe.ts";
 
-export type TextureKey = "grain" | "fibers" | "linen" | "wood" | "watercolour" | "foil" | "marble" | "velvet";
+export type TextureKey =
+  | "grain"
+  | "fibers"
+  | "linen"
+  | "wood"
+  | "watercolour"
+  | "foil"
+  | "marble"
+  | "velvet"
+  | "cold_press";
 
 /**
  * Material textures as SVG `feTurbulence` tiles, ported from the design
@@ -8,7 +17,8 @@ export type TextureKey = "grain" | "fibers" | "linen" | "wood" | "watercolour" |
  * `background-image` data URL: the browser rasterises the filter once per
  * tile and caches the bitmap, so no SVG filter runs on a live element.
  * The strings are constants; the only interpolated values are `#RRGGBB`
- * colours that passed `safeHexList`.
+ * colours that passed `safeHexList`. The one exception is `cold_press`, a
+ * bundled raster (see COLD_PRESS).
  */
 const NS = 'xmlns="http://www.w3.org/2000/svg"';
 
@@ -25,6 +35,13 @@ const MARBLE = `<svg ${NS} width="420" height="420"><filter id="m" x="0" y="0" w
 
 // Soft low-frequency sheen (no lighting kernel, so the tile stitches cleanly), tinted by the blend mode.
 const VELVET = `<svg ${NS} width="480" height="480"><filter id="v" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".006 .012" numOctaves="3" seed="5" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="gamma" exponent="1.6"/><feFuncG type="gamma" exponent="1.6"/><feFuncB type="gamma" exponent="1.6"/></feComponentTransfer></filter><rect width="100%" height="100%" filter="url(#v)"/></svg>`;
+
+/**
+ * Cold-press watercolour paper: a seamless greyscale grain tile quilted from a
+ * scanned paper sample, white where the paper is flat. A constant same-origin
+ * file under `public/`, never user input. Meant for `multiply`.
+ */
+const COLD_PRESS = 'url("/themes/cold-press.webp")';
 
 function watercolour([a, b, c]: string[]): string {
   return `<svg ${NS} width="400" height="500" viewBox="0 0 400 500"><filter id="bleed" x="-30%" y="-30%" width="160%" height="160%"><feTurbulence type="fractalNoise" baseFrequency=".012" numOctaves="3" seed="3"/><feDisplacementMap in="SourceGraphic" scale="70"/><feGaussianBlur stdDeviation="14"/></filter><filter id="rim" x="-30%" y="-30%" width="160%" height="160%"><feTurbulence type="fractalNoise" baseFrequency=".02" numOctaves="4" seed="8"/><feDisplacementMap in="SourceGraphic" scale="46"/><feGaussianBlur stdDeviation="1.4"/></filter><filter id="pp"><feTurbulence type="fractalNoise" baseFrequency=".75" numOctaves="3"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".22"/></feComponentTransfer></filter><g filter="url(#bleed)" opacity=".8"><circle cx="80" cy="100" r="125" fill="${a}"/><circle cx="330" cy="150" r="115" fill="${b}"/><circle cx="250" cy="420" r="145" fill="${c}"/><circle cx="50" cy="430" r="95" fill="${b}"/></g><g filter="url(#rim)" fill="none" stroke-width="5" opacity=".35"><circle cx="80" cy="100" r="112" stroke="${a}"/><circle cx="330" cy="150" r="102" stroke="${b}"/><circle cx="250" cy="420" r="130" stroke="${c}"/></g><rect width="400" height="500" filter="url(#pp)" style="mix-blend-mode:multiply"/></svg>`;
@@ -46,6 +63,7 @@ export const TEXTURE_SIZE: Record<TextureKey, string> = {
   foil: "cover",
   marble: "420px",
   velvet: "480px",
+  cold_press: "220px",
 };
 
 const STATIC: Partial<Record<TextureKey, string>> = {
@@ -66,7 +84,8 @@ export function isTextureKey(value: unknown): value is TextureKey {
 }
 
 /**
- * CSS `url("data:image/svg+xml,...")` for a texture, or `null` for an unknown
+ * CSS `url("data:image/svg+xml,...")` for a texture (the constant raster URL
+ * for `cold_press`), or `null` for an unknown
  * key or unusable colours. `colors` is only read by `watercolour` (exactly
  * three hex colours); `foilStops` only by `foil` (3-5 hex colours).
  */
@@ -81,6 +100,8 @@ export function textureUrl(key: unknown, colors?: unknown, foilStops?: unknown):
       const stops = safeHexList(foilStops, 3, 5);
       return stops ? toUrl(foil(stops)) : null;
     }
+    case "cold_press":
+      return COLD_PRESS;
     default: {
       const svg = STATIC[key];
       return svg ? toUrl(svg) : null;

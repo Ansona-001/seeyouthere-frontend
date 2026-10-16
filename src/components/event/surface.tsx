@@ -32,7 +32,8 @@ const V2_CARD = [
   "in-data-[ev-card^=reply]:bg-(--ev-surface) in-data-[ev-card^=reply]:p-6 in-data-[ev-card^=reply]:shadow-[0_1px_2px_rgb(0_0_0/.06),0_26px_44px_-26px_rgb(0_0_0/.42)]",
   "in-data-[ev-card=sticker]:bg-(--ev-surface) in-data-[ev-card=sticker]:p-6 in-data-[ev-card=sticker]:shadow-[0_8px_0_-2px_var(--ev-text),0_26px_34px_-22px_rgb(0_0_0/.5)] in-data-[ev-card=sticker]:-rotate-[.75deg] in-data-[ev-card=sticker]:has-[input,select,textarea]:rotate-0",
   "in-data-[ev-card=chamfered]:bg-(--ev-surface) in-data-[ev-card=chamfered]:p-6",
-  "in-data-[ev-card=none]:border-y-[3px] in-data-[ev-card=none]:border-(--ev-text) in-data-[ev-card=none]:py-2",
+  // A ruled band has square ends whatever the theme radius (a radius would curl the rules at the corners).
+  "in-data-[ev-card=none]:rounded-none! in-data-[ev-card=none]:border-y-[3px] in-data-[ev-card=none]:border-(--ev-text) in-data-[ev-card=none]:py-2",
   // border: hairline | ink | foil | foil_inset (none adds nothing)
   "in-data-[ev-border=hairline]:border in-data-[ev-border=hairline]:border-(--ev-text)/28",
   "in-data-[ev-border=ink]:border-[2.5px] in-data-[ev-border=ink]:border-(--ev-text) in-data-[ev-border=ink]:in-data-[ev-card^=reply]:border-[1.5px]",

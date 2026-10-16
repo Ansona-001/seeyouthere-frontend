@@ -20,6 +20,7 @@ const HERO_STYLES = {
   text_only: 0,
   spotlight: 0,
   color_block: 0,
+  invitation: 0,
 } as const;
 
 /** Title face per heading font; sizes use container-query units so the editor's narrow pane behaves like a phone. */
@@ -32,6 +33,7 @@ const TITLE_FONT: Partial<Record<FontKey, string>> = {
   dm_serif_display: "font-normal tracking-[-.01em] leading-none text-[clamp(2rem,13.4cqi,3.25rem)]",
   limelight: "font-normal tracking-[.06em] leading-[1.02]",
   bagel_fat_one: "font-normal",
+  great_vibes: "font-normal tracking-normal leading-[1.1] text-[clamp(2.5rem,17cqi,4.25rem)]",
 };
 
 /** Kicker (accent font) style by the kind of face the accent font is. */
@@ -80,16 +82,16 @@ function accentKind(accent: FontKey): keyof typeof KICKER_CLASS {
 /** The title as real text; `&` is set in the accent font when the theme asks for it. */
 function TitleText({
   title,
-  script,
+  amp,
   foil,
   primaryFoil,
 }: {
   title: string;
-  script: boolean;
+  amp: "script" | "word" | null;
   foil: boolean;
   primaryFoil: boolean;
 }) {
-  const parts = script ? splitTitle(title) : null;
+  const parts = amp ? splitTitle(title) : null;
   if (!parts || !parts.some((p) => p.amp)) return <>{title}</>;
   // "Amelia & Theo": names on their own lines with the ampersand between them.
   const stacked = parts.length === 3 && parts[1].amp;
@@ -102,6 +104,16 @@ function TitleText({
             <span key={i} className={stacked ? "block" : undefined}>
               {part.text}
               {!stacked && i < parts.length - 1 ? " " : null}
+            </span>
+          );
+        }
+        if (amp === "word") {
+          return (
+            <span
+              key={i}
+              className="my-1 block text-[.4em] font-semibold text-(--ev-muted) [font-family:var(--ev-font-body)]"
+            >
+              and
             </span>
           );
         }
@@ -155,7 +167,9 @@ export function HeroV2({ block, theme, media }: { block: HeroBlock; theme: Theme
 
   const headingFont = theme.fonts.heading;
   const accentFont = theme.fonts.accent || headingFont;
-  const script = theme.ornament?.ampersand === "script";
+  const ampStyle = theme.ornament?.ampersand;
+  const amp = ampStyle === "script" || ampStyle === "word" ? ampStyle : null;
+  const invitation = style === "invitation";
   const numeral = ornament === "sticker_numeral" || ornament === "foil_numeral";
   const showNum = numeral && badge !== "";
   const scale = numeralScale(Array.from(badge).length);
@@ -163,7 +177,10 @@ export function HeroV2({ block, theme, media }: { block: HeroBlock; theme: Theme
   const clearance = artClearance(theme.layers, (key) => Object.hasOwn(ART, key));
   const pt = clearance.reserve || clearance.top;
   const ptWide = clearance.reserve ? clearance.reserve + 40 : clearance.top ? clearance.top + 30 : 0;
-  const vars = (pt || ptWide ? { "--ev-pt": `${pt}px`, "--ev-ptw": `${ptWide}px` } : undefined) as
+  // Art that grows with the page (up to 1280px) keeps a share of the page width clear at every size.
+  const fluid = clearance.reserve || !clearance.topFluid ? "" : `min(${clearance.topFluid}cqi,${clearance.topFluid * 12.8}px)`;
+  const gap = (px: number) => (fluid ? (px ? `max(${fluid},${px}px)` : fluid) : `${px}px`);
+  const vars = (pt || ptWide || fluid ? { "--ev-pt": gap(pt), "--ev-ptw": gap(ptWide) } : undefined) as
     CSSProperties | undefined;
 
   const kickerClass = KICKER_CLASS[accentKind(accentFont)];
@@ -176,9 +193,13 @@ export function HeroV2({ block, theme, media }: { block: HeroBlock; theme: Theme
         <p
           className={cn(
             "[font-family:var(--ev-font-accent)]",
-            onBlock || fullBleed ? "" : HERO_INK,
+            onBlock || fullBleed ? "" : invitation ? "text-(--ev-muted)" : HERO_INK,
             fullBleed && "text-white/90",
+            // On a phone the quote keeps a narrow column so it stays clear of the art at the top corners.
+            invitation && "mx-auto max-w-[66cqi] text-balance @min-[900px]/ev:max-w-none",
+            "ev-rise [--i:1]",
             kickerClass,
+            invitation && "text-[22px]",
           )}
         >
           {block.kicker}
@@ -189,10 +210,18 @@ export function HeroV2({ block, theme, media }: { block: HeroBlock; theme: Theme
         <h1
           className={cn(
             "mt-3.5 text-balance [font-family:var(--ev-font-heading)]",
+            "ev-rise [--i:0]",
             TITLE_SIZE,
             "leading-[1.04] font-medium",
             TITLE_FONT[headingFont],
-            fullBleed ? "text-white" : onBlock ? "text-(--ev-accent-text)" : "text-(--ev-text)",
+            invitation && "text-[clamp(2.25rem,14cqi,3.5rem)]",
+            fullBleed
+              ? "text-white"
+              : onBlock
+                ? "text-(--ev-accent-text)"
+                : invitation
+                  ? "text-[color:var(--ev-hero-ink,var(--ev-accent-ink))]"
+                  : "text-(--ev-text)",
           )}
         >
           {showNum ? (
@@ -231,14 +260,14 @@ export function HeroV2({ block, theme, media }: { block: HeroBlock; theme: Theme
               )}
             </>
           ) : (
-            <TitleText title={block.title} script={script} foil={foil} primaryFoil={ornament !== "foil_numeral"} />
+            <TitleText title={block.title} amp={amp} foil={foil} primaryFoil={ornament !== "foil_numeral"} />
           )}
         </h1>
       </div>
       {block.subtitle && (
         <p
           className={cn(
-            "mx-auto mt-4 text-[15px] text-balance",
+            "ev-rise mx-auto mt-4 text-[15px] text-balance [--i:2]",
             fullBleed ? "max-w-xl text-white/90" : onBlock ? "text-(--ev-accent-text)" : "text-(--ev-muted)",
             onBlock && "text-[19px] font-extrabold",
             subSans && "text-[11.5px] leading-8 font-medium tracking-[.24em] uppercase",
