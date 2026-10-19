@@ -34,6 +34,12 @@ const TITLE_FONT: Partial<Record<FontKey, string>> = {
   limelight: "font-normal tracking-[.06em] leading-[1.02]",
   bagel_fat_one: "font-normal",
   great_vibes: "font-normal tracking-normal leading-[1.1] text-[clamp(2.5rem,17cqi,4.25rem)]",
+  // About 15% larger than Great Vibes: it is narrower, so the same names fill the column the same way.
+  birthstone: "font-normal tracking-normal leading-[1.1] text-[clamp(2.9rem,19.5cqi,4.9rem)] @min-[900px]/ev:text-[74px]",
+};
+/** The invitation hero sets its own title size; Birthstone gets the same 15% boost as above. */
+const INVITATION_TITLE_SIZE: Partial<Record<FontKey, string>> = {
+  birthstone: "text-[clamp(2.6rem,16.1cqi,4rem)]",
 };
 
 /** Kicker (accent font) style by the kind of face the accent font is. */
@@ -214,7 +220,7 @@ export function HeroV2({ block, theme, media }: { block: HeroBlock; theme: Theme
             TITLE_SIZE,
             "leading-[1.04] font-medium",
             TITLE_FONT[headingFont],
-            invitation && "text-[clamp(2.25rem,14cqi,3.5rem)]",
+            invitation && (INVITATION_TITLE_SIZE[headingFont] ?? "text-[clamp(2.25rem,14cqi,3.5rem)]"),
             fullBleed
               ? "text-white"
               : onBlock
