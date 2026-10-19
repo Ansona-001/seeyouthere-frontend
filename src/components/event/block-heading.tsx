@@ -37,6 +37,9 @@ export function BlockHeading({
             // Script faces ship one weight; a synthesised bold smears them, and the display glow
             // round their thin strokes reads as a grey smudge on a light card.
             "in-data-[ev-heading-script]:font-normal! in-data-[ev-heading-script]:[text-shadow:none]!",
+            // Thin script faces look small at the usual heading size and end up level with the script
+            // kicker above them; this keeps the heading clearly the larger of the two.
+            "in-data-[ev-heading-script]:text-[clamp(2.25rem,7vw,3rem)]! in-data-[ev-heading-script]:leading-[1.1]!",
           )}
         >
           {heading}
