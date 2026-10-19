@@ -393,6 +393,7 @@ export type Motion = "none" | "draw_on" | "pop_and_settle" | "foil_sheen" | "swa
  * - ampersand: none | script | word
  * - date: none | bars
  * - hero_ink: resolved HEX colour
+ * - label_ink: resolved HEX colour for section labels (kickers), or "" when the theme does not set one
  */
 export type ThemeOrnament = {
   hero: string;
@@ -402,6 +403,7 @@ export type ThemeOrnament = {
   /** Absent on older themes. */
   date?: string;
   hero_ink: string;
+  label_ink: string;
 };
 
 /**

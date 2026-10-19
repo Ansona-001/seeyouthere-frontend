@@ -4,8 +4,9 @@ import { cn } from "@/lib/utils";
 
 /**
  * Small accent-font label rendered above a heading (build-out plan
- * rich-blocks extension §1.5, §4.3 "fonts[].accent"). Colour comes from
- * `--ev-accent-ink` (server-computed, already contrast-checked against the
+ * rich-blocks extension §1.5, §4.3 "fonts[].accent"). Colour is
+ * `--ev-label-ink` when the theme sets one (pre-checked for contrast, used
+ * as-is), else `--ev-accent-ink` (server-computed, already contrast-checked against the
  * background/surface — see `Theme.accent_ink`), and the font from
  * `--ev-font-accent`, both set by `<EventTheme>`.
  *
@@ -20,11 +21,11 @@ export function Kicker({ children, className }: { children: ReactNode; className
   return (
     <p
       className={cn(
-        "text-(--ev-accent-ink) [font-family:var(--ev-font-accent)]",
+        "text-(--ev-label-ink,var(--ev-accent-ink)) [font-family:var(--ev-font-accent)]",
         "text-xs tracking-[0.3em] uppercase",
         "in-data-[ev-accent-script]:-mb-2 in-data-[ev-accent-script]:text-4xl in-data-[ev-accent-script]:tracking-normal in-data-[ev-accent-script]:normal-case in-data-[ev-accent-script]:@min-[640px]/ev:text-5xl",
         // Invitation themes: the label stays visibly smaller than the section title it sits above.
-        "in-data-[ev-hero=invitation]:text-[22px]! in-data-[ev-hero=invitation]:@min-[640px]/ev:text-[26px]! in-data-[ev-hero=invitation]:text-[color-mix(in_srgb,var(--ev-accent-ink)_78%,var(--ev-bg))]! in-data-[ev-hero=invitation]:leading-[1.15] in-data-[ev-hero=invitation]:-mb-1",
+        "in-data-[ev-hero=invitation]:text-[22px]! in-data-[ev-hero=invitation]:@min-[640px]/ev:text-[26px]! in-data-[ev-hero=invitation]:text-(--ev-label-ink,color-mix(in_srgb,var(--ev-accent-ink)_78%,var(--ev-bg)))! in-data-[ev-hero=invitation]:leading-[1.15] in-data-[ev-hero=invitation]:-mb-1",
         // Over a script heading the swashes would collide, so the kicker keeps its own line.
         "in-data-[ev-heading-script]:mb-1!",
         className,
