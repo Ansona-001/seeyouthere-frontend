@@ -250,7 +250,7 @@ export function Editor({
           </Tabs>
 
           <div className={mobileView === "preview" ? "hidden lg:block" : ""}>
-            <fieldset disabled={editingDisabled} className="flex flex-col gap-6">
+            <fieldset disabled={editingDisabled} className="flex min-w-0 flex-col gap-6">
               <section>
                 <h2 className="mb-2 font-heading text-base text-brand-heading">Content</h2>
                 <BlockList
