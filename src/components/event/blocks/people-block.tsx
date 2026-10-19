@@ -40,17 +40,11 @@ function PersonCard({ person, media }: { person: Person; media: MediaMap }) {
 
   return (
     <EvCard as="article" className="flex flex-col items-center gap-3 rounded-3xl p-6 text-center">
-      <div className="ev-portrait size-36 overflow-hidden rounded-full ring-2 ring-(--ev-accent)/40 @min-[640px]/ev:size-44">
-        {photo ? (
+      {photo && (
+        <div className="ev-portrait size-36 overflow-hidden rounded-full ring-2 ring-(--ev-accent)/40 @min-[640px]/ev:size-44">
           <Image src={photo.src} alt={alt} width={480} height={480} className="size-full object-cover" />
-        ) : (
-          <div className="flex size-full items-center justify-center bg-(--ev-accent)/10 text-(--ev-accent)" aria-hidden="true">
-            <svg viewBox="0 0 24 24" className="size-16 fill-current opacity-40">
-              <path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.3 0-9.8 1.6-9.8 4.9v2.3h19.6v-2.3c0-3.3-6.5-4.9-9.8-4.9z" />
-            </svg>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <div>
         <p className="text-lg font-medium in-data-[ev-hero=invitation]:text-3xl in-data-[ev-hero=invitation]:font-normal break-words [font-family:var(--ev-font-heading)]">{person.name}</p>
