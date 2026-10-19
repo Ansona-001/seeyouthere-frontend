@@ -124,8 +124,9 @@ const decode = (url: string | null): string => {
   return decodeURIComponent(match[1]);
 };
 
-test("textureUrl returns an SVG data URL for every key", () => {
+test("textureUrl returns an SVG data URL for every key but the bundled raster", () => {
   for (const key of Object.keys(TEXTURE_SIZE)) {
+    if (key === "cold_press") continue;
     const url = textureUrl(
       key,
       ["#111111", "#222222", "#333333"],
@@ -136,6 +137,11 @@ test("textureUrl returns an SVG data URL for every key", () => {
     assert.ok(svg.endsWith("</svg>"), key);
     assert.ok(!/<script|javascript:|<foreignObject|onload/i.test(svg), key);
   }
+});
+
+test("cold_press is the one constant same-origin raster", () => {
+  assert.equal(textureUrl("cold_press"), 'url("/themes/cold-press.webp")');
+  assert.equal(textureUrl("cold_press", ["#111111", "#222222", "#333333"]), textureUrl("cold_press"));
 });
 
 test("textureUrl rejects unknown keys", () => {

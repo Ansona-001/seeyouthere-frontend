@@ -23,6 +23,10 @@ export function Kicker({ children, className }: { children: ReactNode; className
         "text-(--ev-accent-ink) [font-family:var(--ev-font-accent)]",
         "text-xs tracking-[0.3em] uppercase",
         "in-data-[ev-accent-script]:-mb-2 in-data-[ev-accent-script]:text-4xl in-data-[ev-accent-script]:tracking-normal in-data-[ev-accent-script]:normal-case in-data-[ev-accent-script]:@min-[640px]/ev:text-5xl",
+        // Invitation themes: the label stays visibly smaller than the section title it sits above.
+        "in-data-[ev-hero=invitation]:text-[22px]! in-data-[ev-hero=invitation]:@min-[640px]/ev:text-[26px]! in-data-[ev-hero=invitation]:text-[color-mix(in_srgb,var(--ev-accent-ink)_78%,var(--ev-bg))]! in-data-[ev-hero=invitation]:leading-[1.15] in-data-[ev-hero=invitation]:-mb-1",
+        // Over a script heading the swashes would collide, so the kicker keeps its own line.
+        "in-data-[ev-heading-script]:mb-1!",
         className,
       )}
     >

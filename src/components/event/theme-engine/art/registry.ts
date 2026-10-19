@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 
 import { makeArt } from "./layout.ts";
+import { makeRasterTop } from "./raster.ts";
 import * as balloons from "./shapes/balloons.ts";
 import * as botanicalWash from "./shapes/botanical_wash.ts";
 import * as clouds from "./shapes/clouds.ts";
@@ -37,8 +38,9 @@ export type ArtProps = {
 /**
  * Art components by registry key (mirrors `artRegistry` in the Go
  * `theme_registry.go`; `art.test.mts` pins the key set and placements).
- * Static inline SVG Server Components only: no SVG filters, no foreign objects,
- * scripts or runtime randomness. An unknown key renders nothing.
+ * Static Server Components only: inline SVG (no SVG filters, no foreign objects,
+ * scripts or runtime randomness) plus constant same-origin rasters from `public/`
+ * (`raster.ts`). An unknown key renders nothing.
  *
  * Sizes follow `design/src/v2/preview.js` (`CORNER_SIZE`): phone width, then
  * from 900px of the `ev` container the desktop width. Text-column clearance
@@ -142,4 +144,5 @@ export const ART: Record<string, ComponentType<ArtProps>> = {
       small: "w-[min(34cqi,130px)] @min-[900px]/ev:w-[min(16cqi,180px)]",
     },
   }),
+  mimosa: makeRasterTop({ src: "/themes/mimosa-canopy.webp", width: 1130, height: 480 }),
 };

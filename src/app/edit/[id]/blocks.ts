@@ -92,7 +92,7 @@ export function createBlock(type: BlockType): Block {
         id,
         type,
         kicker: "Save the date",
-        heading: "Date & time",
+        heading: "Mark your calendar",
         start_local: "",
         end_local: "",
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,

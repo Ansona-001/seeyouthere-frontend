@@ -376,6 +376,14 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.55; }
 }
+@keyframes ev-sway {
+  from { rotate: -1deg; }
+  to { rotate: 1deg; }
+}
+@keyframes ev-rise {
+  from { opacity: 0; translate: 0 12px; }
+  to { opacity: 1; translate: 0 0; }
+}
 @media (prefers-reduced-motion: no-preference) {
   [data-ev-motion="draw_on"] .ev-draw {
     stroke-dasharray: 1;
@@ -405,6 +413,19 @@
   [data-ev-motion="foil_sheen"] .ev-sheen,
   [data-ev-motion="foil_sheen"] .ev-glint {
     animation: ev-glow 2.4s ease-in-out 0.3s 1 both;
+  }
+  /* Individual `rotate` / `translate` properties so existing transforms (flips, centring) are untouched. */
+  [data-ev-motion="sway"] .ev-sway {
+    animation: ev-sway 6.5s ease-in-out infinite alternate;
+    animation-delay: calc(var(--i, 0) * -1.7s);
+  }
+  [data-ev-motion="sway"] .ev-bloom {
+    animation: ev-wash 0.7s ease-out both;
+    animation-delay: calc(var(--i, 0) * 40ms);
+  }
+  [data-ev-engine="2"][data-ev-motion="sway"] .ev-rise {
+    animation: ev-rise 0.9s var(--ease-out) both;
+    animation-delay: calc(0.1s + var(--i, 0) * 160ms);
   }
 }
 
@@ -454,4 +475,48 @@
       radial-gradient(35% 20% at 30% 85%, rgb(130 100 50 / 0.4), transparent 70%),
       linear-gradient(160deg, #1a1712, #050504);
   }
+}
+
+/* ---- Invitation themes (Mimosa): cards read as printed stationery on watercolour paper ---- */
+[data-ev-hero="invitation"] .ev-card {
+  position: relative;
+  background:
+    radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, #fff 55%, transparent), transparent 70%),
+    color-mix(in srgb, var(--ev-surface) 86%, transparent);
+  border-color: color-mix(in srgb, var(--ev-accent-ink) 22%, transparent);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--ev-accent-ink) 14%, transparent),
+    0 22px 38px -26px color-mix(in srgb, var(--ev-accent-ink) 55%, transparent);
+}
+/* A second, finer rule inset from the edge, like a letterpress keyline. */
+[data-ev-hero="invitation"] .ev-card::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px solid color-mix(in srgb, var(--ev-accent-ink) 18%, transparent);
+  border-radius: calc(var(--ev-card-radius) - 6px);
+  pointer-events: none;
+}
+/* Section titles end in a small ornament: two hairlines around a dot. */
+[data-ev-hero="invitation"] hgroup > h2::after {
+  content: "";
+  display: block;
+  width: 84px;
+  height: 8px;
+  margin: 0.6rem auto 0;
+  background:
+    radial-gradient(circle, var(--ev-accent-ink) 0 2.5px, transparent 3px) center / 8px 8px no-repeat,
+    linear-gradient(var(--ev-accent-ink), var(--ev-accent-ink)) left center / 32px 1px no-repeat,
+    linear-gradient(var(--ev-accent-ink), var(--ev-accent-ink)) right center / 32px 1px no-repeat;
+  opacity: 0.55;
+}
+/* Portrait placeholder and photo frame: double olive ring on a sage wash. */
+[data-ev-hero="invitation"] .ev-portrait {
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--ev-surface) 90%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--ev-accent-ink) 45%, transparent);
+  background: linear-gradient(160deg, #eef3e6, #d6e2c6);
+}
+[data-ev-hero="invitation"] .ev-map-placeholder {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--ev-surface) 70%, #d6e2c6), #dbe6cd);
 }

@@ -151,7 +151,7 @@ export function RsvpForm({
       </div>
 
       <fieldset className="grid gap-1.5" disabled={formDisabled}>
-        <legend className="text-sm font-medium">Will you be there?</legend>
+        <legend className="text-sm font-semibold">Will you be there?</legend>
         <div className="flex gap-2">
           {ATTENDING_OPTIONS.map((option) => (
             <label
@@ -299,7 +299,7 @@ function RsvpField({
     const selected = Array.isArray(value) ? value : [];
     return (
       <fieldset className="grid gap-1.5" disabled={disabled}>
-        <legend className="text-sm font-medium">{fieldLabel}</legend>
+        <legend className="text-sm font-semibold">{fieldLabel}</legend>
         <div className="flex flex-wrap gap-2">
           {field.options.map((opt) => (
             <label
