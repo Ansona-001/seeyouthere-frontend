@@ -43,7 +43,7 @@ export const oliveGroveIvory: Theme = {
   ],
   art: ["#5F6E55", "#C9D3B8", "#DCE2CF", "#4A5531", "#FFFDF8", "#E5DCC8"],
   foil: ["#8E6B2E", "#C9A963", "#F3E2AA", "#B48A43", "#E6CC8B"],
-  ornament: { hero: "wreath_monogram", divider: "olive_sprig", badge: "none", ampersand: "script", hero_ink: "#77592A" },
+  ornament: { hero: "wreath_monogram", divider: "olive_sprig", badge: "none", ampersand: "script", hero_ink: "#77592A", label_ink: "" },
   card: { style: "reply_card", border: "foil_inset", radius: 3, fields: "underline", buttons: "accent" },
   motion: "draw_on",
 };
@@ -109,7 +109,7 @@ export const sprinklesCobalt: Theme = {
     { kind: "texture", region: "page", texture: "grain", opacity: 0.12, blend: "multiply" },
   ],
   art: ["#FFC21A", "#FF4F7B", "#16C79A", "#FF8A3D", "#FFFFFF"],
-  ornament: { hero: "sticker_numeral", divider: "squiggle", badge: "starburst_sticker", ampersand: "none", hero_ink: "#FFFFFF" },
+  ornament: { hero: "sticker_numeral", divider: "squiggle", badge: "starburst_sticker", ampersand: "none", hero_ink: "#FFFFFF", label_ink: "" },
   card: { style: "sticker", border: "ink", radius: 28, fields: "boxed", buttons: "accent" },
   motion: "pop_and_settle",
 };
@@ -168,7 +168,7 @@ export const giltNoirNoir: Theme = {
   ],
   art: ["#C9A45C", "#8E7440"],
   foil: ["#E3C779", "#C9A45C", "#F3E2AA", "#B48A43", "#D9B769"],
-  ornament: { hero: "foil_numeral", divider: "deco_diamond", badge: "none", ampersand: "none", hero_ink: "#D4B06A" },
+  ornament: { hero: "foil_numeral", divider: "deco_diamond", badge: "none", ampersand: "none", hero_ink: "#D4B06A", label_ink: "" },
   card: { style: "chamfered", border: "foil", radius: 0, fields: "underline", buttons: "foil" },
   motion: "foil_sheen",
 };

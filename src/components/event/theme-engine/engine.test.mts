@@ -170,3 +170,10 @@ test("textureUrl needs valid colours for watercolour and foil", () => {
 test("textureUrl ignores colours for textures that take none", () => {
   assert.equal(textureUrl("grain", ["not hex"]), textureUrl("grain"));
 });
+
+test("label_ink is applied only when it is a valid hex (root.tsx gates --ev-label-ink on safeHex)", () => {
+  assert.equal(safeHex("#85690A"), "#85690A");
+  assert.equal(safeHex(""), null);
+  assert.equal(safeHex(undefined), null);
+  assert.equal(safeHex("#85690A;color:red"), null);
+});

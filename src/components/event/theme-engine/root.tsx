@@ -46,7 +46,7 @@ function surfaceFor(style: keyof typeof CARD_STYLES): "card" | "glass" | "plain"
   return "plain";
 }
 
-/** Theme CSS variables plus the v2 additions (`--ev-art-N`, `--ev-foil*`, `--ev-card-radius`, `--ev-hero-ink`). */
+/** Theme CSS variables plus the v2 additions (`--ev-art-N`, `--ev-foil*`, `--ev-card-radius`, `--ev-hero-ink`, `--ev-label-ink`). `--ev-label-ink` is set only for a valid hex and tints section labels (kickers) only. */
 function themeStyleV2(theme: Theme, foil: string | null): CSSProperties {
   const vars: Record<string, string> = {};
   (theme.art ?? []).slice(0, 8).forEach((color, i) => {
@@ -62,6 +62,8 @@ function themeStyleV2(theme: Theme, foil: string | null): CSSProperties {
   vars["--ev-card-radius"] = `${safeInt(theme.card?.radius, 0, 32, 24)}px`;
   const heroInk = safeHex(theme.ornament?.hero_ink);
   if (heroInk) vars["--ev-hero-ink"] = heroInk;
+  const labelInk = safeHex(theme.ornament?.label_ink);
+  if (labelInk) vars["--ev-label-ink"] = labelInk;
   return { ...themeStyle(theme), ...vars } as CSSProperties;
 }
 
