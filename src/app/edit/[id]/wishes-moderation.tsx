@@ -22,7 +22,7 @@ const EMPTY_COPY: Record<WishStatus, string> = {
 const NETWORK_ERROR = "Couldn't reach the server. Please try again.";
 
 /** Guest wishes go live on submit; this lets the host hide, restore or delete them. */
-export function WishesModeration({ eventId }: { eventId: string }) {
+export function WishesModeration({ eventId, onModerated }: { eventId: string; onModerated: () => void }) {
   const [tab, setTab] = useState<WishStatus | null>(null);
   const [wishes, setWishes] = useState<HostWish[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -72,6 +72,7 @@ export function WishesModeration({ eventId }: { eventId: string }) {
       }
       // Every action moves the wish out of the current tab.
       setWishes((prev) => prev.filter((w) => w.id !== id));
+      onModerated();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : NETWORK_ERROR);
     } finally {
@@ -87,6 +88,7 @@ export function WishesModeration({ eventId }: { eventId: string }) {
       await api(`${base}?status=${status}`, { method: "DELETE" });
       setWishes([]);
       setCursor(null);
+      onModerated();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : NETWORK_ERROR);
     } finally {

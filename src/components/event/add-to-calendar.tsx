@@ -1,23 +1,33 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
+
 import type { CalendarInfo } from "@/lib/calendar";
 import { buildIcs, googleCalendarUrl } from "@/lib/calendar";
 
+type Platform = "apple" | "other" | "unknown";
+
 /**
- * "Add to calendar" pair for the `datetime` block (build-out plan
- * rich-blocks extension §6.5). Fully client-side — no endpoint, nothing
- * sent to our servers.
- *
- * Both pills are always shown regardless of device: iPadOS reports its
- * platform as "Macintosh" (touch is the only tell, and that's true of some
- * touch-screen laptops too), so user-agent sniffing to hide one button is
- * unreliable. The Google Calendar link works everywhere, and iOS/macOS
- * open a downloaded `.ics` natively, so showing both is never wrong — at
- * worst a guest sees an extra button.
+ * iPhone, iPad and Mac are all "apple": iPadOS reports itself as "Macintosh", which is why it needs no
+ * separate check. "unknown" is the server render and the first client render, so both pills show and
+ * hydration matches; useSyncExternalStore then swaps in the real value without an effect.
+ */
+function detectPlatform(): Platform {
+  return /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent) ? "apple" : "other";
+}
+
+const noSubscribe = () => () => {};
+
+/**
+ * "Add to calendar" for the `datetime` block (build-out plan rich-blocks extension §6.5). Fully
+ * client-side: no endpoint, nothing sent to our servers. Apple devices get one "Apple Calendar" pill
+ * (a downloaded `.ics`, which iOS/macOS open natively); everything else gets "Google Calendar". Until
+ * the device is known both pills render.
  */
 export function AddToCalendar({ info }: { info: CalendarInfo }) {
   const pageUrl = eventPageUrl(info.slug);
   const googleHref = googleCalendarUrl(info, pageUrl);
+  const platform = useSyncExternalStore<Platform>(noSubscribe, detectPlatform, () => "unknown");
 
   function handleDownloadIcs() {
     const ics = buildIcs(info, pageUrl, new Date());
@@ -37,12 +47,16 @@ export function AddToCalendar({ info }: { info: CalendarInfo }) {
 
   return (
     <div className="mt-2 flex flex-col items-center gap-2 @min-[640px]/ev:flex-row @min-[640px]/ev:gap-3">
-      <a href={googleHref} target="_blank" rel="noopener noreferrer" className={pillClass}>
-        Google Calendar
-      </a>
-      <button type="button" onClick={handleDownloadIcs} className={pillClass}>
-        Apple / Outlook (.ics)
-      </button>
+      {platform !== "apple" && (
+        <a href={googleHref} target="_blank" rel="noopener noreferrer" className={pillClass}>
+          Google Calendar
+        </a>
+      )}
+      {platform !== "other" && (
+        <button type="button" onClick={handleDownloadIcs} className={pillClass}>
+          Apple Calendar
+        </button>
+      )}
     </div>
   );
 }

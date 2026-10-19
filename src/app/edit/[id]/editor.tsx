@@ -7,7 +7,7 @@ import { EventView } from "@/components/event/event-view";
 import { ShareLinks } from "@/components/share-links";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api, ApiError, type Event, type Occasion, type Overrides, type ShareImageSource, type TemplateSummary, type ValidationIssue } from "@/lib/api";
+import { api, ApiError, type Event, type Occasion, type Overrides, type PublicWish, type ShareImageSource, type TemplateSummary, type ValidationIssue, type WishListResponse } from "@/lib/api";
 
 import { BlockForm } from "./block-form";
 import { BlockIssuesProvider, blockIssues, groupIssuesByBlock, issueLabel, uninlinedIssues } from "./block-issues";
@@ -18,6 +18,9 @@ import { editorReducer, editorStateFromEvent } from "./reducer";
 import { SettingsPanel } from "./settings-panel";
 import { heroDrawsPhoto } from "./hero-fields";
 import { SharePanel } from "./share-image-panel";
+
+// Matches how many approved wishes the public page embeds.
+const PREVIEW_WISHES_LIMIT = 30;
 
 export function Editor({
   initialEvent,
@@ -38,6 +41,32 @@ export function Editor({
   }, [state]);
   const savingContentRef = useRef(false);
   const retryContentRef = useRef(false);
+
+  // The preview shows the guests' approved wishes as a visitor would see them (newest first, capped
+  // like the public page). Only owners/editors can list wishes, and only a wishes block shows them.
+  const canModerate = state.role === "owner" || state.role === "editor";
+  const hasWishesBlock = state.content.some((b) => b.type === "wishes");
+  const wishesEnabled = canModerate && hasWishesBlock;
+  const [approvedWishes, setApprovedWishes] = useState<PublicWish[]>([]);
+  // Guards against a slow response overwriting a newer one.
+  const wishesRequestRef = useRef(0);
+
+  async function refreshApprovedWishes() {
+    const request = ++wishesRequestRef.current;
+    try {
+      const qs = new URLSearchParams({ status: "approved", limit: String(PREVIEW_WISHES_LIMIT) });
+      const res = await api<WishListResponse>(`/v1/events/${encodeURIComponent(stateRef.current.id)}/wishes?${qs.toString()}`);
+      if (request !== wishesRequestRef.current) return;
+      setApprovedWishes(res.wishes.map(({ id, author, message }) => ({ id, author, message })));
+    } catch {
+      // Best effort: on failure the preview keeps whatever it last showed.
+    }
+  }
+
+  useEffect(() => {
+    if (!wishesEnabled) return;
+    void refreshApprovedWishes();
+  }, [wishesEnabled, state.id]);
 
   function handleSaveError(err: unknown) {
     if (err instanceof ApiError) {
@@ -250,7 +279,7 @@ export function Editor({
           </Tabs>
 
           <div className={mobileView === "preview" ? "hidden lg:block" : ""}>
-            <fieldset disabled={editingDisabled} className="flex flex-col gap-6">
+            <fieldset disabled={editingDisabled} className="flex min-w-0 flex-col gap-6">
               <section>
                 <h2 className="mb-2 font-heading text-base text-brand-heading">Content</h2>
                 <BlockList
@@ -279,7 +308,8 @@ export function Editor({
                           eventId={state.id}
                           media={state.media}
                           theme={state.theme}
-                          canModerate={state.role === "owner" || state.role === "editor"}
+                          canModerate={canModerate}
+                          onWishesModerated={refreshApprovedWishes}
                           onChange={(patch) => updateBlock(block.id, patch)}
                           onMediaUploaded={(id, ref) => dispatch({ type: "add_media", id, ref })}
                         />
@@ -342,6 +372,7 @@ export function Editor({
             removeBranding={state.removeBranding}
             slug={state.slug ?? undefined}
             startsAt={state.startsAt}
+            wishes={wishesEnabled ? approvedWishes : undefined}
           />
         </div>
       </div>
