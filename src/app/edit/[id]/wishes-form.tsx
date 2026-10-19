@@ -22,11 +22,13 @@ export function WishesForm({
   block,
   eventId,
   canModerate,
+  onWishesModerated,
   onChange,
 }: {
   block: WishesBlock;
   eventId: string;
   canModerate: boolean;
+  onWishesModerated: () => void;
   onChange: (patch: Partial<WishesBlock>) => void;
 }) {
   function updateItem(index: number, patch: Partial<Wish>) {
@@ -119,7 +121,7 @@ export function WishesForm({
         Add wish
       </Button>
 
-      {canModerate &&<WishesModeration eventId={eventId} />}
+      {canModerate && <WishesModeration eventId={eventId} onModerated={onWishesModerated} />}
     </div>
   );
 }

@@ -63,6 +63,7 @@ export function BlockForm({
   media,
   theme,
   canModerate,
+  onWishesModerated,
   onChange,
   onMediaUploaded,
 }: {
@@ -73,6 +74,8 @@ export function BlockForm({
   theme: Theme;
   /** Owner/editor only: shows the guest-wish moderation list in the wishes form. */
   canModerate: boolean;
+  /** Called after the host approves, hides or deletes guest wishes, so the preview can refresh. */
+  onWishesModerated: () => void;
   onChange: (patch: Partial<Block>) => void;
   onMediaUploaded: (id: string, ref: MediaRef) => void;
 }) {
@@ -124,7 +127,15 @@ export function BlockForm({
         />
       );
     case "wishes":
-      return <WishesForm block={block} eventId={eventId} canModerate={canModerate} onChange={onChange as OnChange<WishesBlock>} />;
+      return (
+        <WishesForm
+          block={block}
+          eventId={eventId}
+          canModerate={canModerate}
+          onWishesModerated={onWishesModerated}
+          onChange={onChange as OnChange<WishesBlock>}
+        />
+      );
     default:
       return null;
   }
