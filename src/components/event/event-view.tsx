@@ -37,12 +37,15 @@ import { EventLayoutShell } from "./layouts";
 import { ScrollReveal } from "./scroll-reveal";
 import { EventTheme } from "./theme";
 import { HeroV2 } from "./theme-engine/hero";
+import { MUSIC_TRACKS } from "./theme-engine/music-tracks";
 import { ART } from "./theme-engine/art/registry";
 import { artClearance, dateOrnamentKey } from "./theme-engine/ornament-keys";
 import { LayerStack } from "./theme-engine/layers";
 import { LayoutV2 } from "./theme-engine/layout";
 import { BadgeOrnament, DividerOrnament } from "./theme-engine/ornaments";
 import { ThemeRootV2 } from "./theme-engine/root";
+import { ownKey } from "./theme-engine/safe";
+import { ThemeMusic } from "./theme-engine/theme-music";
 
 export type EventViewMode = "live" | "preview";
 
@@ -155,8 +158,10 @@ export function EventView({
     const hero = heroBlock ? <HeroV2 block={heroBlock} theme={theme} media={media} /> : null;
     // Keep the footer clear of art that hangs in the bottom corners.
     const clearBottom = artClearance(theme.layers, (key) => Object.hasOwn(ART, key)).bottom;
+    const track = ownKey(MUSIC_TRACKS, theme.music);
     return (
       <ThemeRootV2 theme={theme} className="flex min-h-dvh flex-col">
+        {mode === "live" && track && <ThemeMusic track={track} />}
         <LayerStack layers={theme.layers} region="page" foil={theme.foil} />
         <div className="flex-1" style={!slug && clearBottom ? { paddingBottom: clearBottom } : undefined}>
           <LayoutV2 layout={theme.layout} hero={hero}>
