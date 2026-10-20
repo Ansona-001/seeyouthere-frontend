@@ -380,6 +380,8 @@ export type Theme = {
   ornament?: ThemeOrnament;
   card?: ThemeCard;
   motion?: Motion;
+  /** Background music on the public page; unknown values play nothing. */
+  music?: "none" | "music_box";
 };
 
 export type Motion = "none" | "draw_on" | "pop_and_settle" | "foil_sheen" | "sway";
