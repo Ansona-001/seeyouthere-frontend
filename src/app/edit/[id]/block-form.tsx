@@ -1,7 +1,7 @@
 "use client";
 
 import { PlusIcon, Trash2Icon } from "lucide-react";
-import { useId, useMemo, useRef, useState, type ReactNode } from "react";
+import { useId, useRef, useState, type ReactNode } from "react";
 
 import { FutureDateTimeInput } from "@/components/future-datetime-input";
 import { downscaleToJpeg } from "@/components/event/photo-upload";
@@ -322,14 +322,6 @@ function DatetimeForm({
   block: Extract<Block, { type: "datetime" }>;
   onChange: OnChange<Extract<Block, { type: "datetime" }>>;
 }) {
-  const timezones = useMemo(() => {
-    try {
-      return Intl.supportedValuesOf("timeZone");
-    } catch {
-      return [block.timezone];
-    }
-  }, [block.timezone]);
-
   return (
     <div className="flex flex-col gap-3">
       <KickerField idPrefix="dt" value={block.kicker} onChange={(kicker) => onChange({ kicker })} />
@@ -354,19 +346,10 @@ function DatetimeForm({
           onValueChange={(end_local) => onChange({ end_local })}
         />
       </Field>
-      <Field label="Time zone" htmlFor="dt-tz" field="timezone">
-        <NativeSelect
-          id="dt-tz"
-          value={block.timezone}
-          onChange={(e) => onChange({ timezone: e.target.value })}
-        >
-          {timezones.map((tz) => (
-            <option key={tz} value={tz}>
-              {tz}
-            </option>
-          ))}
-        </NativeSelect>
-      </Field>
+      <p id="dt-tz-note" className="text-xs text-muted-foreground">
+        Times are the local time at your venue. The time zone is read from the map link in your Location block ({block.timezone} right
+        now). Without a readable map link it uses the zone you created the event in.
+      </p>
       <div className="flex items-center gap-3">
         <Switch id="dt-allday" checked={block.all_day} onCheckedChange={(v) => onChange({ all_day: v })} />
         <Label htmlFor="dt-allday">All day</Label>
@@ -403,7 +386,7 @@ function LocationForm({ block, onChange }: { block: LocationBlock; onChange: OnC
         label="Map link (optional, https)"
         htmlFor="loc-map"
         field="map_url"
-        hint="Only needed if the address doesn't find the right spot (a park, a hall, a private venue). Share a link from Google Maps or Apple Maps and it's used for the “Open in Maps” button. Leave it empty to search the address instead."
+        hint="Paste the full link from Google Maps or Apple Maps (open the place and copy the address-bar link). It sets your event's time zone and is used for the “Open in Maps” button. Shortened links (maps.app.goo.gl) can't be read for the time zone. Leave it empty to search the address instead."
       >
         <Input
           id="loc-map"
@@ -462,6 +445,12 @@ function ScheduleForm({ block, onChange }: { block: ScheduleBlock; onChange: OnC
               </Button>
             </div>
             <Input
+              maxLength={120}
+              placeholder="Location (optional)"
+              value={item.location ?? ""}
+              onChange={(e) => updateItem(i, { location: e.target.value })}
+            />
+            <Input
               maxLength={300}
               placeholder="Description (optional)"
               value={item.description}
@@ -476,7 +465,7 @@ function ScheduleForm({ block, onChange }: { block: ScheduleBlock; onChange: OnC
         size="sm"
         className="self-start"
         disabled={block.items.length >= 30}
-        onClick={() => onChange({ items: [...block.items, { time: "", title: "", description: "" }] })}
+        onClick={() => onChange({ items: [...block.items, { time: "", title: "", location: "", description: "" }] })}
       >
         <PlusIcon data-icon="inline-start" />
         Add item

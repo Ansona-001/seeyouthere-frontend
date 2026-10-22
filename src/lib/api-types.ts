@@ -78,6 +78,8 @@ export type ScheduleItem = {
   /** `"HH:MM"` or `""`. */
   time: string;
   title: string;
+  /** Where this item happens, or `""`. Absent on items saved before the field existed. */
+  location?: string;
   description: string;
 };
 

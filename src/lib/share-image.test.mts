@@ -3,18 +3,26 @@ import { test } from "node:test";
 
 import { ogImageFor } from "./share-image.ts";
 
-test("ogImageFor scales wide images down to 1080 wide", () => {
+test("ogImageFor keeps a wide picture's own ratio, shrunk to the 1080 rendition", () => {
   assert.deepEqual(ogImageFor({ src: "/media/e/m", width: 2160, height: 1130 }), {
-    url: "/media/e/m/1080.jpg",
+    url: "/media/e/m/og.jpg",
     width: 1080,
     height: 565,
   });
 });
 
-test("ogImageFor keeps the size of images narrower than 1080", () => {
-  assert.deepEqual(ogImageFor({ src: "/media/e/m", width: 800, height: 600 }), {
-    url: "/media/e/m/1080.jpg",
-    width: 800,
-    height: 600,
+test("ogImageFor shrinks a portrait invitation to the card height without cropping", () => {
+  assert.deepEqual(ogImageFor({ src: "/media/e/m", width: 800, height: 1200 }), {
+    url: "/media/e/m/og.jpg",
+    width: 420,
+    height: 630,
+  });
+});
+
+test("ogImageFor never enlarges a small picture", () => {
+  assert.deepEqual(ogImageFor({ src: "/media/e/m", width: 400, height: 300 }), {
+    url: "/media/e/m/og.jpg",
+    width: 400,
+    height: 300,
   });
 });

@@ -9,7 +9,7 @@ type Platform = "apple" | "other" | "unknown";
 
 /**
  * iPhone, iPad and Mac are all "apple": iPadOS reports itself as "Macintosh", which is why it needs no
- * separate check. "unknown" is the server render and the first client render, so both pills show and
+ * separate check. "unknown" is the server render and the first client render, so the link shows and
  * hydration matches; useSyncExternalStore then swaps in the real value without an effect.
  */
 function detectPlatform(): Platform {
@@ -20,9 +20,9 @@ const noSubscribe = () => () => {};
 
 /**
  * "Add to calendar" for the `datetime` block (build-out plan rich-blocks extension §6.5). Fully
- * client-side: no endpoint, nothing sent to our servers. Apple devices get one "Apple Calendar" pill
- * (a downloaded `.ics`, which iOS/macOS open natively); everything else gets "Google Calendar". Until
- * the device is known both pills render.
+ * client-side: no endpoint, nothing sent to our servers. One pill, labelled "Add to Calendar" everywhere:
+ * Apple devices download an `.ics` (which iOS/macOS open natively); everything else opens a Google
+ * Calendar link. Until the device is known (and without JS) the Google link shows.
  */
 export function AddToCalendar({ info }: { info: CalendarInfo }) {
   const pageUrl = eventPageUrl(info.slug);
@@ -46,16 +46,15 @@ export function AddToCalendar({ info }: { info: CalendarInfo }) {
     "inline-flex items-center justify-center rounded-full border border-(--ev-accent-ink)/40 px-4 py-1.5 text-xs font-medium tracking-[0.2em] text-(--ev-accent-ink) uppercase transition-colors hover:bg-(--ev-accent-ink)/10";
 
   return (
-    <div className="mt-2 flex flex-col items-center gap-2 @min-[640px]/ev:flex-row @min-[640px]/ev:gap-3">
-      {platform !== "apple" && (
-        <a href={googleHref} target="_blank" rel="noopener noreferrer" className={pillClass}>
-          Google Calendar
-        </a>
-      )}
-      {platform !== "other" && (
+    <div className="mt-2 flex justify-center">
+      {platform === "apple" ? (
         <button type="button" onClick={handleDownloadIcs} className={pillClass}>
-          Apple Calendar
+          Add to Calendar
         </button>
+      ) : (
+        <a href={googleHref} target="_blank" rel="noopener noreferrer" className={pillClass}>
+          Add to Calendar
+        </a>
       )}
     </div>
   );

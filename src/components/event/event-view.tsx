@@ -143,6 +143,8 @@ export function EventView({
             photosNextCursor={photosNextCursor}
             wishes={wishes}
             dateBars={theme.engine === 2 && dateOrnamentKey(theme.ornament?.date) === "bars"}
+            timeline={theme.engine === 2}
+            bloom={theme.layers?.some((l) => l.kind === "art" && l.art === "mimosa") ?? false}
             badge={
               theme.engine === 2 ? <BadgeOrnament badge={theme.ornament?.badge} text={heroBlock?.badge} /> : undefined
             }
@@ -240,6 +242,8 @@ function RenderBlock({
   wishes,
   badge,
   dateBars = false,
+  timeline = false,
+  bloom = false,
 }: {
   block: Block;
   media: MediaMap;
@@ -257,6 +261,10 @@ function RenderBlock({
   badge?: ReactNode;
   /** Schema-2 `ornament.date: bars`: the date as `Nov | 7th | 2026`. */
   dateBars?: boolean;
+  /** Schema-2 themes lay the schedule out as a timeline card. */
+  timeline?: boolean;
+  /** The theme paints the Mimosa canopy, so its watercolour bloom accents the schedule. */
+  bloom?: boolean;
 }) {
   switch (block.type) {
     case "hero":
@@ -288,7 +296,7 @@ function RenderBlock({
     case "location":
       return <LocationBlock block={block} interactive={mode === "live"} />;
     case "schedule":
-      return <ScheduleBlock block={block} />;
+      return <ScheduleBlock block={block} timeline={timeline} bloom={bloom} />;
     case "image":
       return <ImageBlock block={block} media={media} />;
     case "gallery":

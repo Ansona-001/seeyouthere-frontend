@@ -28,18 +28,6 @@ function formatLocal(local: string, options: Intl.DateTimeFormatOptions): string
   return new Intl.DateTimeFormat("en-US", { ...options, timeZone: "UTC" }).format(date);
 }
 
-/** Best-effort zone label (e.g. "PDT"); purely cosmetic, not used for any conversion. */
-function zoneAbbreviation(timezone: string): string {
-  try {
-    const parts = new Intl.DateTimeFormat("en-US", { timeZone: timezone, timeZoneName: "short" }).formatToParts(
-      new Date(),
-    );
-    return parts.find((p) => p.type === "timeZoneName")?.value ?? timezone;
-  } catch {
-    return timezone;
-  }
-}
-
 function BarsDate({ parts, label }: { parts: { month: string; day: string; year: string }; label: string }) {
   const bar = (
     <span aria-hidden="true" className="inline-block h-[1.1em] w-[2px] bg-(--ev-hero-ink,var(--ev-accent-ink))" />
@@ -87,7 +75,7 @@ export function DatetimeBlock({
         {timeLabel && (
           <p className="text-(--ev-muted)">
             {timeLabel}
-            {endTimeLabel && <> – {endTimeLabel}</>} <span className="text-sm">({zoneAbbreviation(block.timezone)})</span>
+            {endTimeLabel && <> – {endTimeLabel}</>}
           </p>
         )}
         {calendar && <AddToCalendar info={calendar} />}
