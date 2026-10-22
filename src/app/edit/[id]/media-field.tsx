@@ -23,6 +23,7 @@ export function MediaField({
   onUploaded,
   aspect,
   previewAspect,
+  keepRatio = false,
 }: {
   eventId: string;
   preview: MediaRef | null;
@@ -31,6 +32,8 @@ export function MediaField({
   aspect?: number;
   /** Shape of the preview box (width / height); defaults to 16:9. */
   previewAspect?: number;
+  /** Show the picture whole in its own shape instead of filling a fixed box. */
+  keepRatio?: boolean;
 }) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -66,10 +69,16 @@ export function MediaField({
     <div className="flex flex-col gap-2">
       {preview && (
         <div
-          className={`w-full max-w-xs overflow-hidden rounded-lg bg-muted ${previewAspect ? "" : "aspect-video"}`}
-          style={previewAspect ? { aspectRatio: previewAspect } : undefined}
+          className={`w-full max-w-xs overflow-hidden rounded-lg bg-muted ${previewAspect || keepRatio ? "" : "aspect-video"}`}
+          style={keepRatio ? { aspectRatio: `${preview.width} / ${preview.height}` } : previewAspect ? { aspectRatio: previewAspect } : undefined}
         >
-          <Image src={preview.src} alt="" width={480} height={270} className="size-full object-cover" />
+          <Image
+            src={preview.src}
+            alt=""
+            width={480}
+            height={keepRatio ? Math.max(1, Math.round((480 * preview.height) / preview.width)) : 270}
+            className={`size-full ${keepRatio ? "object-contain" : "object-cover"}`}
+          />
         </div>
       )}
       <input

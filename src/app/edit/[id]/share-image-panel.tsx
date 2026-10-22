@@ -6,8 +6,6 @@ import type { MediaMap, MediaRef, ShareImageSource } from "@/lib/api-types";
 
 import { MediaField } from "./media-field";
 
-const SHARE_ASPECT = 1200 / 630;
-
 /**
  * Picks the image that link previews (chat apps, social posts) show for the event. Hero and site
  * choices save immediately; "Your own image" saves only once its upload has succeeded, so the
@@ -82,7 +80,7 @@ export function SharePanel({
         ]
       : []),
     { value: "site", label: "See You There image", hint: "Our default image." },
-    { value: "custom", label: "Your own image", hint: "Cropped to the shape link previews use." },
+    { value: "custom", label: "Your own image", hint: "Shown in full, without cropping." },
   ];
 
   return (
@@ -112,7 +110,7 @@ export function SharePanel({
 
       {selected === "custom" && (
         <div className="mt-1">
-          <MediaField eventId={eventId} preview={customPreview} onUploaded={handleUploaded} aspect={SHARE_ASPECT} previewAspect={SHARE_ASPECT} />
+          <MediaField eventId={eventId} preview={customPreview} onUploaded={handleUploaded} keepRatio />
         </div>
       )}
       <p role="status" className="sr-only">
