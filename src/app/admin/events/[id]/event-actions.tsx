@@ -21,6 +21,7 @@ export function EventActions({
   const router = useRouter();
   const [reason, setReason] = useState("");
   const [removeBranding, setRemoveBranding] = useState(event.remove_branding);
+  const [newSlug, setNewSlug] = useState("");
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,6 +57,16 @@ export function EventActions({
     );
   }
 
+  function changeSlug() {
+    const slug = newSlug.trim().toLowerCase();
+    if (!slug || slug === event.slug) return Promise.resolve();
+    if (!confirm(`Change this event's link from /${event.slug} to /${slug}? The old link will stop working.`)) return Promise.resolve();
+    return run("slug", async () => {
+      await api(`/v1/admin/events/${event.id}/slug`, { method: "PATCH", json: { slug } });
+      setNewSlug("");
+    });
+  }
+
   return (
     <div className="flex flex-col gap-4">
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
@@ -87,6 +98,38 @@ export function EventActions({
           />
           <Label htmlFor="remove-branding">Remove &ldquo;Made with See You There&rdquo; branding</Label>
         </div>
+      )}
+
+      {isSuperAdmin && event.slug && (
+        <form
+          className="grid gap-2 border-t pt-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void changeSlug();
+          }}
+        >
+          <Label htmlFor="new-slug">Change link</Label>
+          <p className="text-sm text-muted-foreground">
+            Moves the event to a different link. Only an available one is accepted. The old link stops working at once
+            (anything already shared breaks) and is held back from everyone else for 30 days.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Input
+              id="new-slug"
+              value={newSlug}
+              onChange={(e) => setNewSlug(e.target.value)}
+              maxLength={50}
+              placeholder={event.slug}
+              autoComplete="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              className="max-w-xs"
+            />
+            <Button type="submit" variant="outline" disabled={pending !== null || !newSlug.trim()}>
+              {pending === "slug" ? "Changing…" : "Change link"}
+            </Button>
+          </div>
+        </form>
       )}
 
       {isSuperAdmin && (
