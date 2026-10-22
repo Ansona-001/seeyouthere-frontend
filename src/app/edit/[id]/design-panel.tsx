@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import type { Overrides, Palette, TemplateSummary } from "@/lib/api-types";
 import { fontCssVar } from "@/lib/fonts";
 import { cn } from "cn";
@@ -25,6 +27,7 @@ export function DesignPanel({
   templateVersion,
   templateLatestVersion,
   overrides,
+  canToggleBoxes,
   onChangeTemplate,
   onChangeOverrides,
   onUpgradeTemplate,
@@ -35,6 +38,8 @@ export function DesignPanel({
   templateVersion: number;
   templateLatestVersion: number;
   overrides: Overrides;
+  /** Only schema-2 templates can drop their section boxes. */
+  canToggleBoxes: boolean;
   onChangeTemplate: (slug: string) => Promise<boolean>;
   onChangeOverrides: (overrides: Overrides) => Promise<boolean>;
   onUpgradeTemplate: () => Promise<boolean>;
@@ -89,7 +94,7 @@ export function DesignPanel({
                   palette={p}
                   selected={p.id === paletteId}
                   disabled={pending}
-                  onSelect={() => run(() => onChangeOverrides({ palette: p.id, font: fontId }))}
+                  onSelect={() => run(() => onChangeOverrides({ ...overrides, palette: p.id, font: fontId }))}
                 />
               ))}
             </div>
@@ -103,7 +108,7 @@ export function DesignPanel({
                   type="button"
                   disabled={pending}
                   aria-pressed={f.id === fontId}
-                  onClick={() => run(() => onChangeOverrides({ palette: paletteId, font: f.id }))}
+                  onClick={() => run(() => onChangeOverrides({ ...overrides, palette: paletteId, font: f.id }))}
                   className={cn(CHOICE, "px-3.5", f.id === fontId ? CHOICE_ON : CHOICE_OFF)}
                   style={{ fontFamily: fontCssVar(f.heading) }}
                 >
@@ -112,6 +117,17 @@ export function DesignPanel({
               ))}
             </div>
           </div>
+          {canToggleBoxes && (
+            <div className="flex items-center gap-3">
+              <Switch
+                id="design-boxes"
+                checked={overrides.boxes !== "off"}
+                disabled={pending}
+                onCheckedChange={(on) => run(() => onChangeOverrides({ ...overrides, boxes: on ? "" : "off" }))}
+              />
+              <Label htmlFor="design-boxes">Boxes around sections</Label>
+            </div>
+          )}
         </>
       )}
     </div>

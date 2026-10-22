@@ -91,9 +91,21 @@ export type ScheduleBlock = {
   items: ScheduleItem[];
 };
 
+export type ImageSize = "small" | "medium" | "large" | "full";
+
+/** `original` shows the whole picture; the others centre-crop it to that shape. */
+export type ImageRatio = "original" | "square" | "landscape" | "wide" | "portrait";
+
 export type ImageBlock = {
   id: string;
   type: "image";
+  /** Optional label and heading above the photo; absent on photos saved before they existed. */
+  kicker?: string;
+  heading?: string;
+  /** How wide the photo shows; absent or `""` means `"large"`, the width every photo had before this existed. */
+  size?: ImageSize;
+  /** Absent or `""` means `"original"`. */
+  ratio?: ImageRatio;
   media_id: string;
   alt: string;
   caption: string;
@@ -268,7 +280,17 @@ export type HostWish = {
 
 export type WishListResponse = { wishes: HostWish[]; next_cursor: string | null };
 
-export type Block =
+/** How strongly a section's background picture shows. */
+export type SectionFade = "soft" | "medium" | "strong";
+
+/** An optional background picture behind any section except Hero and Photo. */
+export type SectionPhoto = {
+  media_id: string;
+  /** Absent or `""` means `"medium"`. */
+  fade?: SectionFade;
+};
+
+export type Block = (
   | HeroBlock
   | TextBlock
   | DatetimeBlock
@@ -284,7 +306,8 @@ export type Block =
   | GuestPhotosBlock
   | PeopleBlock
   | VideoBlock
-  | WishesBlock;
+  | WishesBlock
+) & { photo?: SectionPhoto | null };
 
 // ---------------------------------------------------------------------------
 // Template manifest / resolved theme (§3.4). The frontend never parses a raw
@@ -352,8 +375,11 @@ export type Palette = {
 /** `accent`: kicker font, `""` = falls back to `heading`. */
 export type FontPair = { id: string; name: string; heading: FontKey; body: FontKey; accent: FontKey | "" };
 
-/** `events.overrides` — ids must exist in the pinned manifest, or `""` for "use default". */
-export type Overrides = { palette: string; font: string };
+/**
+ * `events.overrides` — ids must exist in the pinned manifest, or `""` for "use default". `boxes` is `"off"` to
+ * drop the box behind every section (schema-2 templates only); absent or `""` keeps the template's own cards.
+ */
+export type Overrides = { palette: string; font: string; boxes?: "" | "off" };
 
 /**
  * Resolved theme sent to the frontend (§3.4 "Resolved theme"; rich-blocks
@@ -412,7 +438,7 @@ export type ThemeOrnament = {
 
 /**
  * Plain strings on purpose (see `ThemeOrnament`). Intended values:
- * - style: soft | glass | reply_card | sticker | chamfered | none
+ * - style: soft | glass | reply_card | sticker | chamfered | none | open (no box: sections sit on the page)
  * - border: none | hairline | ink | foil | foil_inset
  * - fields: boxed | underline
  * - buttons: accent | foil

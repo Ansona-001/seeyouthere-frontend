@@ -24,6 +24,10 @@ import type {
   GuestPhotosBlock,
   HeroBlock,
   ImageBlock,
+  ImageRatio,
+  ImageSize,
+  SectionFade,
+  SectionPhoto,
   LinkItem,
   LinksBlock,
   LocationBlock,
@@ -56,17 +60,74 @@ type OnChange<B extends Block> = (patch: Partial<B>) => void;
  * here (`maxLength`, item counts) mirror the server's validator; the server
  * still enforces everything independently on save.
  */
-export function BlockForm({
-  block,
-  occasion,
+export function BlockForm(props: BlockFormProps) {
+  const { block, eventId, media, onChange, onMediaUploaded } = props;
+  return (
+    <>
+      <BlockFormBody {...props} />
+      {block.type !== "hero" && block.type !== "image" && (
+        <SectionPhotoForm
+          photo={block.photo ?? null}
+          eventId={eventId}
+          media={media}
+          onChange={(photo) => onChange({ photo })}
+          onMediaUploaded={onMediaUploaded}
+        />
+      )}
+    </>
+  );
+}
+
+/** Optional picture behind a section's content, faded so the text stays readable. */
+function SectionPhotoForm({
+  photo,
   eventId,
   media,
-  theme,
-  canModerate,
-  onWishesModerated,
   onChange,
   onMediaUploaded,
 }: {
+  photo: SectionPhoto | null;
+  eventId: string;
+  media: MediaMap;
+  onChange: (photo: SectionPhoto | null) => void;
+  onMediaUploaded: (id: string, ref: MediaRef) => void;
+}) {
+  const current = photo?.media_id ? (media[photo.media_id] ?? null) : null;
+  return (
+    <fieldset className="mt-4 flex flex-col gap-3 border-t border-input pt-4">
+      <legend className="text-sm font-medium">Background photo for this section (optional)</legend>
+      <MediaField
+        eventId={eventId}
+        preview={current}
+        keepRatio
+        onUploaded={(id, ref) => {
+          onMediaUploaded(id, ref);
+          onChange({ fade: "medium", ...photo, media_id: id });
+        }}
+      />
+      {photo && (
+        <>
+          <Field label="Strength" htmlFor="sec-photo-fade" hint="Soft keeps the text easiest to read. Strong shows more of the picture.">
+            <NativeSelect
+              id="sec-photo-fade"
+              value={photo.fade || "medium"}
+              onChange={(e) => onChange({ ...photo, fade: e.target.value as SectionFade })}
+            >
+              <option value="soft">Soft</option>
+              <option value="medium">Medium</option>
+              <option value="strong">Strong</option>
+            </NativeSelect>
+          </Field>
+          <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => onChange(null)}>
+            Remove photo
+          </Button>
+        </>
+      )}
+    </fieldset>
+  );
+}
+
+type BlockFormProps = {
   block: Block;
   occasion: Occasion | null;
   eventId: string;
@@ -78,7 +139,19 @@ export function BlockForm({
   onWishesModerated: () => void;
   onChange: (patch: Partial<Block>) => void;
   onMediaUploaded: (id: string, ref: MediaRef) => void;
-}) {
+};
+
+function BlockFormBody({
+  block,
+  occasion,
+  eventId,
+  media,
+  theme,
+  canModerate,
+  onWishesModerated,
+  onChange,
+  onMediaUploaded,
+}: BlockFormProps) {
   switch (block.type) {
     case "hero":
       return <HeroForm block={block} onChange={onChange as OnChange<HeroBlock>} eventId={eventId} media={media} theme={theme} onMediaUploaded={onMediaUploaded} />;
@@ -489,6 +562,35 @@ function ImageForm({
 }) {
   return (
     <div className="flex flex-col gap-3">
+      <KickerField idPrefix="img" value={block.kicker ?? ""} onChange={(kicker) => onChange({ kicker })} />
+      <Field label="Heading (optional)" htmlFor="img-heading">
+        <Input id="img-heading" maxLength={120} value={block.heading ?? ""} onChange={(e) => onChange({ heading: e.target.value })} />
+      </Field>
+      <Field label="Size" htmlFor="img-size">
+        <NativeSelect
+          id="img-size"
+          value={block.size || "large"}
+          onChange={(e) => onChange({ size: e.target.value as ImageSize })}
+        >
+          <option value="small">Small</option>
+          <option value="medium">Medium</option>
+          <option value="large">Large</option>
+          <option value="full">Full width</option>
+        </NativeSelect>
+      </Field>
+      <Field label="Shape" htmlFor="img-ratio" hint="Original shows the whole picture. The other shapes trim it from the centre.">
+        <NativeSelect
+          id="img-ratio"
+          value={block.ratio || "original"}
+          onChange={(e) => onChange({ ratio: e.target.value as ImageRatio })}
+        >
+          <option value="original">Original</option>
+          <option value="square">Square (1:1)</option>
+          <option value="landscape">Landscape (3:2)</option>
+          <option value="wide">Wide (16:9)</option>
+          <option value="portrait">Portrait (4:5)</option>
+        </NativeSelect>
+      </Field>
       <MediaField
         eventId={eventId}
         preview={block.media_id ? media[block.media_id] ?? null : null}

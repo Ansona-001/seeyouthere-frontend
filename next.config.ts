@@ -13,6 +13,16 @@ const nextConfig: NextConfig = {
     loader: "custom",
     loaderFile: "./src/lib/image-loader.ts",
   },
+  async headers() {
+    // Theme artwork and audio are constant files with unversioned names: cache for a day so repeat visits skip
+    // the re-check, and let browsers serve a stale copy for a week while they refresh it in the background.
+    return [
+      {
+        source: "/themes/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }],
+      },
+    ];
+  },
   async rewrites() {
     // Local dev convenience: in production Caddy serves /media/* directly
     // before requests reach Next (deploy/Caddyfile), so this rule never runs.

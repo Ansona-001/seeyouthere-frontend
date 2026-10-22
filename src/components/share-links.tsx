@@ -4,7 +4,6 @@ import { CheckIcon, CopyIcon, Share2Icon } from "lucide-react";
 import { useState, type ComponentProps } from "react";
 
 import { Button } from "@/components/ui/button";
-import { displayUrl } from "@/lib/urls";
 
 // lucide-react dropped brand icons, so WhatsApp is an inline outline SVG in the same 24px stroke style.
 function WhatsAppIcon(props: ComponentProps<"svg">) {
@@ -25,8 +24,16 @@ function WhatsAppIcon(props: ComponentProps<"svg">) {
   );
 }
 
+/** The text people paste into a chat: a short invitation, then the link on its own line so chat apps still build the preview. */
+function inviteMessage(title: string, occasionSlug: string, url: string): string {
+  const occasion = occasionSlug.replace(/-/g, " ").trim();
+  const lead = occasion ? `You're invited to the ${occasion} of ${title}!` : `You're invited to ${title}!`;
+  return `${lead} We'd love to see you there.
+${url}`;
+}
+
 /** Copy link, WhatsApp and native share actions for a published event's public URL. */
-export function ShareLinks({ url, title }: { url: string; title: string }) {
+export function ShareLinks({ url, title, occasionSlug }: { url: string; title: string; occasionSlug: string }) {
   const [notice, setNotice] = useState("");
 
   function flash(text: string) {
@@ -34,9 +41,9 @@ export function ShareLinks({ url, title }: { url: string; title: string }) {
     setTimeout(() => setNotice(""), 4000);
   }
 
-  async function copyLink(message = "Link copied."): Promise<boolean> {
+  async function copyLink(message = "Invitation copied."): Promise<boolean> {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(inviteMessage(title, occasionSlug, url));
       flash(message);
       return true;
     } catch {
@@ -49,7 +56,7 @@ export function ShareLinks({ url, title }: { url: string; title: string }) {
   async function share() {
     if (typeof navigator.share === "function") {
       try {
-        await navigator.share({ title, url });
+        await navigator.share({ title, text: inviteMessage(title, occasionSlug, url) });
       } catch {
         // Dismissing the share sheet rejects with AbortError; nothing to do.
       }
@@ -63,14 +70,14 @@ export function ShareLinks({ url, title }: { url: string; title: string }) {
       <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-3">
         <Button type="button" variant="outline" size="lg" onClick={() => copyLink()}>
           {notice ? <CheckIcon data-icon="inline-start" /> : <CopyIcon data-icon="inline-start" />}
-          {notice ? "Copied" : "Copy link"}
+          {notice ? "Copied" : "Copy invite"}
         </Button>
         <Button
           variant="outline"
           size="lg"
           render={
             <a
-              href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${title} ${displayUrl(url)}`)}`}
+              href={`https://api.whatsapp.com/send?text=${encodeURIComponent(inviteMessage(title, occasionSlug, url))}`}
               target="_blank"
               rel="noopener noreferrer"
             />

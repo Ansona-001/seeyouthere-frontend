@@ -12,9 +12,7 @@ export const BLOCK_TYPES: BlockType[] = [
   "datetime",
   "location",
   "schedule",
-  // The single Image section is hidden from the add list for now (use Gallery); existing Image blocks
-  // still render and stay editable. Re-enable by restoring the next line.
-  // "image",
+  "image",
   "gallery",
   "dress_code",
   "links",
@@ -34,7 +32,7 @@ export const BLOCK_LABELS: Record<BlockType, string> = {
   datetime: "Date & time",
   location: "Location",
   schedule: "Schedule",
-  image: "Image",
+  image: "Photo",
   gallery: "Gallery",
   dress_code: "Dress code",
   links: "Links",
@@ -103,7 +101,7 @@ export function createBlock(type: BlockType): Block {
     case "schedule":
       return { id, type, kicker: "The plan", heading: "Schedule", items: [{ time: "", title: "", location: "", description: "" }] };
     case "image":
-      return { id, type, media_id: "", alt: "", caption: "" };
+      return { id, type, kicker: "", heading: "", size: "large", ratio: "original", media_id: "", alt: "", caption: "" };
     case "gallery":
       return { id, type, kicker: "Moments", heading: "Gallery", images: [], display: "grid" };
     case "dress_code":

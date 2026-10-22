@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 import type {
   Block,
@@ -22,7 +22,7 @@ import { FaqBlock } from "./blocks/faq-block";
 import { GalleryBlock } from "./blocks/gallery-block";
 import { GuestPhotosBlock } from "./blocks/guest-photos-block";
 import { HeroBlock } from "./blocks/hero-block";
-import { ImageBlock } from "./blocks/image-block";
+import { ImageBlock, SectionBackground } from "./blocks/image-block";
 import { LinksBlock } from "./blocks/links-block";
 import { LocationBlock } from "./blocks/location-block";
 import { PeopleBlock } from "./blocks/people-block";
@@ -227,7 +227,19 @@ function BlockSection({
   );
 }
 
-function RenderBlock({
+/** A section's own content, over its optional background picture (any section except Hero and Photo). */
+function RenderBlock(props: ComponentProps<typeof RenderBlockContent>) {
+  const { block, media } = props;
+  const content = <RenderBlockContent {...props} />;
+  if (!block.photo || block.type === "hero" || block.type === "image") return content;
+  return (
+    <SectionBackground photo={block.photo} media={media}>
+      {content}
+    </SectionBackground>
+  );
+}
+
+function RenderBlockContent({
   block,
   media,
   mode,
