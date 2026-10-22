@@ -7,7 +7,8 @@ import { GateShell } from "@/components/brand/gate-shell";
 import { EventView } from "@/components/event/event-view";
 import { PasswordGate } from "@/components/event/password-gate";
 import { Button } from "@/components/ui/button";
-import type { HeroBlock, PublicEvent } from "@/lib/api-types";
+import type { PublicEvent } from "@/lib/api-types";
+import { shareDescription } from "@/lib/share-description";
 import { ogImageFor } from "@/lib/share-image";
 import { serverApi } from "@/lib/server-api";
 
@@ -36,8 +37,7 @@ export async function generateMetadata({ params }: PageProps<"/[slug]">, parent:
   }
 
   const { event } = result.data;
-  const hero = event.content.find((block): block is HeroBlock => block.type === "hero");
-  const description = hero?.subtitle || "You're invited — see the details and RSVP.";
+  const description = shareDescription(event.content);
 
   return {
     title: event.title,
