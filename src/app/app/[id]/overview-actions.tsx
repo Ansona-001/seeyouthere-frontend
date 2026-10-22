@@ -59,7 +59,7 @@ export function OverviewActions({ event }: { event: Event }) {
         )}
       </div>
 
-      {event.url && event.status === "published" && <ShareLinks url={event.url} title={event.title} />}
+      {event.url && event.status === "published" && <ShareLinks url={event.url} title={event.title} occasionSlug={event.occasion_slug} />}
 
       {notReady && (
         <div role="alert" className="rounded-xl bg-destructive/10 px-3 py-2.5 text-sm text-destructive">

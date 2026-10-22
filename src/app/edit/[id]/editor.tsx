@@ -328,6 +328,7 @@ export function Editor({
                   templateVersion={state.templateVersion}
                   templateLatestVersion={state.templateLatestVersion}
                   overrides={state.overrides}
+                  canToggleBoxes={state.theme.engine === 2}
                   onChangeTemplate={saveTemplateNow}
                   onChangeOverrides={saveOverridesNow}
                   onUpgradeTemplate={upgradeTemplateNow}
@@ -356,7 +357,7 @@ export function Editor({
               {state.status === "published" && state.url && (
                 <section>
                   <h2 className="mb-2 font-heading text-base text-brand-heading">Share your invite</h2>
-                  <ShareLinks url={state.url} title={state.title} />
+                  <ShareLinks url={state.url} title={state.title} occasionSlug={initialEvent.occasion_slug} />
                 </section>
               )}
             </fieldset>

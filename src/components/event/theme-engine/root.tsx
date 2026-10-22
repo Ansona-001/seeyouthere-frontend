@@ -16,6 +16,7 @@ const CARD_STYLES = {
   reply_card: 0,
   sticker: 0,
   chamfered: 0,
+  open: 0,
 } as const;
 const CARD_BORDERS = {
   none: 0,

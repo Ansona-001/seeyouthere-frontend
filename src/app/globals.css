@@ -477,8 +477,8 @@
   }
 }
 
-/* ---- Invitation themes (Mimosa): cards read as printed stationery on watercolour paper ---- */
-[data-ev-hero="invitation"] .ev-card {
+/* ---- Invitation themes (Mimosa): cards read as printed stationery on watercolour paper (not when the theme's card style is "open", which draws no box) ---- */
+[data-ev-hero="invitation"]:not([data-ev-card="open"]) .ev-card {
   position: relative;
   background:
     radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, #fff 55%, transparent), transparent 70%),
@@ -489,7 +489,7 @@
     0 22px 38px -26px color-mix(in srgb, var(--ev-accent-ink) 55%, transparent);
 }
 /* A second, finer rule inset from the edge, like a letterpress keyline. */
-[data-ev-hero="invitation"] .ev-card::after {
+[data-ev-hero="invitation"]:not([data-ev-card="open"]) .ev-card::after {
   content: "";
   position: absolute;
   inset: 6px;
