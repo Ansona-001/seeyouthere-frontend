@@ -90,15 +90,17 @@ export function SectionBackground({ photo, media, children }: { photo: SectionPh
   const ref = media[photo.media_id];
   if (!ref) return <>{children}</>;
   return (
-    <div className="relative isolate">
-      <Image
-        src={ref.src}
-        alt=""
-        aria-hidden="true"
-        fill
-        sizes="100vw"
-        className={`-z-10 object-cover ${FADES[photo.fade || "medium"] ?? FADES.medium} [mask-composite:intersect] [mask-image:linear-gradient(to_bottom,transparent,#000_18%,#000_82%,transparent),linear-gradient(to_right,transparent,#000_6%,#000_94%,transparent)] [-webkit-mask-composite:source-in]`}
-      />
+    <div className="relative isolate" data-ev-photo="">
+      <div className="absolute inset-0 -z-10">
+        <Image
+          src={ref.src}
+          alt=""
+          aria-hidden="true"
+          fill
+          sizes="100vw"
+          className={`object-cover ${FADES[photo.fade || "medium"] ?? FADES.medium} [mask-composite:intersect] [mask-image:linear-gradient(to_bottom,transparent,#000_18%,#000_82%,transparent),linear-gradient(to_right,transparent,#000_6%,#000_94%,transparent)] [-webkit-mask-composite:source-in]`}
+        />
+      </div>
       {children}
     </div>
   );

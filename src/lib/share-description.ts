@@ -14,7 +14,7 @@ function dateLabel(startLocal: string): string {
 /**
  * The text link previews show under the title: the hero subtitle when the host wrote one, otherwise a line
  * built from the event's date and place, so every event (including already published ones) previews with a
- * useful message and no extra setup.
+ * useful message and no extra setup. It only mentions RSVP when the event has an RSVP section.
  */
 export function shareDescription(blocks: Block[]): string {
   const hero = blocks.find((b) => b.type === "hero");
@@ -27,5 +27,6 @@ export function shareDescription(blocks: Block[]): string {
 
   const details = [when, where].filter(Boolean).join(" · ");
   const lead = details ? `${details}. ` : "";
-  return `${lead}You're invited. Tap to see the details and RSVP.`.slice(0, MAX_LENGTH);
+  const action = blocks.some((b) => b.type === "rsvp") ? "Tap to see the details and RSVP." : "Tap to see the details.";
+  return `${lead}You're invited. ${action}`.slice(0, MAX_LENGTH);
 }

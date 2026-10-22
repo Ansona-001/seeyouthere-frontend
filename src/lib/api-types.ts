@@ -226,6 +226,8 @@ export type PeopleBlock = {
   kicker: string;
   heading: string;
   people: Person[];
+  /** Optional background picture; the section then leaves room above its cards for it. */
+  photo?: SectionPhoto | null;
 };
 
 export type VideoProvider = "youtube" | "vimeo";

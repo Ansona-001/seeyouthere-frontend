@@ -34,6 +34,7 @@ import { WishesBlock } from "./blocks/wishes-block";
 import { DecorationDivider } from "./decorations";
 import { EventFooter } from "./footer";
 import { EventLayoutShell } from "./layouts";
+import { LoadGate } from "./load-gate";
 import { ScrollReveal } from "./scroll-reveal";
 import { EventTheme } from "./theme";
 import { HeroV2 } from "./theme-engine/hero";
@@ -44,7 +45,7 @@ import { LayerStack } from "./theme-engine/layers";
 import { LayoutV2 } from "./theme-engine/layout";
 import { BadgeOrnament, DividerOrnament } from "./theme-engine/ornaments";
 import { ThemeRootV2 } from "./theme-engine/root";
-import { ownKey } from "./theme-engine/safe";
+import { ownKey, safeHex } from "./theme-engine/safe";
 import { ThemeMusic } from "./theme-engine/theme-music";
 
 export type EventViewMode = "live" | "preview";
@@ -154,6 +155,12 @@ export function EventView({
     </ScrollReveal>
   );
 
+  // The public page only: a theme-coloured cover until the first screen (fonts, hero art, photos) is ready, so
+  // the hero and the sections appear together. Never in the editor preview or the admin template preview.
+  const gateBackground = safeHex(theme.palette.background);
+  const gateInk = safeHex(theme.accent_ink) ?? safeHex(theme.palette.accent);
+  const gate = mode === "live" && gateBackground && gateInk ? <LoadGate background={gateBackground} ink={gateInk} /> : null;
+
   if (theme.engine === 2) {
     // Theme engine v2: container-query shell, layered background. The v2 hero
     // owns its hero-region layer stack.
@@ -162,6 +169,8 @@ export function EventView({
     const clearBottom = artClearance(theme.layers, (key) => Object.hasOwn(ART, key)).bottom;
     const track = ownKey(MUSIC_TRACKS, theme.music);
     return (
+      <>
+      {gate}
       <ThemeRootV2 theme={theme} className="flex min-h-dvh flex-col">
         {mode === "live" && track && <ThemeMusic track={track} />}
         <LayerStack layers={theme.layers} region="page" foil={theme.foil} />
@@ -172,10 +181,13 @@ export function EventView({
         </div>
         {slug && <EventFooter slug={slug} removeBranding={removeBranding} mode={mode} clearBottom={clearBottom} />}
       </ThemeRootV2>
+      </>
     );
   }
 
   return (
+    <>
+    {gate}
     <EventTheme theme={theme} mode={mode} className="flex min-h-dvh flex-col">
       <div className="flex-1">
         <EventLayoutShell
@@ -191,6 +203,7 @@ export function EventView({
       </div>
       {slug && <EventFooter slug={slug} removeBranding={removeBranding} mode={mode} />}
     </EventTheme>
+    </>
   );
 }
 
