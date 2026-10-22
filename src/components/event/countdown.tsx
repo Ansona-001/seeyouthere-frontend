@@ -18,7 +18,8 @@ function diffParts(targetMs: number, nowMs: number) {
 /**
  * Four-cell "glass grid" countdown (build-out plan rich-blocks extension
  * §4.3, §6.2): each unit in an `EvCard` (a no-op under `surface: "plain"`),
- * numerals in `--ev-accent-ink`. Ticks once a second; under
+ * numerals in `--ev-accent-ink`. Always one row: the cells, numerals and
+ * labels scale with the page width so four units fit even on a phone. Ticks once a second; under
  * `prefers-reduced-motion` the count is computed once and never ticks, and
  * the seconds cell is dropped (today's cadence) so nothing visibly moves.
  */
@@ -60,15 +61,15 @@ export function Countdown({ target }: { target: string }) {
       className={
         reducedMotion
           ? "grid w-full max-w-md grid-cols-3 gap-3"
-          : "grid w-full max-w-xl grid-cols-2 gap-3 @min-[640px]/ev:grid-cols-4 @min-[640px]/ev:gap-6"
+          : "grid w-full max-w-xl grid-cols-4 gap-2 @min-[640px]/ev:gap-4"
       }
     >
       {cells.map(([label, value]) => (
-        <EvCard key={label} className="flex flex-col items-center gap-1 py-4">
-          <span className="text-(--ev-accent-ink) tabular-nums [font-family:var(--ev-font-heading)] text-[clamp(2rem,6vw,3.5rem)]">
+        <EvCard key={label} className="flex min-w-0 flex-col items-center gap-1 px-1! py-3!">
+          <span className="text-(--ev-accent-ink) tabular-nums [font-family:var(--ev-font-heading)] text-[clamp(1.5rem,7cqi,3.5rem)] leading-none">
             {value}
           </span>
-          <span className="text-xs tracking-wide text-(--ev-muted) uppercase">{label}</span>
+          <span className="text-[clamp(9px,2.6cqi,12px)] tracking-wide text-(--ev-muted) uppercase">{label}</span>
         </EvCard>
       ))}
     </div>

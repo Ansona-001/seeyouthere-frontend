@@ -101,7 +101,7 @@ export function createBlock(type: BlockType): Block {
     case "location":
       return { id, type, kicker: "Find us", heading: "Venue", name: "", address: "", map_url: "", notes: "" };
     case "schedule":
-      return { id, type, kicker: "The plan", heading: "Schedule", items: [{ time: "", title: "", description: "" }] };
+      return { id, type, kicker: "The plan", heading: "Schedule", items: [{ time: "", title: "", location: "", description: "" }] };
     case "image":
       return { id, type, media_id: "", alt: "", caption: "" };
     case "gallery":

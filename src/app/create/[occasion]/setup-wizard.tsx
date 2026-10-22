@@ -109,14 +109,6 @@ function SetupWizardInner({
       return "UTC";
     }
   }, []);
-  const timezones = useMemo(() => {
-    try {
-      return Intl.supportedValuesOf("timeZone");
-    } catch {
-      return [browserTimezone];
-    }
-  }, [browserTimezone]);
-
   function answerFor(key: string, questionType: string): string {
     if (answers[key] !== undefined) return answers[key];
     return questionType === "timezone" ? browserTimezone : "";
@@ -192,27 +184,14 @@ function SetupWizardInner({
 
       {hasQuestions ? (
         <form onSubmit={submit} className="mx-auto flex w-full max-w-md flex-col gap-5 rounded-3xl bg-card p-6 shadow-sm ring-1 ring-border">
-          {occasion.setup_questions.map((q) => (
+          {/* The time zone question is not shown: the event starts in the creator's zone and follows the venue's map link once one is added in the editor. */}
+          {occasion.setup_questions.filter((q) => q.type !== "timezone").map((q) => (
             <div key={q.key} className="grid gap-1.5">
               <Label htmlFor={`q-${q.key}`}>
                 {q.label}
                 {!q.required && <span className="text-muted-foreground"> (optional)</span>}
               </Label>
-              {q.type === "timezone" ? (
-                <select
-                  id={`q-${q.key}`}
-                  value={answerFor(q.key, q.type)}
-                  onChange={(e) => setAnswers((a) => ({ ...a, [q.key]: e.target.value }))}
-                  required={q.required}
-                  className="h-11.5 w-full min-w-0 rounded-md border border-input bg-card px-3 text-base text-foreground outline-none transition-[border-color,box-shadow] duration-(--duration-fast) focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/28 motion-reduce:transition-none"
-                >
-                  {timezones.map((tz) => (
-                    <option key={tz} value={tz}>
-                      {tz}
-                    </option>
-                  ))}
-                </select>
-              ) : q.type === "date_time" ? (
+              {q.type === "date_time" ? (
                 <FutureDateTimeInput
                   id={`q-${q.key}`}
                   timeZone={tzQuestion ? answerFor(tzQuestion.key, "timezone") : browserTimezone}

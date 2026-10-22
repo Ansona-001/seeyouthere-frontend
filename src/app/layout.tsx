@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 const gloock = Gloock({ variable: "--font-gloock", subsets: ["latin"], weight: "400", display: "swap" });
 
 // Lets relative OG/Twitter image URLs (e.g. an event's hero photo, served as
-// `/media/<event>/<media>/1080.jpg` on this same origin — build-out plan
+// `/media/<event>/<media>/og.jpg` on this same origin — build-out plan
 // §6.2, §10) resolve to absolute URLs in generated metadata.
 function siteUrl(): URL {
   try {
