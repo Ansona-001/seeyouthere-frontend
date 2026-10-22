@@ -497,6 +497,60 @@
   border-radius: calc(var(--ev-card-radius) - 6px);
   pointer-events: none;
 }
+/* A person card over a section background photo: a frosted vellum panel so names and family lines stay readable
+   whether the theme draws card boxes or not. Blur only from the md breakpoint up (it is costly while scrolling). */
+[data-ev-hero="invitation"] [data-ev-photo] .ev-person {
+  background: color-mix(in srgb, var(--ev-surface) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ev-accent-ink) 22%, transparent);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--ev-accent-ink) 14%, transparent),
+    0 24px 40px -28px color-mix(in srgb, var(--ev-accent-ink) 60%, transparent);
+}
+/* The shared host panel is lighter still: no box, border, keyline or shadow, just a soft veil that fades out
+   toward the edges so the photo shows around and through it. */
+[data-ev-hero="invitation"] [data-ev-photo] .ev-person-pair {
+  background: radial-gradient(
+    ellipse closest-side at 50% 50%,
+    color-mix(in srgb, var(--ev-surface) 80%, transparent) 0%,
+    color-mix(in srgb, var(--ev-surface) 66%, transparent) 55%,
+    color-mix(in srgb, var(--ev-surface) 24%, transparent) 88%,
+    transparent 100%
+  );
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+[data-ev-hero="invitation"] [data-ev-photo] .ev-person-pair::after {
+  display: none;
+}
+/* Lettering over the picture: a tight, opaque halo plus a wider soft one, and the full text colour at a
+   medium weight (the script names are single-weight faces and are left alone). */
+[data-ev-hero="invitation"] [data-ev-photo] .ev-person-pair article {
+  color: var(--ev-text);
+  text-shadow:
+    0 0 2px var(--ev-surface),
+    0 0 6px var(--ev-surface),
+    0 0 14px color-mix(in srgb, var(--ev-surface) 92%, transparent),
+    0 0 26px color-mix(in srgb, var(--ev-surface) 70%, transparent);
+}
+[data-ev-hero="invitation"] [data-ev-photo] .ev-person-pair article > p,
+[data-ev-hero="invitation"] [data-ev-photo] .ev-person-pair article > p span,
+[data-ev-hero="invitation"] [data-ev-photo] .ev-person-pair article > div > p + p {
+  color: var(--ev-text);
+  font-weight: 600;
+}
+@media (min-width: 768px) {
+  [data-ev-hero="invitation"] [data-ev-photo] .ev-person:not(.ev-person-pair) {
+    backdrop-filter: blur(6px) saturate(1.05);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  [data-ev-hero="invitation"] [data-ev-photo] .ev-person,
+  [data-ev-hero="invitation"] [data-ev-photo] .ev-person-pair {
+    background: var(--ev-surface);
+    backdrop-filter: none;
+  }
+}
 /* Section titles end in a small ornament: two hairlines around a dot. */
 [data-ev-hero="invitation"] hgroup > h2::after {
   content: "";
@@ -519,4 +573,82 @@
 }
 [data-ev-hero="invitation"] .ev-map-placeholder {
   background: linear-gradient(160deg, color-mix(in srgb, var(--ev-surface) 70%, #d6e2c6), #dbe6cd);
+}
+
+/* ---- Public invitation loading cover (LoadGate): theme-coloured, lifts when the first screen is ready ---- */
+.ev-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  opacity: 1;
+  transition:
+    opacity 0.5s ease,
+    visibility 0s linear 0.5s;
+  /* If scripts never run, the cover still goes away on its own. */
+  animation: ev-loader-failsafe 0s linear 7s forwards;
+}
+.ev-loader[data-done] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+@keyframes ev-loader-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+.ev-loader-mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ev-loader-line {
+  width: 36px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.5;
+  transform-origin: center;
+  animation: ev-loader-line 1.6s ease-in-out infinite;
+}
+.ev-loader-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: ev-loader-dot 1.6s ease-in-out infinite;
+}
+@keyframes ev-loader-line {
+  0%,
+  100% {
+    transform: scaleX(0.35);
+    opacity: 0.25;
+  }
+  50% {
+    transform: scaleX(1);
+    opacity: 0.6;
+  }
+}
+@keyframes ev-loader-dot {
+  0%,
+  100% {
+    transform: scale(0.7);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ev-loader {
+    transition: none;
+  }
+  .ev-loader-line,
+  .ev-loader-dot {
+    animation: none;
+  }
 }
