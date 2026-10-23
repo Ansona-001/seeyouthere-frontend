@@ -150,6 +150,10 @@ export const ART: Record<string, ComponentType<ArtProps>> = {
   marigold_page: makeRasterPage({
     bottom: { src: "/themes/marigold-flowers.webp", width: 900, height: 407, flip: false },
   }),
+  wildflower: makeRasterTop({ src: "/themes/wildflower-top.webp", width: 900, height: 507, solid: true, noFade: true }),
+  wildflower_page: makeRasterPage({
+    bottom: { src: "/themes/wildflower-bottom.webp", width: 900, height: 540, flip: false },
+  }),
   autumn_page: makeRasterPage({
     wash: "/themes/autumn-wash.webp",
     bottom: { src: "/themes/autumn-canopy.webp", width: 1000, height: 266 },

@@ -123,10 +123,13 @@ const CLEARANCE: Record<string, { top?: number; topFluid?: number; bottom?: numb
   // The drape and chandelier band is 60.8% as tall as it is wide; the lilies along the bottom are about 170px high on a phone.
   marigold: { topFluid: 61 },
   marigold_page: { bottom: 160 },
+  // The hanging flowers are 56.3% as tall as they are wide, but only the sides reach low; the bottom flowers rise about 200px on a phone.
+  wildflower: { topFluid: 46 },
+  wildflower_page: { bottom: 200 },
 };
 
 /** Art keys of the stationery-style themes (Harvest, Marigold): a hero that opens the page and cards drawn as flat paper tags. */
-export const STATIONERY_ART: ReadonlySet<string> = new Set(["autumn", "marigold"]);
+export const STATIONERY_ART: ReadonlySet<string> = new Set(["autumn", "marigold", "wildflower"]);
 
 const TOP_PLACEMENTS = new Set(["corners", "top_corners", "top"]);
 const BOTTOM_PLACEMENTS = new Set(["corners", "bottom_corners", "page"]);
