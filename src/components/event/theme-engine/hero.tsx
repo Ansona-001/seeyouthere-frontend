@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { ART } from "./art/registry";
 import { foilGradient } from "./foil";
 import { LayerStack } from "./layers";
-import { artClearance, heroOrnamentKey, sanitizeBadge, splitTitle } from "./ornament-keys";
+import { artClearance, heroOrnamentKey, sanitizeBadge, splitTitle, STATIONERY_ART } from "./ornament-keys";
 import { HeroOrnament, NumeralBackdrop } from "./ornaments";
 import { ownKey } from "./safe";
 
@@ -43,9 +43,6 @@ const INVITATION_TITLE_SIZE: Partial<Record<FontKey, string>> = {
   // Playfair is wide and heavy; Heirloom's long couple names wrapped to three lines at the default size.
   playfair_display: "text-[clamp(1.75rem,10.5cqi,2.75rem)] @min-[900px]/ev:text-[52px]",
 };
-
-/** Art keys whose themes show only the hero on the first screen. */
-const FULL_SCREEN_ART: ReadonlySet<string> = new Set(["autumn"]);
 
 /** Kicker (accent font) style by the kind of face the accent font is. */
 const ACCENT_KIND: Partial<Record<FontKey, "serif" | "sans" | "display">> = {
@@ -197,7 +194,7 @@ export function HeroV2({
   const scale = numeralScale(Array.from(badge).length);
 
   const clearance = artClearance(theme.layers, (key) => Object.hasOwn(ART, key));
-  const fillsScreen = theme.layers?.some((l) => l.kind === "art" && FULL_SCREEN_ART.has(l.art)) ?? false;
+  const fillsScreen = theme.layers?.some((l) => l.kind === "art" && STATIONERY_ART.has(l.art)) ?? false;
   const pt = clearance.reserve || clearance.top;
   const ptWide = clearance.reserve ? clearance.reserve + 40 : clearance.top ? clearance.top + 30 : 0;
   // Art that grows with the page (up to 1280px) keeps a share of the page width clear at every size.

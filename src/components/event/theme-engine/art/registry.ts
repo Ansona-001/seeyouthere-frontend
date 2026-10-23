@@ -146,6 +146,10 @@ export const ART: Record<string, ComponentType<ArtProps>> = {
   }),
   mimosa: makeRasterTop({ src: "/themes/mimosa-canopy.webp", width: 1130, height: 480 }),
   autumn: makeRasterTop({ src: "/themes/autumn-canopy.webp", width: 1000, height: 266, solid: true }),
+  marigold: makeRasterTop({ src: "/themes/marigold-top.webp", width: 900, height: 547, solid: true, noFade: true }),
+  marigold_page: makeRasterPage({
+    bottom: { src: "/themes/marigold-flowers.webp", width: 900, height: 407, flip: false },
+  }),
   autumn_page: makeRasterPage({
     wash: "/themes/autumn-wash.webp",
     bottom: { src: "/themes/autumn-canopy.webp", width: 1000, height: 266 },

@@ -120,7 +120,13 @@ const CLEARANCE: Record<string, { top?: number; topFluid?: number; bottom?: numb
   autumn: { topFluid: 24 },
   // The same band mirrored along the bottom of the page: keep the footer clear of it.
   autumn_page: { bottom: 130 },
+  // The drape and chandelier band is 60.8% as tall as it is wide; the lilies along the bottom are about 170px high on a phone.
+  marigold: { topFluid: 61 },
+  marigold_page: { bottom: 160 },
 };
+
+/** Art keys of the stationery-style themes (Harvest, Marigold): a hero that opens the page and cards drawn as flat paper tags. */
+export const STATIONERY_ART: ReadonlySet<string> = new Set(["autumn", "marigold"]);
 
 const TOP_PLACEMENTS = new Set(["corners", "top_corners", "top"]);
 const BOTTOM_PLACEMENTS = new Set(["corners", "bottom_corners", "page"]);

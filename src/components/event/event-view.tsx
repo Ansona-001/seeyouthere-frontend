@@ -42,7 +42,7 @@ import { EventTheme } from "./theme";
 import { HeroV2 } from "./theme-engine/hero";
 import { customMusicSrc, MUSIC_TRACKS } from "./theme-engine/music-tracks";
 import { ART } from "./theme-engine/art/registry";
-import { artClearance, dateOrnamentKey } from "./theme-engine/ornament-keys";
+import { artClearance, dateOrnamentKey, STATIONERY_ART } from "./theme-engine/ornament-keys";
 import { LayerStack } from "./theme-engine/layers";
 import { LayoutV2 } from "./theme-engine/layout";
 import { BadgeOrnament, DividerOrnament } from "./theme-engine/ornaments";
@@ -112,7 +112,7 @@ export function EventView({
 }: EventViewProps) {
   const heroBlock = content.find((block): block is HeroBlockType => block.type === "hero");
   // Autumn themes show the date, time and "Add to Calendar" in the hero.
-  const autumn = theme.layers?.some((l) => l.kind === "art" && l.art === "autumn") ?? false;
+  const autumn = theme.layers?.some((l) => l.kind === "art" && STATIONERY_ART.has(l.art)) ?? false;
   // An autumn theme shows the date, time and "Add to Calendar" in the hero while the date section is the first one
   // after it; move that section further down and it becomes an ordinary section at its new position.
   const dateBlock = content.find((block): block is DatetimeBlockType => block.type === "datetime");

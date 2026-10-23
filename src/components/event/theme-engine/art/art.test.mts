@@ -30,11 +30,15 @@ const BACKEND: Record<string, { min: number; max: number; foil: boolean; placeme
   mimosa: { min: 0, max: 0, foil: false, placements: ["top"] },
   autumn: { min: 0, max: 0, foil: false, placements: ["top"] },
   autumn_page: { min: 0, max: 0, foil: false, placements: ["page"] },
+  marigold: { min: 0, max: 0, foil: false, placements: ["top"] },
+  marigold_page: { min: 0, max: 0, foil: false, placements: ["page"] },
 };
 const ALL_PLACEMENTS = ["hero", "hero_top", "top", "page", "edges", "scatter", "corners", "top_corners", "bottom_corners"];
 const PALETTE = ["#112233", "#445566", "#778899", "#AABBCC", "#DDEEFF", "#102030", "#405060", "#708090"];
 
 // React 19 hoists a preload hint for a raster's constant src; it is the only markup outside the layer box.
+// Rasters: one constant same-origin <img>-based layer each, no SVG.
+const RASTER_KEYS: ReadonlySet<string> = new Set(["mimosa", "autumn", "autumn_page", "marigold", "marigold_page"]);
 const PRELOAD_LINK = /<link rel="preload"[^>]*\/>/g;
 function render(key: string, placement: string, colors: readonly string[], extra: Record<string, unknown> = {}): string {
   return renderToStaticMarkup(createElement(ART[key], { placement, colors, region: "page", density: "dense", ...extra })).replace(PRELOAD_LINK, "");
@@ -65,7 +69,7 @@ test("every key renders every placement at every palette size without throwing",
       for (let n = spec.min; n <= spec.max; n++) {
         const html = render(key, placement, PALETTE.slice(0, n));
         assert.ok(html.startsWith("<div"), `${key}/${placement}/${n}`);
-        assert.ok(html.includes(key === "mimosa" || key === "autumn" || key === "autumn_page" ? "<img" : "<svg"), `${key}/${placement}/${n}`);
+        assert.ok(html.includes(RASTER_KEYS.has(key) ? "<img" : "<svg"), `${key}/${placement}/${n}`);
         assert.ok(html.includes('aria-hidden="true"'), `${key}/${placement}`);
         // Colours reach the drawing only through the --aN custom properties on the root.
         assert.ok(!html.replace(/^<div[^>]*>/, "").includes("#112233"), `${key}/${placement}/${n}`);
@@ -186,6 +190,8 @@ test("clearance reaches the text column for the keys that reserve it", () => {
   assert.deepEqual(artClearance([layer("mimosa", "top")], drawn), { ...none, topFluid: 27 });
   assert.deepEqual(artClearance([layer("autumn", "top")], drawn), { ...none, topFluid: 24 });
   assert.deepEqual(artClearance([layer("autumn_page", "page")], drawn), { ...none, bottom: 130 });
+  assert.deepEqual(artClearance([layer("marigold", "top")], drawn), { ...none, topFluid: 61 });
+  assert.deepEqual(artClearance([layer("marigold_page", "page")], drawn), { ...none, bottom: 160 });
   assert.deepEqual(artClearance([layer("mimosa", "top", "hero")], drawn), none);
   assert.deepEqual(artClearance([layer("mimosa", "top"), layer("olive_branches", "corners")], drawn), { top: 118, topFluid: 27, bottom: 70, reserve: 0 });
   assert.deepEqual(artClearance([layer("balloons", "hero_top", "hero")], drawn), none);
@@ -199,7 +205,7 @@ test("mimosa is one constant same-origin raster: a single img, nothing else, nev
   assert.ok(html.startsWith('<div class="absolute inset-0" aria-hidden="true">'));
   for (const placement of ALL_PLACEMENTS.filter((p) => p !== "top")) assert.equal(render("mimosa", placement, []), "", placement);
   for (const [key, spec] of Object.entries(BACKEND)) {
-    if (key === "mimosa" || key === "autumn" || key === "autumn_page") continue;
+    if (RASTER_KEYS.has(key)) continue;
     for (const placement of spec.placements) assert.ok(!render(key, placement, PALETTE.slice(0, spec.max)).includes("<img"), `${key}/${placement}`);
   }
 });
@@ -219,4 +225,17 @@ test("autumn_page paints only its own constant same-origin images, never animate
   assert.ok(html.includes("url(/themes/autumn-wash.webp)"), html);
   assert.ok(!/<script|<svg|\bhref\b|\bon\w+=|ev-sway/i.test(html), html);
   for (const placement of ALL_PLACEMENTS.filter((p) => p !== "page")) assert.equal(render("autumn_page", placement, []), "", placement);
+});
+
+test("marigold is one constant same-origin raster band and its lilies one upright image, never animated", () => {
+  const top = render("marigold", "top", []);
+  assert.equal(count(top, /<img\b/g), 1);
+  assert.match(top, /<img src="\/themes\/marigold-top\.webp" alt="" width="900" height="547" /);
+  const page = render("marigold_page", "page", []);
+  assert.equal(count(page, /<img\b/g), 1);
+  assert.match(page, /<img src="\/themes\/marigold-flowers\.webp" alt="" width="900" height="407" /);
+  assert.ok(!/-scale-y-100/.test(page), "the lilies stay upright");
+  for (const html of [top, page]) assert.ok(!/<script|<svg|\bhref\b|\bon\w+=|style=|ev-sway/i.test(html), html);
+  for (const placement of ALL_PLACEMENTS.filter((p) => p !== "top")) assert.equal(render("marigold", placement, []), "", placement);
+  for (const placement of ALL_PLACEMENTS.filter((p) => p !== "page")) assert.equal(render("marigold_page", placement, []), "", placement);
 });

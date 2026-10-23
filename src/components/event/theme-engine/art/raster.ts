@@ -8,7 +8,7 @@ import type { ArtProps } from "./registry.ts";
  * It scales with the page up to 1280px wide, then stays centred with its side
  * edges feathered so it never shows a hard cut. Not animated.
  */
-export function makeRasterTop(spec: { src: string; width: number; height: number; solid?: boolean }): (props: ArtProps) => ReactElement | null {
+export function makeRasterTop(spec: { src: string; width: number; height: number; solid?: boolean; noFade?: boolean }): (props: ArtProps) => ReactElement | null {
   return function RasterTop({ placement }: ArtProps) {
     if (placement !== "top") return null;
     return createElement(
@@ -25,7 +25,7 @@ export function makeRasterTop(spec: { src: string; width: number; height: number
           decoding: "async",
           loading: "eager",
           fetchPriority: spec.solid ? "high" : undefined,
-          className: `block h-auto w-full ${spec.solid ? "mask-b-from-75%" : "mask-b-from-50%"} @min-[1280px]/ev:mask-x-from-85%`,
+          className: `block h-auto w-full ${spec.noFade ? "" : spec.solid ? "mask-b-from-75%" : "mask-b-from-50%"} @min-[1280px]/ev:mask-x-from-85%`,
         }),
       ),
     );
@@ -38,8 +38,10 @@ export function makeRasterTop(spec: { src: string; width: number; height: number
  * same-origin file under `public/`, never user input. Not animated.
  */
 export function makeRasterPage(spec: {
-  wash: string;
-  bottom: { src: string; width: number; height: number };
+  /** Optional tiled wash image behind the page. */
+  wash?: string;
+  /** `flip: false` keeps the image upright (art that grows up from the bottom edge); the default mirrors a top band. */
+  bottom: { src: string; width: number; height: number; flip?: boolean };
 }): (props: ArtProps) => ReactElement | null {
   const end = "absolute left-1/2 block h-auto w-full -translate-x-1/2 @min-[1280px]/ev:w-[1280px] @min-[1280px]/ev:mask-x-from-85%";
   return function RasterPage({ placement }: ArtProps) {
@@ -47,10 +49,12 @@ export function makeRasterPage(spec: {
     return createElement(
       "div",
       { className: "absolute inset-0", "aria-hidden": "true" },
-      createElement("div", {
-        className: "absolute inset-0 bg-[length:100%_auto] bg-top bg-repeat-y",
-        style: { backgroundImage: `url(${spec.wash})` },
-      }),
+      spec.wash
+        ? createElement("div", {
+            className: "absolute inset-0 bg-[length:100%_auto] bg-top bg-repeat-y",
+            style: { backgroundImage: `url(${spec.wash})` },
+          })
+        : null,
       createElement("img", {
         src: spec.bottom.src,
         alt: "",
@@ -58,7 +62,7 @@ export function makeRasterPage(spec: {
         height: spec.bottom.height,
         decoding: "async",
         loading: "lazy",
-        className: `${end} bottom-0 -scale-y-100 mask-b-from-75%`,
+        className: `${end} bottom-0 ${spec.bottom.flip === false ? "mask-t-from-75%" : "-scale-y-100 mask-b-from-75%"}`,
       }),
     );
   };

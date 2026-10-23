@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { themeStyle } from "../theme";
 
 import { foilGradient, mirroredFoilStops } from "./foil";
+import { STATIONERY_ART } from "./ornament-keys";
 import { ownKey, safeHex, safeHexList, safeInt } from "./safe";
 
 const CARD_STYLES = {
@@ -97,7 +98,7 @@ export function ThemeRootV2({ theme, className, children }: { theme: Theme; clas
       data-ev-buttons={buttons}
       data-ev-motion={motion}
       data-ev-hero={theme.hero_style === "invitation" ? "invitation" : undefined}
-      data-ev-autumn={theme.layers?.some((l) => l.kind === "art" && l.art === "autumn") ? "" : undefined}
+      data-ev-autumn={theme.layers?.some((l) => l.kind === "art" && STATIONERY_ART.has(l.art)) ? "" : undefined}
       data-ev-surface={surfaceFor(cardStyle)}
       data-ev-headings={headings}
       data-ev-accent-script={SCRIPT_FONTS.has(accentFont) ? "" : undefined}
