@@ -113,8 +113,11 @@ export function EventView({
   const heroBlock = content.find((block): block is HeroBlockType => block.type === "hero");
   // Autumn themes show the date, time and "Add to Calendar" in the hero.
   const autumn = theme.layers?.some((l) => l.kind === "art" && l.art === "autumn") ?? false;
-  // The hero already shows the date, time and "Add to Calendar" of an autumn theme, so its date section is dropped.
-  const rest = content.filter((block) => block.type !== "hero" && !(autumn && block.type === "datetime"));
+  // An autumn theme shows the date, time and "Add to Calendar" in the hero while the date section is the first one
+  // after it; move that section further down and it becomes an ordinary section at its new position.
+  const dateBlock = content.find((block): block is DatetimeBlockType => block.type === "datetime");
+  const dateInHero = autumn && dateBlock !== undefined && content.find((block) => block.type !== "hero") === dateBlock;
+  const rest = content.filter((block) => block.type !== "hero" && !(dateInHero && block === dateBlock));
   const locationBlock = content.find((block): block is LocationBlockType => block.type === "location");
   const calendarLocation = locationBlock ? [locationBlock.name, locationBlock.address].filter(Boolean).join(", ") : "";
 
@@ -172,9 +175,8 @@ export function EventView({
   if (theme.engine === 2) {
     // Theme engine v2: container-query shell, layered background. The v2 hero
     // owns its hero-region layer stack.
-    const dateBlock = content.find((block): block is DatetimeBlockType => block.type === "datetime");
     const heroDate =
-      dateBlock && autumn ? (
+      dateBlock && dateInHero ? (
         <HeroDate
           block={dateBlock}
           calendar={
