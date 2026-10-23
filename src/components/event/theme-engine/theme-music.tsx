@@ -88,25 +88,31 @@ export function ThemeMusic({ src, download = false }: { src: string; download?: 
       };
     }
 
-    if (download) {
-      (async () => {
-        try {
-          const res = await fetch(src, { signal: abort.signal, credentials: "omit" });
-          if (!res.ok || !(res.headers.get("content-type") ?? "").toLowerCase().startsWith("audio/mpeg")) return;
-          const blob = await res.blob();
-          if (abort.signal.aborted || blob.size === 0 || blob.size > MAX_BLOB_BYTES) return;
-          objectUrl = URL.createObjectURL(new Blob([blob], { type: "audio/mpeg" }));
-          setReady(true);
-          begin(objectUrl);
-        } catch (err) {
-          if (!abort.signal.aborted) console.debug("theme music unavailable", err);
-        }
-      })();
-    } else {
-      begin(src);
-    }
+    const start = () => {
+      if (download) {
+        (async () => {
+          try {
+            const res = await fetch(src, { signal: abort.signal, credentials: "omit" });
+            if (!res.ok || !(res.headers.get("content-type") ?? "").toLowerCase().startsWith("audio/mpeg")) return;
+            const blob = await res.blob();
+            if (abort.signal.aborted || blob.size === 0 || blob.size > MAX_BLOB_BYTES) return;
+            objectUrl = URL.createObjectURL(new Blob([blob], { type: "audio/mpeg" }));
+            setReady(true);
+            begin(objectUrl);
+          } catch (err) {
+            if (!abort.signal.aborted) console.debug("theme music unavailable", err);
+          }
+        })();
+      } else {
+        begin(src);
+      }
+    };
+    // Start once the page's own images and fonts are in, so the track (up to 5 MB) never competes with the first screen.
+    if (document.readyState === "complete") start();
+    else window.addEventListener("load", start, { once: true });
 
     return () => {
+      window.removeEventListener("load", start);
       abort.abort();
       cleanup();
       window.clearInterval(ramp);

@@ -507,7 +507,7 @@
 }
 /* Harvest: sections sit close together; the hero keeps the room around it. */
 [data-ev-autumn] [data-ev-reveal] > section {
-  padding-block: 1.75rem;
+  padding-block: 2.5rem;
 }
 /* Harvest: air between the script kicker and the heading under it, and before the content below. */
 [data-ev-autumn] [data-ev-reveal] hgroup {
@@ -539,6 +539,13 @@
   height: 1px;
   margin: 0 auto 0.5rem;
   background: color-mix(in srgb, var(--ev-accent) 50%, transparent);
+}
+/* Harvest: sections fade in quicker and from a shorter distance, so scrolling does not feel like waiting for each one. */
+[data-ev-autumn] [data-ev-reveal] {
+  transition-duration: 350ms;
+}
+[data-ev-autumn] [data-reveal="on"] [data-ev-reveal]:not([data-revealed]) {
+  translate: 0 1rem;
 }
 /* A person card over a section background photo: a frosted vellum panel so names and family lines stay readable
    whether the theme draws card boxes or not. Blur only from the md breakpoint up (it is costly while scrolling). */

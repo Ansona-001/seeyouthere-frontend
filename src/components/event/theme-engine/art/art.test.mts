@@ -34,10 +34,10 @@ const BACKEND: Record<string, { min: number; max: number; foil: boolean; placeme
 const ALL_PLACEMENTS = ["hero", "hero_top", "top", "page", "edges", "scatter", "corners", "top_corners", "bottom_corners"];
 const PALETTE = ["#112233", "#445566", "#778899", "#AABBCC", "#DDEEFF", "#102030", "#405060", "#708090"];
 
-// React 19 hoists a preload hint for the raster's constant src; it is the only markup outside the layer box.
-const PRELOADS = ["/themes/mimosa-canopy.webp", "/themes/autumn-canopy.webp"].map((href) => `<link rel="preload" as="image" href="${href}"/>`);
+// React 19 hoists a preload hint for a raster's constant src; it is the only markup outside the layer box.
+const PRELOAD_LINK = /<link rel="preload"[^>]*\/>/g;
 function render(key: string, placement: string, colors: readonly string[], extra: Record<string, unknown> = {}): string {
-  return renderToStaticMarkup(createElement(ART[key], { placement, colors, region: "page", density: "dense", ...extra })).replace(PRELOADS[0], "").replace(PRELOADS[1], "");
+  return renderToStaticMarkup(createElement(ART[key], { placement, colors, region: "page", density: "dense", ...extra })).replace(PRELOAD_LINK, "");
 }
 const count = (s: string, re: RegExp) => (s.match(re) ?? []).length;
 

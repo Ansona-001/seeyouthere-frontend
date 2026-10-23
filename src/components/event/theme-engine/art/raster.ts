@@ -24,6 +24,7 @@ export function makeRasterTop(spec: { src: string; width: number; height: number
           height: spec.height,
           decoding: "async",
           loading: "eager",
+          fetchPriority: spec.solid ? "high" : undefined,
           className: `block h-auto w-full ${spec.solid ? "mask-b-from-75%" : "mask-b-from-50%"} @min-[1280px]/ev:mask-x-from-85%`,
         }),
       ),
