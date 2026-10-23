@@ -40,6 +40,8 @@ const TITLE_FONT: Partial<Record<FontKey, string>> = {
 /** The invitation hero sets its own title size; Birthstone gets the same 15% boost as above. */
 const INVITATION_TITLE_SIZE: Partial<Record<FontKey, string>> = {
   birthstone: "text-[clamp(2.6rem,16.1cqi,4rem)]",
+  // Playfair is wide and heavy; Heirloom's long couple names wrapped to three lines at the default size.
+  playfair_display: "text-[clamp(1.75rem,10.5cqi,2.75rem)] @min-[900px]/ev:text-[52px]",
 };
 
 /** Kicker (accent font) style by the kind of face the accent font is. */
