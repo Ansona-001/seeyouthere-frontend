@@ -40,7 +40,12 @@ const TITLE_FONT: Partial<Record<FontKey, string>> = {
 /** The invitation hero sets its own title size; Birthstone gets the same 15% boost as above. */
 const INVITATION_TITLE_SIZE: Partial<Record<FontKey, string>> = {
   birthstone: "text-[clamp(2.6rem,16.1cqi,4rem)]",
+  // Playfair is wide and heavy; Heirloom's long couple names wrapped to three lines at the default size.
+  playfair_display: "text-[clamp(1.75rem,10.5cqi,2.75rem)] @min-[900px]/ev:text-[52px]",
 };
+
+/** Art keys whose themes show only the hero on the first screen. */
+const FULL_SCREEN_ART: ReadonlySet<string> = new Set(["autumn"]);
 
 /** Kicker (accent font) style by the kind of face the accent font is. */
 const ACCENT_KIND: Partial<Record<FontKey, "serif" | "sans" | "display">> = {
@@ -157,7 +162,18 @@ function Portrait({ image, alt, ring }: { image: { src: string }; alt: string; r
  * React text. `color_block` sets text in `accent_text` on the accent block and
  * never uses the muted colour, which is not contrast-checked against it.
  */
-export function HeroV2({ block, theme, media }: { block: HeroBlock; theme: Theme; media: MediaMap }) {
+export function HeroV2({
+  block,
+  theme,
+  media,
+  footer = null,
+}: {
+  block: HeroBlock;
+  theme: Theme;
+  media: MediaMap;
+  /** Extra content set under the hero text (the event date and "Add to Calendar" on autumn themes). */
+  footer?: ReactNode;
+}) {
   const image = block.image ? media[block.image.media_id] : undefined;
   const alt = block.image?.alt ?? "";
   const ornament = heroOrnamentKey(theme.ornament?.hero);
@@ -181,6 +197,7 @@ export function HeroV2({ block, theme, media }: { block: HeroBlock; theme: Theme
   const scale = numeralScale(Array.from(badge).length);
 
   const clearance = artClearance(theme.layers, (key) => Object.hasOwn(ART, key));
+  const fillsScreen = theme.layers?.some((l) => l.kind === "art" && FULL_SCREEN_ART.has(l.art)) ?? false;
   const pt = clearance.reserve || clearance.top;
   const ptWide = clearance.reserve ? clearance.reserve + 40 : clearance.top ? clearance.top + 30 : 0;
   // Art that grows with the page (up to 1280px) keeps a share of the page width clear at every size.
@@ -319,6 +336,8 @@ export function HeroV2({ block, theme, media }: { block: HeroBlock; theme: Theme
       style={vars}
       className={cn(
         "relative isolate flex flex-col items-center px-[22px] text-center",
+        // These themes open on the hero with the first card peeking in below it, so the page reads as one scroll.
+        fillsScreen && "min-h-[60svh] justify-center pb-6",
         style === "spotlight" ? "pt-[max(3.5rem,var(--ev-pt,0px))] pb-8" : "pb-2",
         style === "spotlight"
           ? ""
@@ -342,6 +361,7 @@ export function HeroV2({ block, theme, media }: { block: HeroBlock; theme: Theme
       {portrait}
       {framed}
       {content}
+      {footer}
     </div>
   );
 }

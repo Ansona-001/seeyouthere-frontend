@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 
 import { makeArt } from "./layout.ts";
-import { makeRasterTop } from "./raster.ts";
+import { makeRasterPage, makeRasterTop } from "./raster.ts";
 import * as balloons from "./shapes/balloons.ts";
 import * as botanicalWash from "./shapes/botanical_wash.ts";
 import * as clouds from "./shapes/clouds.ts";
@@ -145,4 +145,9 @@ export const ART: Record<string, ComponentType<ArtProps>> = {
     },
   }),
   mimosa: makeRasterTop({ src: "/themes/mimosa-canopy.webp", width: 1130, height: 480 }),
+  autumn: makeRasterTop({ src: "/themes/autumn-canopy.webp", width: 1000, height: 266, solid: true }),
+  autumn_page: makeRasterPage({
+    wash: "/themes/autumn-wash.webp",
+    bottom: { src: "/themes/autumn-canopy.webp", width: 1000, height: 266 },
+  }),
 };

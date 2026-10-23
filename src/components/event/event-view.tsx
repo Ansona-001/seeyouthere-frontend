@@ -4,6 +4,7 @@ import type {
   Block,
   ClosedReason,
   FieldDef,
+  DatetimeBlock as DatetimeBlockType,
   HeroBlock as HeroBlockType,
   LocationBlock as LocationBlockType,
   MediaMap,
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils";
 
 import { CountdownBlock } from "./blocks/countdown-block";
 import { DatetimeBlock } from "./blocks/datetime-block";
+import { HeroDate } from "./blocks/hero-date";
 import { DressCodeBlock } from "./blocks/dress-code-block";
 import { FaqBlock } from "./blocks/faq-block";
 import { GalleryBlock } from "./blocks/gallery-block";
@@ -38,7 +40,7 @@ import { LoadGate } from "./load-gate";
 import { ScrollReveal } from "./scroll-reveal";
 import { EventTheme } from "./theme";
 import { HeroV2 } from "./theme-engine/hero";
-import { MUSIC_TRACKS } from "./theme-engine/music-tracks";
+import { customMusicSrc, MUSIC_TRACKS } from "./theme-engine/music-tracks";
 import { ART } from "./theme-engine/art/registry";
 import { artClearance, dateOrnamentKey } from "./theme-engine/ornament-keys";
 import { LayerStack } from "./theme-engine/layers";
@@ -82,6 +84,8 @@ export type EventViewProps = {
   photosNextCursor?: string | null;
   /** Approved guest wishes for the wishes block (live mode only). */
   wishes?: PublicWish[];
+  /** The host's own uploaded track (public page only); wins over the design's built-in music. */
+  musicSrc?: string | null;
 };
 
 /**
@@ -104,9 +108,13 @@ export function EventView({
   photos,
   photosNextCursor = null,
   wishes,
+  musicSrc,
 }: EventViewProps) {
   const heroBlock = content.find((block): block is HeroBlockType => block.type === "hero");
-  const rest = content.filter((block) => block.type !== "hero");
+  // Autumn themes show the date, time and "Add to Calendar" in the hero.
+  const autumn = theme.layers?.some((l) => l.kind === "art" && l.art === "autumn") ?? false;
+  // The hero already shows the date, time and "Add to Calendar" of an autumn theme, so its date section is dropped.
+  const rest = content.filter((block) => block.type !== "hero" && !(autumn && block.type === "datetime"));
   const locationBlock = content.find((block): block is LocationBlockType => block.type === "location");
   const calendarLocation = locationBlock ? [locationBlock.name, locationBlock.address].filter(Boolean).join(", ") : "";
 
@@ -164,15 +172,40 @@ export function EventView({
   if (theme.engine === 2) {
     // Theme engine v2: container-query shell, layered background. The v2 hero
     // owns its hero-region layer stack.
-    const hero = heroBlock ? <HeroV2 block={heroBlock} theme={theme} media={media} /> : null;
+    const dateBlock = content.find((block): block is DatetimeBlockType => block.type === "datetime");
+    const heroDate =
+      dateBlock && autumn ? (
+        <HeroDate
+          block={dateBlock}
+          calendar={
+            mode === "live" && slug && startsAt
+              ? {
+                  title: title ?? "",
+                  slug,
+                  blockId: dateBlock.id,
+                  startsAt,
+                  endsAt,
+                  allDay: dateBlock.all_day,
+                  startLocal: dateBlock.start_local,
+                  endLocal: dateBlock.end_local,
+                  timezone: dateBlock.timezone,
+                  location: calendarLocation,
+                }
+              : undefined
+          }
+        />
+      ) : null;
+    const hero = heroBlock ? <HeroV2 block={heroBlock} theme={theme} media={media} footer={heroDate} /> : null;
     // Keep the footer clear of art that hangs in the bottom corners.
     const clearBottom = artClearance(theme.layers, (key) => Object.hasOwn(ART, key)).bottom;
+    const customMusic = customMusicSrc(musicSrc);
     const track = ownKey(MUSIC_TRACKS, theme.music);
+    const music = customMusic ?? (track ? MUSIC_TRACKS[track] : null);
     return (
       <>
       {gate}
       <ThemeRootV2 theme={theme} className="flex min-h-dvh flex-col">
-        {mode === "live" && track && <ThemeMusic track={track} />}
+        {mode === "live" && music && <ThemeMusic key={music} src={music} download={customMusic !== null} />}
         <LayerStack layers={theme.layers} region="page" foil={theme.foil} />
         <div className="flex-1" style={!slug && clearBottom ? { paddingBottom: clearBottom } : undefined}>
           <LayoutV2 layout={theme.layout} hero={hero}>

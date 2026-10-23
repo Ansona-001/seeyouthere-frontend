@@ -91,6 +91,7 @@ export default async function PublicEventPage({ params }: PageProps<"/[slug]">) 
       content={event.content}
       theme={event.theme}
       media={event.media}
+      musicSrc={event.music_src}
       mode="live"
       removeBranding={event.remove_branding}
       slug={slug}

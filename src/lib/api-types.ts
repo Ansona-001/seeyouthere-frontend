@@ -579,6 +579,10 @@ export type EventTemplateRef = {
   latest_version: number;
 };
 
+export type MusicSource = "template" | "custom" | "none";
+
+export type EventAudio = { id: string; src: string; size_bytes: number; duration_ms: number; created_at: string };
+
 export type Event = {
   id: string;
   /** null until a slug is set. */
@@ -606,6 +610,8 @@ export type Event = {
   media: MediaMap;
   /** Which image link previews (chat apps, social) show. `media_id` is set only for `custom`. */
   share_image: { source: ShareImageSource; media_id: string | null };
+  /** Which music the public page plays; `audio` is the host's uploaded track, kept even while another source is chosen. */
+  music: { source: MusicSource; /** Whether the design itself ships a track, whatever the host chose. */ template_available: boolean; audio: EventAudio | null };
   /** null until a slug is set. */
   url: string | null;
 };
@@ -667,6 +673,8 @@ export type PublicEventData = {
   media: MediaMap;
   /** Resolved server-side; null means "use the site default image". */
   share_image: MediaRef | null;
+  /** The host's own track; set only when they chose it and have uploaded one. */
+  music_src: string | null;
   rsvp: PublicRsvpConfig;
 };
 

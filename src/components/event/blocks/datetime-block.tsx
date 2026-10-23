@@ -22,7 +22,7 @@ function parseLocal(local: string): Date | null {
   return new Date(Date.UTC(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi)));
 }
 
-function formatLocal(local: string, options: Intl.DateTimeFormatOptions): string | null {
+export function formatLocal(local: string, options: Intl.DateTimeFormatOptions): string | null {
   const date = parseLocal(local);
   if (!date) return null;
   return new Intl.DateTimeFormat("en-US", { ...options, timeZone: "UTC" }).format(date);

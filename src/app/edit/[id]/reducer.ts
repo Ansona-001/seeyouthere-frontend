@@ -3,7 +3,7 @@
 // successful write ("applied") is the single source of truth for `version`,
 // `theme` and `media` — the client never computes those itself.
 
-import type { Block, Event, EventRole, EventStatus, MediaMap, MediaRef, Overrides, RsvpMode, ShareImageSource, Theme, ValidationIssue, Visibility } from "@/lib/api-types";
+import type { Block, Event, EventAudio, EventRole, EventStatus, MediaMap, MediaRef, Overrides, RsvpMode, ShareImageSource, Theme, ValidationIssue, Visibility } from "@/lib/api-types";
 
 export type SaveStatus = "idle" | "saving" | "saved" | "error" | "conflict";
 
@@ -29,6 +29,7 @@ export type EditorState = {
   theme: Theme;
   media: MediaMap;
   shareImage: { source: ShareImageSource; mediaId: string | null };
+  music: Event["music"];
   title: string;
   startsAt: string | null;
   dirty: boolean;
@@ -39,11 +40,12 @@ export type EditorState = {
 };
 
 export type EditorAction =
-  | { type: "applied"; event: Event; templateSlug: string }
+  | { type: "applied"; event: Event; templateSlug: string; sent?: { content: Block[]; overrides: Overrides } }
   | { type: "set_content"; content: Block[] }
   | { type: "set_overrides"; overrides: Overrides }
   | { type: "set_template"; slug: string }
   | { type: "add_media"; id: string; ref: MediaRef }
+  | { type: "set_audio"; audio: EventAudio | null }
   | { type: "save_start" }
   | { type: "save_error"; message: string; issues?: ValidationIssue[] }
   | { type: "conflict"; currentVersion: number }
@@ -71,6 +73,7 @@ export function editorStateFromEvent(event: Event): EditorState {
     theme: event.theme,
     media: event.media,
     shareImage: { source: event.share_image.source, mediaId: event.share_image.media_id },
+    music: event.music,
     title: event.title,
     startsAt: event.starts_at,
     dirty: false,
@@ -85,6 +88,19 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
   switch (action.type) {
     case "applied": {
       const next = editorStateFromEvent(action.event);
+      // The user kept editing while this save was in flight: the response describes what was sent, so
+      // adopting its content would silently drop those newer edits (e.g. a hero photo just chosen).
+      // Take the server's version/theme/media but keep the local edits and leave them dirty so they save next.
+      if (action.sent && (state.content !== action.sent.content || state.overrides !== action.sent.overrides)) {
+        return {
+          ...next,
+          content: state.content,
+          overrides: state.overrides,
+          media: { ...next.media, ...state.media },
+          dirty: true,
+          saveStatus: "idle",
+        };
+      }
       return next;
     }
     case "set_content":
@@ -98,6 +114,8 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return { ...state, templateSlug: action.slug, dirty: true, saveStatus: "idle", saveMessage: null, saveIssues: null };
     case "add_media":
       return { ...state, media: { ...state.media, [action.id]: action.ref } };
+    case "set_audio":
+      return { ...state, music: { ...state.music, audio: action.audio } };
     case "save_start":
       return { ...state, saveStatus: "saving" };
     case "save_error":
