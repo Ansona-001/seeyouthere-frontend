@@ -28,14 +28,16 @@ const BACKEND: Record<string, { min: number; max: number; foil: boolean; placeme
   printers_corners: { min: 1, max: 1, foil: true, placements: ["corners"] },
   daisies: { min: 2, max: 3, foil: false, placements: ["corners", "edges"] },
   mimosa: { min: 0, max: 0, foil: false, placements: ["top"] },
+  autumn: { min: 0, max: 0, foil: false, placements: ["top"] },
+  autumn_page: { min: 0, max: 0, foil: false, placements: ["page"] },
 };
-const ALL_PLACEMENTS = ["hero", "hero_top", "top", "edges", "scatter", "corners", "top_corners", "bottom_corners"];
+const ALL_PLACEMENTS = ["hero", "hero_top", "top", "page", "edges", "scatter", "corners", "top_corners", "bottom_corners"];
 const PALETTE = ["#112233", "#445566", "#778899", "#AABBCC", "#DDEEFF", "#102030", "#405060", "#708090"];
 
 // React 19 hoists a preload hint for the raster's constant src; it is the only markup outside the layer box.
-const PRELOAD = '<link rel="preload" as="image" href="/themes/mimosa-canopy.webp"/>';
+const PRELOADS = ["/themes/mimosa-canopy.webp", "/themes/autumn-canopy.webp"].map((href) => `<link rel="preload" as="image" href="${href}"/>`);
 function render(key: string, placement: string, colors: readonly string[], extra: Record<string, unknown> = {}): string {
-  return renderToStaticMarkup(createElement(ART[key], { placement, colors, region: "page", density: "dense", ...extra })).replace(PRELOAD, "");
+  return renderToStaticMarkup(createElement(ART[key], { placement, colors, region: "page", density: "dense", ...extra })).replace(PRELOADS[0], "").replace(PRELOADS[1], "");
 }
 const count = (s: string, re: RegExp) => (s.match(re) ?? []).length;
 
@@ -63,7 +65,7 @@ test("every key renders every placement at every palette size without throwing",
       for (let n = spec.min; n <= spec.max; n++) {
         const html = render(key, placement, PALETTE.slice(0, n));
         assert.ok(html.startsWith("<div"), `${key}/${placement}/${n}`);
-        assert.ok(html.includes(key === "mimosa" ? "<img" : "<svg"), `${key}/${placement}/${n}`);
+        assert.ok(html.includes(key === "mimosa" || key === "autumn" || key === "autumn_page" ? "<img" : "<svg"), `${key}/${placement}/${n}`);
         assert.ok(html.includes('aria-hidden="true"'), `${key}/${placement}`);
         // Colours reach the drawing only through the --aN custom properties on the root.
         assert.ok(!html.replace(/^<div[^>]*>/, "").includes("#112233"), `${key}/${placement}/${n}`);
@@ -158,8 +160,9 @@ test("no filter, foreign object, script, image or external reference anywhere un
   for (const url of files) {
     const src = readFileSync(url, "utf8");
     for (const re of forbidden) assert.ok(!re.test(src), `${url.pathname}: ${re}`);
-    // The only url(#...) targets: the foil gradient, the mirror ball's clip path and the tile pattern built in layout.ts.
-    for (const m of src.matchAll(/url\(([^)]*)\)/g)) assert.match(m[1], /^#(ev-foil-grad|ev-mb-clip|\$\{patternId\})$/, `${url.pathname}: ${m[0]}`);
+    // The only url(...) targets: the foil gradient, the mirror ball's clip path, the tile pattern built in layout.ts,
+    // and raster.ts's constant, code-supplied wash image (never user input).
+    for (const m of src.matchAll(/url\(([^)]*)\)/g)) assert.match(m[1], /^(#(ev-foil-grad|ev-mb-clip|\$\{patternId\})|\$\{spec\.wash\})$/, `${url.pathname}: ${m[0]}`);
   }
 });
 
@@ -181,6 +184,8 @@ test("clearance reaches the text column for the keys that reserve it", () => {
   assert.deepEqual(artClearance([layer("open_door_plants", "bottom_corners")], drawn), { ...none, bottom: 170 });
   assert.deepEqual(artClearance([layer("clouds", "top")], drawn), { ...none, top: 120 });
   assert.deepEqual(artClearance([layer("mimosa", "top")], drawn), { ...none, topFluid: 27 });
+  assert.deepEqual(artClearance([layer("autumn", "top")], drawn), { ...none, topFluid: 24 });
+  assert.deepEqual(artClearance([layer("autumn_page", "page")], drawn), { ...none, bottom: 130 });
   assert.deepEqual(artClearance([layer("mimosa", "top", "hero")], drawn), none);
   assert.deepEqual(artClearance([layer("mimosa", "top"), layer("olive_branches", "corners")], drawn), { top: 118, topFluid: 27, bottom: 70, reserve: 0 });
   assert.deepEqual(artClearance([layer("balloons", "hero_top", "hero")], drawn), none);
@@ -194,7 +199,24 @@ test("mimosa is one constant same-origin raster: a single img, nothing else, nev
   assert.ok(html.startsWith('<div class="absolute inset-0" aria-hidden="true">'));
   for (const placement of ALL_PLACEMENTS.filter((p) => p !== "top")) assert.equal(render("mimosa", placement, []), "", placement);
   for (const [key, spec] of Object.entries(BACKEND)) {
-    if (key === "mimosa") continue;
+    if (key === "mimosa" || key === "autumn" || key === "autumn_page") continue;
     for (const placement of spec.placements) assert.ok(!render(key, placement, PALETTE.slice(0, spec.max)).includes("<img"), `${key}/${placement}`);
   }
+});
+
+test("autumn is one constant same-origin raster band, never animated", () => {
+  const html = render("autumn", "top", []);
+  assert.equal(count(html, /<img\b/g), 1);
+  assert.match(html, /<img src="\/themes\/autumn-canopy\.webp" alt="" width="1000" height="266" /);
+  assert.ok(!/<script|<svg|\bhref\b|\bon\w+=|style=|ev-sway/i.test(html), html);
+  for (const placement of ALL_PLACEMENTS.filter((p) => p !== "top")) assert.equal(render("autumn", placement, []), "", placement);
+});
+
+test("autumn_page paints only its own constant same-origin images, never animated", () => {
+  const html = render("autumn_page", "page", []);
+  assert.equal(count(html, /<img\b/g), 1);
+  assert.ok(html.includes('src="/themes/autumn-canopy.webp"'), html);
+  assert.ok(html.includes("url(/themes/autumn-wash.webp)"), html);
+  assert.ok(!/<script|<svg|\bhref\b|\bon\w+=|ev-sway/i.test(html), html);
+  for (const placement of ALL_PLACEMENTS.filter((p) => p !== "page")) assert.equal(render("autumn_page", placement, []), "", placement);
 });

@@ -116,10 +116,14 @@ const CLEARANCE: Record<string, { top?: number; topFluid?: number; bottom?: numb
   mirror_ball: { reserve: 236 },
   // The canopy is 42.5% as tall as it is wide, so its clearance is a share of the page width.
   mimosa: { topFluid: 27 },
+  // The autumn leaf band is 26.6% as tall as it is wide; the extra share keeps the names off the leaves.
+  autumn: { topFluid: 24 },
+  // The same band mirrored along the bottom of the page: keep the footer clear of it.
+  autumn_page: { bottom: 130 },
 };
 
 const TOP_PLACEMENTS = new Set(["corners", "top_corners", "top"]);
-const BOTTOM_PLACEMENTS = new Set(["corners", "bottom_corners"]);
+const BOTTOM_PLACEMENTS = new Set(["corners", "bottom_corners", "page"]);
 
 /**
  * How far the hero text must sit below the top of the page (`top`, art in the

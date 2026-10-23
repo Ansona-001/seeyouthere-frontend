@@ -497,6 +497,49 @@
   border-radius: calc(var(--ev-card-radius) - 6px);
   pointer-events: none;
 }
+/* ---- Harvest (autumn art): cards are a flat warm-paper tag, no border ---- */
+[data-ev-autumn] .ev-card {
+  position: relative;
+  background: var(--ev-surface);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--ev-accent) 20%, transparent),
+    0 24px 38px -26px color-mix(in srgb, var(--ev-accent) 65%, transparent);
+}
+/* Harvest: sections sit close together; the hero keeps the room around it. */
+[data-ev-autumn] [data-ev-reveal] > section {
+  padding-block: 1.75rem;
+}
+/* Harvest: air between the script kicker and the heading under it, and before the content below. */
+[data-ev-autumn] [data-ev-reveal] hgroup {
+  margin-bottom: 0.75rem;
+}
+[data-ev-autumn] [data-ev-reveal] hgroup > h2 {
+  margin-top: 0.4rem;
+}
+/* Harvest countdown: rounder tags, larger numerals, and a short rust rule between each number and its label. */
+[data-ev-autumn] [role="timer"] {
+  gap: 0.625rem;
+}
+[data-ev-autumn] [role="timer"] .ev-card {
+  border-radius: 14px;
+  padding-block: 1.1rem !important;
+  gap: 0.5rem;
+}
+[data-ev-autumn] [role="timer"] .ev-card > span:first-child {
+  font-size: clamp(1.75rem, 9cqi, 3.75rem);
+  font-weight: 600;
+}
+[data-ev-autumn] [role="timer"] .ev-card > span:last-child {
+  letter-spacing: 0.16em;
+}
+[data-ev-autumn] [role="timer"] .ev-card > span:last-child::before {
+  content: "";
+  display: block;
+  width: 1.25rem;
+  height: 1px;
+  margin: 0 auto 0.5rem;
+  background: color-mix(in srgb, var(--ev-accent) 50%, transparent);
+}
 /* A person card over a section background photo: a frosted vellum panel so names and family lines stay readable
    whether the theme draws card boxes or not. Blur only from the md breakpoint up (it is costly while scrolling). */
 [data-ev-hero="invitation"] [data-ev-photo] .ev-person {

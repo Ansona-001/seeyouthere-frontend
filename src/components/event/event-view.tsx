@@ -4,6 +4,7 @@ import type {
   Block,
   ClosedReason,
   FieldDef,
+  DatetimeBlock as DatetimeBlockType,
   HeroBlock as HeroBlockType,
   LocationBlock as LocationBlockType,
   MediaMap,
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils";
 
 import { CountdownBlock } from "./blocks/countdown-block";
 import { DatetimeBlock } from "./blocks/datetime-block";
+import { HeroDate } from "./blocks/hero-date";
 import { DressCodeBlock } from "./blocks/dress-code-block";
 import { FaqBlock } from "./blocks/faq-block";
 import { GalleryBlock } from "./blocks/gallery-block";
@@ -106,7 +108,10 @@ export function EventView({
   wishes,
 }: EventViewProps) {
   const heroBlock = content.find((block): block is HeroBlockType => block.type === "hero");
-  const rest = content.filter((block) => block.type !== "hero");
+  // Autumn themes show the date, time and "Add to Calendar" in the hero.
+  const autumn = theme.layers?.some((l) => l.kind === "art" && l.art === "autumn") ?? false;
+  // The hero already shows the date, time and "Add to Calendar" of an autumn theme, so its date section is dropped.
+  const rest = content.filter((block) => block.type !== "hero" && !(autumn && block.type === "datetime"));
   const locationBlock = content.find((block): block is LocationBlockType => block.type === "location");
   const calendarLocation = locationBlock ? [locationBlock.name, locationBlock.address].filter(Boolean).join(", ") : "";
 
@@ -164,7 +169,30 @@ export function EventView({
   if (theme.engine === 2) {
     // Theme engine v2: container-query shell, layered background. The v2 hero
     // owns its hero-region layer stack.
-    const hero = heroBlock ? <HeroV2 block={heroBlock} theme={theme} media={media} /> : null;
+    const dateBlock = content.find((block): block is DatetimeBlockType => block.type === "datetime");
+    const heroDate =
+      dateBlock && autumn ? (
+        <HeroDate
+          block={dateBlock}
+          calendar={
+            mode === "live" && slug && startsAt
+              ? {
+                  title: title ?? "",
+                  slug,
+                  blockId: dateBlock.id,
+                  startsAt,
+                  endsAt,
+                  allDay: dateBlock.all_day,
+                  startLocal: dateBlock.start_local,
+                  endLocal: dateBlock.end_local,
+                  timezone: dateBlock.timezone,
+                  location: calendarLocation,
+                }
+              : undefined
+          }
+        />
+      ) : null;
+    const hero = heroBlock ? <HeroV2 block={heroBlock} theme={theme} media={media} footer={heroDate} /> : null;
     // Keep the footer clear of art that hangs in the bottom corners.
     const clearBottom = artClearance(theme.layers, (key) => Object.hasOwn(ART, key)).bottom;
     const track = ownKey(MUSIC_TRACKS, theme.music);
