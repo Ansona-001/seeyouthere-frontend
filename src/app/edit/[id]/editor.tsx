@@ -99,11 +99,12 @@ export function Editor({
     dispatch({ type: "save_start" });
     let saved: number | null = null;
     try {
+      const sent = { content: stateRef.current.content, overrides: stateRef.current.overrides };
       const { event } = await api<{ event: Event }>(`/v1/events/${stateRef.current.id}`, {
         method: "PATCH",
-        json: { version: stateRef.current.version, content: stateRef.current.content, overrides: stateRef.current.overrides },
+        json: { version: stateRef.current.version, ...sent },
       });
-      dispatch({ type: "applied", event, templateSlug: event.template.slug });
+      dispatch({ type: "applied", event, templateSlug: event.template.slug, sent });
       saved = event.version;
     } catch (err) {
       handleSaveError(err);
@@ -111,7 +112,9 @@ export function Editor({
       savingContentRef.current = false;
       if (retryContentRef.current) {
         retryContentRef.current = false;
-        void saveContent();
+        // Wait for the applied state to render so stateRef holds the new version; retrying now would send
+        // the old one and hit a false version conflict.
+        setTimeout(() => void saveContent(), 0);
       }
     }
     return saved;

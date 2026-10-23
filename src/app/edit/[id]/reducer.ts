@@ -39,7 +39,7 @@ export type EditorState = {
 };
 
 export type EditorAction =
-  | { type: "applied"; event: Event; templateSlug: string }
+  | { type: "applied"; event: Event; templateSlug: string; sent?: { content: Block[]; overrides: Overrides } }
   | { type: "set_content"; content: Block[] }
   | { type: "set_overrides"; overrides: Overrides }
   | { type: "set_template"; slug: string }
@@ -85,6 +85,19 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
   switch (action.type) {
     case "applied": {
       const next = editorStateFromEvent(action.event);
+      // The user kept editing while this save was in flight: the response describes what was sent, so
+      // adopting its content would silently drop those newer edits (e.g. a hero photo just chosen).
+      // Take the server's version/theme/media but keep the local edits and leave them dirty so they save next.
+      if (action.sent && (state.content !== action.sent.content || state.overrides !== action.sent.overrides)) {
+        return {
+          ...next,
+          content: state.content,
+          overrides: state.overrides,
+          media: { ...next.media, ...state.media },
+          dirty: true,
+          saveStatus: "idle",
+        };
+      }
       return next;
     }
     case "set_content":
