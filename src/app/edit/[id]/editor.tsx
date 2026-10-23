@@ -7,7 +7,7 @@ import { EventView } from "@/components/event/event-view";
 import { ShareLinks } from "@/components/share-links";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api, ApiError, type Event, type Occasion, type Overrides, type PublicWish, type ShareImageSource, type TemplateSummary, type ValidationIssue, type WishListResponse } from "@/lib/api";
+import { api, ApiError, type Event, type MusicSource, type Occasion, type Overrides, type PublicWish, type ShareImageSource, type TemplateSummary, type ValidationIssue, type WishListResponse } from "@/lib/api";
 
 import { BlockForm } from "./block-form";
 import { BlockIssuesProvider, blockIssues, groupIssuesByBlock, issueLabel, uninlinedIssues } from "./block-issues";
@@ -17,6 +17,7 @@ import { DesignPanel } from "./design-panel";
 import { editorReducer, editorStateFromEvent } from "./reducer";
 import { SettingsPanel } from "./settings-panel";
 import { heroDrawsPhoto } from "./hero-fields";
+import { MusicPanel } from "./music-panel";
 import { SharePanel } from "./share-image-panel";
 
 // Matches how many approved wishes the public page embeds.
@@ -166,6 +167,24 @@ export function Editor({
           version,
           share_image: next.source === "custom" ? { source: "custom", media_id: next.mediaId } : { source: next.source },
         },
+      });
+      dispatch({ type: "applied", event, templateSlug: event.template.slug });
+      return true;
+    } catch (err) {
+      handleSaveError(err);
+      return false;
+    }
+  }
+
+  // Same shape as the link-preview image: pending content edits land first, then the music choice on its own.
+  async function saveMusicNow(source: MusicSource): Promise<boolean> {
+    const version = await flushContent();
+    if (version === null) return false;
+    dispatch({ type: "save_start" });
+    try {
+      const { event } = await api<{ event: Event }>(`/v1/events/${stateRef.current.id}`, {
+        method: "PATCH",
+        json: { version, music: { source } },
       });
       dispatch({ type: "applied", event, templateSlug: event.template.slug });
       return true;
@@ -349,6 +368,19 @@ export function Editor({
                   heroDrawsPhoto={heroDrawsPhoto(state.theme)}
                   onSave={saveShareImageNow}
                   onUploaded={(id, ref) => dispatch({ type: "add_media", id, ref })}
+                />
+              </section>
+
+              <section>
+                <h2 className="mb-2 font-heading text-base text-brand-heading">Music</h2>
+                <MusicPanel
+                  eventId={state.id}
+                  source={state.music.source}
+                  audio={state.music.audio}
+                  templateMusic={state.music.template_available}
+                  signedIn={state.role !== "anon"}
+                  onSave={saveMusicNow}
+                  onAudio={(audio) => dispatch({ type: "set_audio", audio })}
                 />
               </section>
 

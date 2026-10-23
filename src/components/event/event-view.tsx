@@ -40,7 +40,7 @@ import { LoadGate } from "./load-gate";
 import { ScrollReveal } from "./scroll-reveal";
 import { EventTheme } from "./theme";
 import { HeroV2 } from "./theme-engine/hero";
-import { MUSIC_TRACKS } from "./theme-engine/music-tracks";
+import { customMusicSrc, MUSIC_TRACKS } from "./theme-engine/music-tracks";
 import { ART } from "./theme-engine/art/registry";
 import { artClearance, dateOrnamentKey } from "./theme-engine/ornament-keys";
 import { LayerStack } from "./theme-engine/layers";
@@ -84,6 +84,8 @@ export type EventViewProps = {
   photosNextCursor?: string | null;
   /** Approved guest wishes for the wishes block (live mode only). */
   wishes?: PublicWish[];
+  /** The host's own uploaded track (public page only); wins over the design's built-in music. */
+  musicSrc?: string | null;
 };
 
 /**
@@ -106,6 +108,7 @@ export function EventView({
   photos,
   photosNextCursor = null,
   wishes,
+  musicSrc,
 }: EventViewProps) {
   const heroBlock = content.find((block): block is HeroBlockType => block.type === "hero");
   // Autumn themes show the date, time and "Add to Calendar" in the hero.
@@ -195,12 +198,14 @@ export function EventView({
     const hero = heroBlock ? <HeroV2 block={heroBlock} theme={theme} media={media} footer={heroDate} /> : null;
     // Keep the footer clear of art that hangs in the bottom corners.
     const clearBottom = artClearance(theme.layers, (key) => Object.hasOwn(ART, key)).bottom;
+    const customMusic = customMusicSrc(musicSrc);
     const track = ownKey(MUSIC_TRACKS, theme.music);
+    const music = customMusic ?? (track ? MUSIC_TRACKS[track] : null);
     return (
       <>
       {gate}
       <ThemeRootV2 theme={theme} className="flex min-h-dvh flex-col">
-        {mode === "live" && track && <ThemeMusic track={track} />}
+        {mode === "live" && music && <ThemeMusic key={music} src={music} download={customMusic !== null} />}
         <LayerStack layers={theme.layers} region="page" foil={theme.foil} />
         <div className="flex-1" style={!slug && clearBottom ? { paddingBottom: clearBottom } : undefined}>
           <LayoutV2 layout={theme.layout} hero={hero}>

@@ -34,6 +34,8 @@ export function proxy(request: NextRequest) {
     "style-src-attr 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self'",
+    // Host-uploaded music is fetched and played from a blob: URL.
+    "media-src 'self' blob:",
     `connect-src 'self' ${apiOrigin()}`,
     // Rich-blocks video embeds (click-to-load facade, `src/lib/video.ts`)
     // only ever point at one of these two constant origins — never a raw
