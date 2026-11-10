@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { api, ApiError } from "@/lib/api";
 
 import { CodeForm } from "./code-form";
+import { QrCode } from "./qr-code";
 
 type EnrollResponse = { secret: string; otpauth_uri: string };
 
@@ -62,8 +63,11 @@ export function MfaEnroll() {
     <div className="grid gap-4">
       <div className="grid gap-2">
         <p className="text-sm">
-          Add this key to your authenticator app, or open the setup link on your phone.
+          Scan this code with your authenticator app, or add the key by hand.
         </p>
+        <div className="flex justify-center">
+          <QrCode value={enrollment.otpauth_uri} label="QR code for setting up two-factor authentication" />
+        </div>
         <div className="rounded-lg bg-muted p-3">
           <code className="block text-center font-mono text-base tracking-wider break-all">
             {groupSecret(enrollment.secret)}
