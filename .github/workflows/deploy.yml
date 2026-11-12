@@ -54,6 +54,7 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_URL=https://api.seeyouthere.at
             NEXT_PUBLIC_SITE_URL=https://seeyouthere.at
+            NEXT_PUBLIC_WHATSAPP_NUMBER=971501945770
           platforms: linux/amd64
           push: true
           tags: |
