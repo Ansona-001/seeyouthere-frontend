@@ -99,8 +99,8 @@ function SetupWizardInner({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // The look is chosen in the editor; new events start from the occasion's first template.
-  const template = templates[0];
+  // The look is chosen in the editor; new events start from the occasion's first free template.
+  const template = templates.find((t) => !t.is_premium) ?? templates[0];
 
   const browserTimezone = useMemo(() => {
     try {

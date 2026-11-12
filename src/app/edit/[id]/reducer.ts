@@ -3,7 +3,7 @@
 // successful write ("applied") is the single source of truth for `version`,
 // `theme` and `media` — the client never computes those itself.
 
-import type { Block, Event, EventAudio, EventRole, EventStatus, MediaMap, MediaRef, Overrides, RsvpMode, ShareImageSource, Theme, ValidationIssue, Visibility } from "@/lib/api-types";
+import type { Block, Event, EventAudio, EventPremium, EventRole, EventStatus, MediaMap, MediaRef, Overrides, RsvpMode, ShareImageSource, Theme, ValidationIssue, Visibility } from "@/lib/api-types";
 
 export type SaveStatus = "idle" | "saving" | "saved" | "error" | "conflict";
 
@@ -26,6 +26,8 @@ export type EditorState = {
   templateSlug: string;
   templateVersion: number;
   templateLatestVersion: number;
+  /** Price/unlock state of the current template; null when it is free. */
+  premium: EventPremium | null;
   theme: Theme;
   media: MediaMap;
   shareImage: { source: ShareImageSource; mediaId: string | null };
@@ -70,6 +72,7 @@ export function editorStateFromEvent(event: Event): EditorState {
     templateSlug: event.template.slug,
     templateVersion: event.template.version,
     templateLatestVersion: event.template.latest_version,
+    premium: event.premium ?? null,
     theme: event.theme,
     media: event.media,
     shareImage: { source: event.share_image.source, mediaId: event.share_image.media_id },

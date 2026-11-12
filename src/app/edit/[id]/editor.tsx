@@ -5,9 +5,10 @@ import { useEffect, useReducer, useRef, useState } from "react";
 
 import { EventView } from "@/components/event/event-view";
 import { ShareLinks } from "@/components/share-links";
+import { paymentRequiredDetails, UnlockDesignDialog } from "@/components/unlock-design-dialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api, ApiError, type Event, type MusicSource, type Occasion, type Overrides, type PublicWish, type ShareImageSource, type TemplateSummary, type ValidationIssue, type WishListResponse } from "@/lib/api";
+import { api, ApiError, type Event, type MusicSource, type Occasion, type Overrides, type PaymentRequiredDetails, type PublicWish, type ShareImageSource, type TemplateSummary, type ValidationIssue, type WishListResponse } from "@/lib/api";
 
 import { BlockForm } from "./block-form";
 import { BlockIssuesProvider, blockIssues, groupIssuesByBlock, issueLabel, uninlinedIssues } from "./block-issues";
@@ -35,6 +36,9 @@ export function Editor({
   const [state, dispatch] = useReducer(editorReducer, editorStateFromEvent(initialEvent));
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(initialEvent.content[0]?.id ?? null);
   const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
+  // Set when switching a published event to a premium design that isn't unlocked yet.
+  // `switching` = the target is a different design than the event's current one (cannot be unlocked while live).
+  const [unlock, setUnlock] = useState<{ name: string; details: PaymentRequiredDetails; retry: () => Promise<boolean>; switching?: boolean } | null>(null);
 
   const stateRef = useRef(state);
   useEffect(() => {
@@ -204,6 +208,18 @@ export function Editor({
       dispatch({ type: "applied", event, templateSlug: event.template.slug });
       return true;
     } catch (err) {
+      const payment = paymentRequiredDetails(err);
+      if (payment) {
+        // Nothing was saved; leave the old design selected and offer the unlock.
+        dispatch({ type: "clear_save_error" });
+        setUnlock({
+          name: templates.find((t) => t.slug === slug)?.name ?? "this design",
+          details: payment,
+          retry: () => saveTemplateNow(slug),
+          switching: slug !== stateRef.current.templateSlug,
+        });
+        return false;
+      }
       handleSaveError(err);
       return false;
     }
@@ -219,6 +235,12 @@ export function Editor({
       dispatch({ type: "applied", event, templateSlug: event.template.slug });
       return true;
     } catch (err) {
+      const payment = paymentRequiredDetails(err);
+      if (payment) {
+        dispatch({ type: "clear_save_error" });
+        setUnlock({ name: templates.find((t) => t.slug === stateRef.current.templateSlug)?.name ?? "this design", details: payment, retry: upgradeTemplateNow });
+        return false;
+      }
       handleSaveError(err);
       return false;
     }
@@ -350,6 +372,7 @@ export function Editor({
                   templateVersion={state.templateVersion}
                   templateLatestVersion={state.templateLatestVersion}
                   overrides={state.overrides}
+                  premium={state.premium}
                   canToggleBoxes={state.theme.engine === 2}
                   onChangeTemplate={saveTemplateNow}
                   onChangeOverrides={saveOverridesNow}
@@ -386,7 +409,7 @@ export function Editor({
 
               <section>
                 <h2 className="mb-2 font-heading text-base text-brand-heading">Settings</h2>
-                <SettingsPanel state={state} occasionSlug={initialEvent.occasion_slug} dispatch={dispatch} canPublish={canPublishNow} flushContent={flushContent} />
+                <SettingsPanel state={state} occasionSlug={initialEvent.occasion_slug} dispatch={dispatch} canPublish={canPublishNow} flushContent={flushContent} templateName={templates.find((t) => t.slug === state.templateSlug)?.name ?? "this design"} />
               </section>
 
               {state.status === "published" && state.url && (
@@ -412,6 +435,20 @@ export function Editor({
           />
         </div>
       </div>
+      {unlock && (
+        <UnlockDesignDialog
+          open
+          onOpenChange={(next) => !next && setUnlock(null)}
+          eventId={state.id}
+          eventTitle={state.title}
+          templateName={unlock.name}
+          templateId={unlock.details.template_id}
+          prices={unlock.details.prices}
+          isOwner={state.role === "owner"}
+          switching={unlock.switching === true}
+          onCheck={unlock.retry}
+        />
+      )}
     </div>
   );
 }

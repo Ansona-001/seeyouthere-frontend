@@ -3,6 +3,15 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { AdminTemplate } from "@/lib/api-types";
+import { formatMoney } from "@/lib/premium";
+
+/** "₹599 · AED 29 · $9": only the regions offered. */
+function priceSummary(t: AdminTemplate): string {
+  const parts = [formatMoney("INR", t.price_paise)];
+  if (t.regional_prices?.AE != null) parts.push(formatMoney("AED", t.regional_prices.AE));
+  if (t.regional_prices?.INT != null) parts.push(formatMoney("USD", t.regional_prices.INT));
+  return parts.join(" · ");
+}
 
 export function TemplatesList({ templates }: { templates: AdminTemplate[] }) {
   return (
@@ -13,6 +22,7 @@ export function TemplatesList({ templates }: { templates: AdminTemplate[] }) {
           <TableHead>Name</TableHead>
           <TableHead>Slug</TableHead>
           <TableHead>Occasions</TableHead>
+          <TableHead>Price</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Latest version</TableHead>
         </TableRow>
@@ -28,6 +38,7 @@ export function TemplatesList({ templates }: { templates: AdminTemplate[] }) {
             </TableCell>
             <TableCell className="text-muted-foreground">{t.slug}</TableCell>
             <TableCell className="text-muted-foreground">{t.tags.occasions?.join(", ") || "all"}</TableCell>
+            <TableCell className="text-muted-foreground">{t.is_premium ? priceSummary(t) : "Free"}</TableCell>
             <TableCell>
               <Badge variant={t.status === "published" ? "secondary" : "outline"}>{t.status}</Badge>
             </TableCell>

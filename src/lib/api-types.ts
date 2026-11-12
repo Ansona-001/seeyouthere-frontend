@@ -558,6 +558,8 @@ export type TemplateSummary = {
   layout: Layout;
   hero_style: HeroStyle;
   decoration: Decoration;
+  /** Premium designs can be picked and edited freely; publishing needs a one-off unlock per event. */
+  is_premium: boolean;
 };
 
 export type TemplatesResponse = { templates: TemplateSummary[] };
@@ -583,6 +585,15 @@ export type MusicSource = "template" | "custom" | "none";
 
 export type EventAudio = { id: string; src: string; size_bytes: number; duration_ms: number; created_at: string };
 
+export type Region = "IN" | "AE" | "INT";
+export type Currency = "INR" | "AED" | "USD";
+
+/** One regional price, in minor units (paise / fils / cents). */
+export type RegionPrice = { region: Region; currency: Currency; amount_minor: number };
+
+/** Regional prices and unlock state of an event's current template; null on the event when the template is free. IN is always offered; order IN, AE, INT. */
+export type EventPremium = { paid: boolean; prices: RegionPrice[] };
+
 export type Event = {
   id: string;
   /** null until a slug is set. */
@@ -604,6 +615,7 @@ export type Event = {
   version: number;
   role: EventRole;
   template: EventTemplateRef;
+  premium: EventPremium | null;
   content: Block[];
   overrides: Overrides;
   theme: Theme;
@@ -782,7 +794,11 @@ export type MembersListResponse = { members: Member[] };
 
 export type ValidationIssue = { path: string; code: string; message: string };
 
+/** Details of a 402 `payment_required` (publish, or switching a published event to an unpaid premium design). */
+export type PaymentRequiredDetails = { template_id: string; prices: RegionPrice[] };
+
 export type ApiErrorDetails =
+  | PaymentRequiredDetails
   | ValidationIssue[]
   | { current_version: number }
   | { spots_left: number | null }
@@ -890,10 +906,23 @@ export type AdminEventReport = {
 export type AdminEventSummary = EventSummary & { owner_email: string };
 export type AdminEventsListResponse = { events: AdminEventSummary[]; next_cursor: string | null };
 
+export type AdminEventPayment = {
+  template_id: string;
+  template_name: string;
+  region: Region;
+  currency: Currency;
+  amount_minor: number;
+  created_at: string;
+  note: string | null;
+};
+
 export type AdminEventDetail = {
-  event: Event & { owner_email: string };
+  event: Event & { owner_email: string; template_id?: string };
   counts: { rsvps: number; guests: number; media: number };
   reports: AdminEventReport[];
+  /** Unlocks recorded for this event. Optional so an older API response still renders. */
+  payments?: AdminEventPayment[];
+  premium?: EventPremium | null;
 };
 
 export type AdminMediaItem = Media & { event: { id: string; slug: string | null; title: string } };
@@ -916,6 +945,10 @@ export type AdminTemplate = {
   name: string;
   tags: { occasions?: string[] };
   is_premium: boolean;
+  /** 100..1000000 (paise); the India (INR) price a host pays to unlock this design for one event. */
+  price_paise: number;
+  /** Minor units, 100..1000000; null = region not offered. */
+  regional_prices: { AE: number | null; INT: number | null };
   status: TemplateStatus;
   latest_version: number;
 };

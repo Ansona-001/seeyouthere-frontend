@@ -6,8 +6,9 @@ import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { ShareLinks } from "@/components/share-links";
+import { paymentRequiredDetails, UnlockDesignDialog } from "@/components/unlock-design-dialog";
 import { Button } from "@/components/ui/button";
-import { api, ApiError, type Event } from "@/lib/api";
+import { api, ApiError, type Event, type PaymentRequiredDetails } from "@/lib/api";
 import { displayUrl } from "@/lib/urls";
 
 const STATUS_LABEL: Record<Event["status"], string> = {
@@ -23,11 +24,13 @@ export function OverviewActions({ event }: { event: Event }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notReady, setNotReady] = useState<string[] | null>(null);
+  const [unlock, setUnlock] = useState<PaymentRequiredDetails | null>(null);
 
   const canEdit = event.role === "owner" || event.role === "editor";
   const canPublish = event.role === "owner";
 
-  async function publish() {
+  // Resolves false when publishing still needs a premium unlock (the unlock dialog is then open).
+  async function publish(): Promise<boolean> {
     setError(null);
     setNotReady(null);
     setPending(true);
@@ -35,6 +38,11 @@ export function OverviewActions({ event }: { event: Event }) {
       await api(`/v1/events/${event.id}/publish`, { method: "POST", json: { version: event.version } });
       router.refresh();
     } catch (err) {
+      const payment = paymentRequiredDetails(err);
+      if (payment) {
+        setUnlock(payment);
+        return false;
+      }
       if (err instanceof ApiError && err.code === "not_ready") {
         const details = err.details as { missing: string[] } | undefined;
         setNotReady(details?.missing ?? []);
@@ -44,6 +52,7 @@ export function OverviewActions({ event }: { event: Event }) {
     } finally {
       setPending(false);
     }
+    return true;
   }
 
   return (
@@ -88,11 +97,25 @@ export function OverviewActions({ event }: { event: Event }) {
           </Button>
         )}
         {canPublish && event.status === "draft" && (
-          <Button type="button" onClick={publish} disabled={pending}>
+          <Button type="button" onClick={() => void publish()} disabled={pending}>
             {pending ? "Publishing…" : "Publish"}
           </Button>
         )}
       </div>
+
+      {unlock && (
+        <UnlockDesignDialog
+          open
+          onOpenChange={(next) => !next && setUnlock(null)}
+          eventId={event.id}
+          eventTitle={event.title}
+          templateName={event.template.name}
+          templateId={unlock.template_id}
+          prices={unlock.prices}
+          isOwner={event.role === "owner"}
+          onCheck={publish}
+        />
+      )}
     </div>
   );
 }

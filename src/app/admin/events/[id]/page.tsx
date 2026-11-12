@@ -10,6 +10,7 @@ import { formatDateTime } from "@/lib/format";
 import { serverApi } from "@/lib/server-api";
 
 import { EventActions } from "./event-actions";
+import { PaymentActions } from "./payment-actions";
 
 export const metadata: Metadata = { title: "Admin: event" };
 
@@ -28,6 +29,8 @@ export default async function AdminEventDetailPage({ params }: PageProps<"/admin
   }
 
   const { event, counts, reports } = result.data;
+  const premium = result.data.premium ?? event.premium ?? null;
+  const payments = result.data.payments ?? [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -60,6 +63,18 @@ export default async function AdminEventDetailPage({ params }: PageProps<"/admin
           />
         </CardContent>
       </Card>
+
+      {(premium || payments.length > 0) && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Premium design</CardTitle>
+            <CardDescription>Unlocks are recorded by hand after the host pays on WhatsApp.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PaymentActions eventId={event.id} templateId={event.template.id} templateName={event.template.name} premium={premium} payments={payments} />
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

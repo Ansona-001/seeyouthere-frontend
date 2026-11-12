@@ -3,10 +3,11 @@
 import Image from "next/image";
 import { useState } from "react";
 
+import { PremiumBadge } from "@/components/premium-badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import type { Overrides, Palette, TemplateSummary } from "@/lib/api-types";
+import type { EventPremium, Overrides, Palette, TemplateSummary } from "@/lib/api-types";
 import { fontCssVar } from "@/lib/fonts";
 import { cn } from "cn";
 
@@ -27,6 +28,7 @@ export function DesignPanel({
   templateVersion,
   templateLatestVersion,
   overrides,
+  premium,
   canToggleBoxes,
   onChangeTemplate,
   onChangeOverrides,
@@ -38,6 +40,8 @@ export function DesignPanel({
   templateVersion: number;
   templateLatestVersion: number;
   overrides: Overrides;
+  /** Unlock state of the selected template (null when free). */
+  premium: EventPremium | null;
   /** Only schema-2 templates can drop their section boxes. */
   canToggleBoxes: boolean;
   onChangeTemplate: (slug: string) => Promise<boolean>;
@@ -76,6 +80,7 @@ export function DesignPanel({
               template={t}
               occasionSlug={occasionSlug}
               selected={t.slug === templateSlug}
+              unlocked={t.slug === templateSlug && premium?.paid === true}
               disabled={pending}
               onSelect={() => t.slug !== templateSlug && run(() => onChangeTemplate(t.slug))}
             />
@@ -193,12 +198,14 @@ function TemplateCard({
   template,
   occasionSlug,
   selected,
+  unlocked,
   disabled,
   onSelect,
 }: {
   template: TemplateSummary;
   occasionSlug: string;
   selected: boolean;
+  unlocked: boolean;
   disabled: boolean;
   onSelect: () => void;
 }) {
@@ -244,6 +251,11 @@ function TemplateCard({
       )}
       <span className="px-1 pb-1">
         <span className="block font-heading text-base text-brand-heading">{template.name}</span>
+        {template.is_premium && (
+          <span className="mt-1 block">
+            <PremiumBadge isPremium unlocked={unlocked} />
+          </span>
+        )}
         <span className="block text-xs font-normal text-muted-foreground capitalize">
           {template.layout} · {template.hero_style.replace("_", " ")}
         </span>

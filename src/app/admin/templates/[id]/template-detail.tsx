@@ -28,11 +28,30 @@ import {
 } from "@/lib/api";
 import { templateErrorMessage } from "@/lib/admin-confirm";
 import { formatDateTime } from "@/lib/format";
+import { rupeesToPaise, wholeUnitsToMinor } from "@/lib/premium";
+
+import { PriceFields, type PriceInputs } from "../price-fields";
 
 export function TemplateDetail({ template }: { template: AdminTemplateDetail }) {
   const router = useRouter();
   const published = template.status === "published";
   const [isPremium, setIsPremium] = useState(template.is_premium);
+  const savedAed = template.regional_prices?.AE ?? null;
+  const savedUsd = template.regional_prices?.INT ?? null;
+  const [prices, setPrices] = useState<PriceInputs>({
+    inr: String(Math.round(template.price_paise / 100)),
+    aed: savedAed === null ? "" : String(Math.round(savedAed / 100)),
+    usd: savedUsd === null ? "" : String(Math.round(savedUsd / 100)),
+  });
+  const pricePaise = rupeesToPaise(prices.inr);
+  const aedMinor = wholeUnitsToMinor(prices.aed);
+  const usdMinor = wholeUnitsToMinor(prices.usd);
+  const pricesValid = pricePaise !== null && aedMinor !== undefined && usdMinor !== undefined;
+  // Only changed keys are sent; null disables a region.
+  const regionalPatch: Record<string, number | null> = {};
+  if (aedMinor !== undefined && aedMinor !== savedAed) regionalPatch.AE = aedMinor;
+  if (usdMinor !== undefined && usdMinor !== savedUsd) regionalPatch.INT = usdMinor;
+  const pricesChanged = pricePaise !== template.price_paise || Object.keys(regionalPatch).length > 0;
   const [drafts, setDrafts] = useState<Record<number, string>>(
     Object.fromEntries(template.versions.map((v) => [v.version, JSON.stringify(v.manifest, null, 2)])),
   );
@@ -57,6 +76,14 @@ export function TemplateDetail({ template }: { template: AdminTemplateDetail }) 
   function togglePremium(next: boolean) {
     setIsPremium(next);
     return run("premium", () => api(`/v1/admin/templates/${template.id}`, { method: "PATCH", json: { is_premium: next } }));
+  }
+
+  function savePrice() {
+    if (!pricesValid) return Promise.resolve();
+    const json: Record<string, unknown> = {};
+    if (pricePaise !== template.price_paise) json.price_paise = pricePaise;
+    if (Object.keys(regionalPatch).length > 0) json.regional_prices = regionalPatch;
+    return run("price", () => api(`/v1/admin/templates/${template.id}`, { method: "PATCH", json }));
   }
 
   function setStatus(next: "draft" | "published") {
@@ -153,9 +180,30 @@ export function TemplateDetail({ template }: { template: AdminTemplateDetail }) 
           <div className="flex items-center gap-3">
             <Switch id="premium" checked={isPremium} disabled={pending !== null} onCheckedChange={togglePremium} />
             <label htmlFor="premium" className="text-sm font-medium">
-              Premium (hidden from the host picker; assign manually from an event&rsquo;s admin flags)
+              Premium (hosts unlock it per event for a one-time price)
             </label>
           </div>
+          {isPremium && (
+            <form
+              className="grid gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void savePrice();
+              }}
+            >
+              <PriceFields
+                idPrefix="price"
+                values={prices}
+                invalid={{ inr: pricePaise === null, aed: aedMinor === undefined, usd: usdMinor === undefined }}
+                onChange={(key, value) => setPrices((p) => ({ ...p, [key]: value }))}
+              />
+              <div>
+                <Button type="submit" variant="outline" disabled={pending !== null || !pricesValid || !pricesChanged}>
+                  {pending === "price" ? "Saving…" : "Save prices"}
+                </Button>
+              </div>
+            </form>
+          )}
         </CardContent>
       </Card>
 

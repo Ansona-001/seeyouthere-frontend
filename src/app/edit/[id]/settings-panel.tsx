@@ -18,7 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { api, ApiError, type Event, type RsvpMode, type SlugAvailability, type Visibility } from "@/lib/api";
+import { paymentRequiredDetails, UnlockDesignDialog } from "@/components/unlock-design-dialog";
+import { api, ApiError, type Event, type PaymentRequiredDetails, type RsvpMode, type SlugAvailability, type Visibility } from "@/lib/api";
 import { suggestSlug } from "@/lib/slug";
 import { displayUrl } from "@/lib/urls";
 
@@ -43,12 +44,15 @@ export function SettingsPanel({
   dispatch,
   canPublish,
   flushContent,
+  templateName,
 }: {
   state: EditorState;
   occasionSlug: string;
   dispatch: (action: EditorAction) => void;
   canPublish: boolean;
   flushContent: () => Promise<number | null>;
+  /** Display name of the event's current design, for the premium unlock message. */
+  templateName: string;
 }) {
   const router = useRouter();
 
@@ -68,7 +72,7 @@ export function SettingsPanel({
     return <p className="text-sm text-muted-foreground">Only the event owner can change settings, publish or delete it.</p>;
   }
 
-  return <OwnerSettings state={state} occasionSlug={occasionSlug} dispatch={dispatch} canPublish={canPublish} flushContent={flushContent} />;
+  return <OwnerSettings state={state} occasionSlug={occasionSlug} dispatch={dispatch} canPublish={canPublish} flushContent={flushContent} templateName={templateName} />;
 }
 
 /** Shown when a settings change or publish can't go ahead because the content behind it didn't save. */
@@ -89,14 +93,18 @@ function OwnerSettings({
   dispatch,
   canPublish,
   flushContent,
+  templateName,
 }: {
   state: EditorState;
   occasionSlug: string;
   dispatch: (action: EditorAction) => void;
   canPublish: boolean;
   flushContent: () => Promise<number | null>;
+  templateName: string;
 }) {
   const router = useRouter();
+  // Set when publishing needs a premium unlock; the dialog re-runs publish() to check.
+  const [unlock, setUnlock] = useState<PaymentRequiredDetails | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorScope, setErrorScope] = useState<"save" | "publish">("save");
@@ -170,7 +178,8 @@ function OwnerSettings({
     }
   }
 
-  async function publish() {
+  // Resolves false when the event still needs a premium unlock (the unlock dialog is then open).
+  async function publish(): Promise<boolean> {
     setError(null);
     setNotReady(null);
     setNotice(null);
@@ -190,6 +199,11 @@ function OwnerSettings({
       dispatch({ type: "applied", event, templateSlug: event.template.slug });
       setNotice({ scope: "publish", text: "Published. Your invitation is live.", slug: event.slug ?? undefined });
     } catch (err) {
+      const payment = paymentRequiredDetails(err);
+      if (payment) {
+        setUnlock(payment);
+        return false;
+      }
       if (err instanceof ApiError && err.code === "not_ready") {
         const details = err.details as { missing: string[] } | undefined;
         setNotReady(details?.missing ?? []);
@@ -203,6 +217,7 @@ function OwnerSettings({
     } finally {
       setPending(false);
     }
+    return true;
   }
 
   async function unpublish() {
@@ -354,14 +369,14 @@ function OwnerSettings({
           </p>
         )}
         {state.status === "draft" && (
-          <Button type="button" onClick={publish} disabled={pending || !canPublish}>
+          <Button type="button" onClick={() => void publish()} disabled={pending || !canPublish}>
             {pending ? "Publishing…" : "Publish"}
           </Button>
         )}
         {(state.status === "published" || state.status === "hidden") && (
           // A hidden event is republished through the publish endpoint; the unpublish endpoint only
           // accepts published events and answers a hidden one with a (misleading) version conflict.
-          <Button type="button" variant="outline" onClick={state.status === "published" ? unpublish : publish} disabled={pending}>
+          <Button type="button" variant="outline" onClick={state.status === "published" ? unpublish : () => void publish()} disabled={pending}>
             {pending ? (state.status === "published" ? "Unpublishing…" : "Republishing…") : state.status === "published" ? "Unpublish" : "Republish"}
           </Button>
         )}
@@ -370,6 +385,20 @@ function OwnerSettings({
         )}
         <DeleteDraftButton eventId={state.id} isAnon={false} onDeleted={() => router.push("/app")} />
       </div>
+
+      {unlock && (
+        <UnlockDesignDialog
+          open
+          onOpenChange={(next) => !next && setUnlock(null)}
+          eventId={state.id}
+          eventTitle={state.title}
+          templateName={templateName}
+          templateId={unlock.template_id}
+          prices={unlock.prices}
+          isOwner
+          onCheck={publish}
+        />
+      )}
     </div>
   );
 }
