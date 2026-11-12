@@ -1,5 +1,6 @@
 "use client";
 
+import { LayoutListIcon, MonitorIcon, PaletteIcon, Settings2Icon, SmartphoneIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useReducer, useRef, useState } from "react";
 
@@ -7,7 +8,7 @@ import { EventView } from "@/components/event/event-view";
 import { ShareLinks } from "@/components/share-links";
 import { paymentRequiredDetails, UnlockDesignDialog } from "@/components/unlock-design-dialog";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "cn";
 import { api, ApiError, type Event, type MusicSource, type Occasion, type Overrides, type PaymentRequiredDetails, type PublicWish, type ShareImageSource, type TemplateSummary, type ValidationIssue, type WishListResponse } from "@/lib/api";
 
 import { BlockForm } from "./block-form";
@@ -24,6 +25,15 @@ import { SharePanel } from "./share-image-panel";
 // Matches how many approved wishes the public page embeds.
 const PREVIEW_WISHES_LIMIT = 30;
 
+type PanelId = "pages" | "design" | "settings";
+type Device = "desktop" | "mobile";
+
+const PANELS: { id: PanelId; label: string; Icon: typeof PaletteIcon }[] = [
+  { id: "design", label: "Design", Icon: PaletteIcon },
+  { id: "pages", label: "Content", Icon: LayoutListIcon },
+  { id: "settings", label: "Settings", Icon: Settings2Icon },
+];
+
 export function Editor({
   initialEvent,
   occasion,
@@ -34,8 +44,10 @@ export function Editor({
   templates: TemplateSummary[];
 }) {
   const [state, dispatch] = useReducer(editorReducer, editorStateFromEvent(initialEvent));
-  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(initialEvent.content[0]?.id ?? null);
-  const [mobileView, setMobileView] = useState<"edit" | "preview">("edit");
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+  // The side panel (a bottom sheet on phones); null = closed so the preview has the whole stage.
+  const [panel, setPanel] = useState<PanelId | null>("pages");
+  const [device, setDevice] = useState<Device>("desktop");
   // Set when switching a published event to a premium design that isn't unlocked yet.
   // `switching` = the target is a different design than the event's current one (cannot be unlocked while live).
   const [unlock, setUnlock] = useState<{ name: string; details: PaymentRequiredDetails; retry: () => Promise<boolean>; switching?: boolean } | null>(null);
@@ -86,7 +98,7 @@ export function Editor({
       const first = groupIssuesByBlock(stateRef.current.content, issues ?? null).keys().next();
       if (!first.done) {
         setSelectedBlockId(first.value);
-        setMobileView("edit");
+        setPanel("pages");
       }
       return;
     }
@@ -282,7 +294,7 @@ export function Editor({
     const block = createBlock(type);
     setContent([...state.content, block]);
     setSelectedBlockId(block.id);
-    setMobileView("edit");
+    setPanel("pages");
   }
 
   function removeBlock(id: string) {
@@ -307,29 +319,63 @@ export function Editor({
   const editingDisabled = state.saveStatus === "conflict";
   const canPublishNow = Boolean(occasion);
 
-  // On desktop the editor is pinned to the window (out of document flow), so the page itself can never
-  // scroll; only the form and preview columns do. Anything in a theme that overflows is clipped here.
+  // The editor is pinned to the window so the page itself never scrolls; only the preview and the
+  // side panel do. Anything in a theme that overflows is clipped here.
+  const panelTitle = PANELS.find((p) => p.id === panel)?.label;
   return (
-    <div className="flex min-h-dvh flex-col lg:fixed lg:inset-0 lg:min-h-0 lg:overflow-hidden">
-      <EditorTopBar state={state} onReload={reload} onSaveNow={saveContent} />
+    <div className="fixed inset-0 flex flex-col bg-background">
+      <EditorTopBar
+        state={state}
+        device={device}
+        onDevice={setDevice}
+        onReload={reload}
+        onSaveNow={saveContent}
+        onPublish={() => setPanel("settings")}
+      />
 
-      <div className="flex flex-1 flex-col lg:min-h-0 lg:flex-row">
-        <div className="flex flex-1 flex-col gap-6 border-b p-4 lg:w-[420px] lg:shrink-0 lg:min-h-0 lg:border-r lg:border-b-0 lg:overflow-y-auto lg:pb-10 lg:overscroll-contain lg:[scrollbar-gutter:stable] lg:[scrollbar-width:thin] lg:[scrollbar-color:var(--border)_transparent]">
-          <Tabs value={mobileView} onValueChange={(v) => setMobileView((v as "edit" | "preview") ?? "edit")} className="lg:hidden">
-            <TabsList className="w-full">
-              <TabsTrigger value="edit">Edit</TabsTrigger>
-              <TabsTrigger value="preview">Preview</TabsTrigger>
-            </TabsList>
-          </Tabs>
+      <div className="relative flex min-h-0 flex-1">
+        <div className="min-w-0 flex-1 overflow-y-auto overscroll-contain bg-muted/50 [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:var(--border)_transparent]">
+          <div
+            className={cn(
+              "mx-auto transition-[max-width] duration-(--duration-fast) motion-reduce:transition-none",
+              device === "mobile" ? "my-4 max-w-[390px] overflow-hidden rounded-[2rem] shadow-xl ring-1 ring-border" : "max-w-full",
+            )}
+          >
+            <EventView
+              content={state.content}
+              theme={state.theme}
+              media={state.media}
+              mode="preview"
+              removeBranding={state.removeBranding}
+              slug={state.slug ?? undefined}
+              startsAt={state.startsAt}
+              wishes={wishesEnabled ? approvedWishes : undefined}
+            />
+          </div>
+        </div>
 
-          <div className={mobileView === "preview" ? "hidden lg:block" : ""}>
+        <aside
+          aria-label={panelTitle}
+          className={cn(
+            "absolute inset-x-0 bottom-0 z-10 max-h-[75%] flex-col rounded-t-2xl border-t bg-card shadow-2xl",
+            "lg:static lg:z-auto lg:max-h-none lg:w-[420px] lg:shrink-0 lg:rounded-none lg:border-t-0 lg:border-l lg:shadow-none",
+            panel ? "flex" : "hidden",
+          )}
+        >
+          <div className="flex items-center justify-between gap-2 border-b px-4 py-2">
+            <h2 className="font-heading text-xl text-brand-heading">{panelTitle}</h2>
+            <Button type="button" variant="ghost" size="icon" aria-label="Close panel" onClick={() => setPanel(null)}>
+              <XIcon />
+            </Button>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 [scrollbar-width:thin] [scrollbar-color:var(--border)_transparent]">
+            {/* Panels stay mounted (just hidden) so half-typed settings survive switching tabs. */}
             <fieldset disabled={editingDisabled} className="flex min-w-0 flex-col gap-6">
-              <section>
-                <h2 className="mb-2 font-heading text-base text-brand-heading">Content</h2>
+              <div className={panel === "pages" ? "" : "hidden"}>
                 <BlockList
                   content={state.content}
                   selectedId={selectedBlockId}
-                  onSelect={(id) => setSelectedBlockId((current) => (current === id ? null : id))}
+                  onSelect={setSelectedBlockId}
                   onAdd={addBlock}
                   onRemove={removeBlock}
                   onMove={moveBlock}
@@ -361,80 +407,86 @@ export function Editor({
                     );
                   }}
                 />
-              </section>
+              </div>
 
-              <section>
-                <h2 className="mb-2 font-heading text-base text-brand-heading">Design</h2>
-                <DesignPanel
-                  templates={templates}
-                  occasionSlug={initialEvent.occasion_slug}
-                  templateSlug={state.templateSlug}
-                  templateVersion={state.templateVersion}
-                  templateLatestVersion={state.templateLatestVersion}
-                  overrides={state.overrides}
-                  premium={state.premium}
-                  canToggleBoxes={state.theme.engine === 2}
-                  onChangeTemplate={saveTemplateNow}
-                  onChangeOverrides={saveOverridesNow}
-                  onUpgradeTemplate={upgradeTemplateNow}
-                />
-              </section>
-
-              <section>
-                <h2 className="mb-2 font-heading text-base text-brand-heading">Link preview</h2>
-                <SharePanel
-                  eventId={state.id}
-                  source={state.shareImage.source}
-                  mediaId={state.shareImage.mediaId}
-                  media={state.media}
-                  hasHeroImage={state.content.some((b) => b.type === "hero" && b.image !== null)}
-                  heroDrawsPhoto={heroDrawsPhoto(state.theme)}
-                  onSave={saveShareImageNow}
-                  onUploaded={(id, ref) => dispatch({ type: "add_media", id, ref })}
-                />
-              </section>
-
-              <section>
-                <h2 className="mb-2 font-heading text-base text-brand-heading">Music</h2>
-                <MusicPanel
-                  eventId={state.id}
-                  source={state.music.source}
-                  audio={state.music.audio}
-                  templateMusic={state.music.template_available}
-                  signedIn={state.role !== "anon"}
-                  onSave={saveMusicNow}
-                  onAudio={(audio) => dispatch({ type: "set_audio", audio })}
-                />
-              </section>
-
-              <section>
-                <h2 className="mb-2 font-heading text-base text-brand-heading">Settings</h2>
-                <SettingsPanel state={state} occasionSlug={initialEvent.occasion_slug} dispatch={dispatch} canPublish={canPublishNow} flushContent={flushContent} templateName={templates.find((t) => t.slug === state.templateSlug)?.name ?? "this design"} />
-              </section>
-
-              {state.status === "published" && state.url && (
+              <div className={cn("flex flex-col gap-6", panel === "design" ? "" : "hidden")}>
                 <section>
-                  <h2 className="mb-2 font-heading text-base text-brand-heading">Share your invite</h2>
-                  <ShareLinks url={state.url} title={state.title} occasionSlug={initialEvent.occasion_slug} />
+                  <h3 className="mb-2 font-heading text-base text-brand-heading">Look and feel</h3>
+                  <DesignPanel
+                    templates={templates}
+                    occasionSlug={initialEvent.occasion_slug}
+                    templateSlug={state.templateSlug}
+                    templateVersion={state.templateVersion}
+                    templateLatestVersion={state.templateLatestVersion}
+                    overrides={state.overrides}
+                    premium={state.premium}
+                    canToggleBoxes={state.theme.engine === 2}
+                    onChangeTemplate={saveTemplateNow}
+                    onChangeOverrides={saveOverridesNow}
+                    onUpgradeTemplate={upgradeTemplateNow}
+                  />
                 </section>
-              )}
+                <section>
+                  <h3 className="mb-2 font-heading text-base text-brand-heading">Music</h3>
+                  <MusicPanel
+                    eventId={state.id}
+                    source={state.music.source}
+                    audio={state.music.audio}
+                    templateMusic={state.music.template_available}
+                    signedIn={state.role !== "anon"}
+                    onSave={saveMusicNow}
+                    onAudio={(audio) => dispatch({ type: "set_audio", audio })}
+                  />
+                </section>
+              </div>
+
+              <div className={cn("flex flex-col gap-6", panel === "settings" ? "" : "hidden")}>
+                <section>
+                  <h3 className="mb-2 font-heading text-base text-brand-heading">Link and publishing</h3>
+                  <SettingsPanel state={state} occasionSlug={initialEvent.occasion_slug} dispatch={dispatch} canPublish={canPublishNow} flushContent={flushContent} templateName={templates.find((t) => t.slug === state.templateSlug)?.name ?? "this design"} />
+                </section>
+                <section>
+                  <h3 className="mb-2 font-heading text-base text-brand-heading">Link preview</h3>
+                  <SharePanel
+                    eventId={state.id}
+                    source={state.shareImage.source}
+                    mediaId={state.shareImage.mediaId}
+                    media={state.media}
+                    hasHeroImage={state.content.some((b) => b.type === "hero" && b.image !== null)}
+                    heroDrawsPhoto={heroDrawsPhoto(state.theme)}
+                    onSave={saveShareImageNow}
+                    onUploaded={(id, ref) => dispatch({ type: "add_media", id, ref })}
+                  />
+                </section>
+                {state.status === "published" && state.url && (
+                  <section>
+                    <h3 className="mb-2 font-heading text-base text-brand-heading">Share your invite</h3>
+                    <ShareLinks url={state.url} title={state.title} occasionSlug={initialEvent.occasion_slug} />
+                  </section>
+                )}
+              </div>
             </fieldset>
           </div>
-        </div>
-
-        <div className={`flex-1 overflow-y-auto lg:min-h-0 lg:overscroll-contain lg:[scrollbar-gutter:stable] lg:[scrollbar-width:thin] lg:[scrollbar-color:var(--border)_transparent] ${mobileView === "edit" ? "hidden lg:block" : ""}`}>
-          <EventView
-            content={state.content}
-            theme={state.theme}
-            media={state.media}
-            mode="preview"
-            removeBranding={state.removeBranding}
-            slug={state.slug ?? undefined}
-            startsAt={state.startsAt}
-            wishes={wishesEnabled ? approvedWishes : undefined}
-          />
-        </div>
+        </aside>
       </div>
+
+      <nav aria-label="Editor sections" className="grid grid-cols-3 border-t bg-card">
+        {PANELS.map(({ id, label, Icon }) => (
+          <button
+            key={id}
+            type="button"
+            aria-pressed={panel === id}
+            onClick={() => setPanel((current) => (current === id ? null : id))}
+            className={cn(
+              "flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-semibold transition-colors focus-visible:ring-3 focus-visible:ring-inset focus-visible:ring-ring/50 focus-visible:outline-none",
+              panel === id ? "text-primary" : "text-muted-foreground [@media(hover:hover)]:hover:text-foreground",
+            )}
+          >
+            <Icon aria-hidden="true" className="size-5" />
+            {label}
+          </button>
+        ))}
+      </nav>
       {unlock && (
         <UnlockDesignDialog
           open
@@ -455,15 +507,21 @@ export function Editor({
 
 function EditorTopBar({
   state,
+  device,
+  onDevice,
   onReload,
   onSaveNow,
+  onPublish,
 }: {
   state: ReturnType<typeof editorStateFromEvent>;
+  device: Device;
+  onDevice: (device: Device) => void;
   onReload: () => void;
   onSaveNow: () => void;
+  onPublish: () => void;
 }) {
   return (
-    <header className="flex flex-wrap items-center justify-between gap-3 border-b bg-card px-4 py-3">
+    <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b bg-card px-4 py-2">
       <div className="flex items-center gap-3">
         <Link
           href={state.role === "anon" ? "/" : "/app"}
@@ -478,6 +536,26 @@ function EditorTopBar({
           <SaveIndicator state={state} />
         </div>
       </div>
+      <div role="group" aria-label="Preview size" className="hidden rounded-full bg-muted p-1 sm:flex">
+        {(["desktop", "mobile"] as const).map((d) => {
+          const Icon = d === "desktop" ? MonitorIcon : SmartphoneIcon;
+          return (
+            <button
+              key={d}
+              type="button"
+              aria-pressed={device === d}
+              aria-label={d === "desktop" ? "Desktop preview" : "Mobile preview"}
+              onClick={() => onDevice(d)}
+              className={cn(
+                "inline-flex size-9 items-center justify-center rounded-full transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+                device === d ? "bg-card text-foreground shadow-sm ring-1 ring-border" : "text-muted-foreground [@media(hover:hover)]:hover:text-foreground",
+              )}
+            >
+              <Icon aria-hidden="true" className="size-5" />
+            </button>
+          );
+        })}
+      </div>
       <div className="flex items-center gap-2">
         {/* New tab so opening Help never interrupts editing. */}
         <Link
@@ -488,7 +566,12 @@ function EditorTopBar({
         >
           Help
         </Link>
-        {state.status !== "draft" && (
+        {state.status === "draft" ? (
+          // Publishing lives in Settings (link, checks, unlock), so this takes you there.
+          <Button onClick={onPublish} disabled={state.saveStatus === "conflict"}>
+            Publish
+          </Button>
+        ) : (
           <Button onClick={onSaveNow} disabled={!state.dirty || state.saveStatus === "saving" || state.saveStatus === "conflict"}>
             {state.saveStatus === "saving" ? "Saving…" : "Save changes"}
           </Button>

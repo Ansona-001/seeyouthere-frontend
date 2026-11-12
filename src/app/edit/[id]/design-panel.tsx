@@ -73,7 +73,7 @@ export function DesignPanel({
 
       <div>
         <p id="design-template" className="mb-2 text-sm font-semibold">Template</p>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-2">
           {templates.map((t) => (
             <TemplateCard
               key={t.slug}
@@ -221,44 +221,43 @@ function TemplateCard({
       onClick={onSelect}
       className={cn(CHOICE, "flex flex-col items-stretch gap-2 rounded-2xl p-2", selected ? CHOICE_ON : CHOICE_OFF)}
     >
-      {PREVIEW_SLUGS.has(template.slug) ? (
-        // Decorative: the name caption below already identifies the template.
-        <Image
-          src={previewSrc}
-          alt=""
-          width={390}
-          height={520}
-          // Static, pre-compressed files; the site's custom loader only serves media renditions.
-          unoptimized
-          loading="lazy"
-          className="aspect-3/4 w-full rounded-xl object-cover object-top ring-1 ring-foreground/10"
-          style={{ backgroundColor: palette?.colors.background }}
-        />
-      ) : (
-        <span
-          aria-hidden
-          className="grid aspect-3/4 place-items-center rounded-xl text-3xl ring-1 ring-foreground/10"
-          style={{
-            backgroundColor: palette?.colors.background,
-            color: palette?.colors.text,
-            fontFamily: font ? fontCssVar(font.heading) : undefined,
-          }}
-        >
-          <span>
-            Aa<span style={{ color: palette?.colors.accent }}>.</span>
-          </span>
-        </span>
-      )}
-      <span className="px-1 pb-1">
-        <span className="block font-heading text-base text-brand-heading">{template.name}</span>
-        {template.is_premium && (
-          <span className="mt-1 block">
-            <PremiumBadge isPremium unlocked={unlocked} />
+      <span className="relative block">
+        {PREVIEW_SLUGS.has(template.slug) ? (
+          // Decorative: the name caption below already identifies the template.
+          <Image
+            src={previewSrc}
+            alt=""
+            width={390}
+            height={520}
+            // Static, pre-compressed files; the site's custom loader only serves media renditions.
+            unoptimized
+            loading="lazy"
+            className="aspect-3/4 w-full rounded-xl object-cover object-top ring-1 ring-foreground/10"
+            style={{ backgroundColor: palette?.colors.background }}
+          />
+        ) : (
+          <span
+            aria-hidden
+            className="grid aspect-3/4 place-items-center rounded-xl text-3xl ring-1 ring-foreground/10"
+            style={{
+              backgroundColor: palette?.colors.background,
+              color: palette?.colors.text,
+              fontFamily: font ? fontCssVar(font.heading) : undefined,
+            }}
+          >
+            <span>
+              Aa<span style={{ color: palette?.colors.accent }}>.</span>
+            </span>
           </span>
         )}
-        <span className="block text-xs font-normal text-muted-foreground capitalize">
-          {template.layout} · {template.hero_style.replace("_", " ")}
-        </span>
+        <PremiumBadge
+          isPremium={template.is_premium}
+          unlocked={unlocked}
+          className="absolute top-2 left-2 bg-card/90 shadow-sm backdrop-blur-sm"
+        />
+      </span>
+      <span className="px-1 pb-1">
+        <span className="block font-heading text-base text-brand-heading">{template.name}</span>
       </span>
     </button>
   );
