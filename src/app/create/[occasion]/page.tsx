@@ -12,14 +12,16 @@ import type { OccasionsResponse, TemplatesResponse } from "@/lib/api-types";
 import { serverApi } from "@/lib/server-api";
 import { getCurrentUser } from "@/lib/session";
 
+import { OccasionInfo, occasionSeo } from "./occasion-info";
 import { SetupWizard } from "./setup-wizard";
 
 export async function generateMetadata({ params }: PageProps<"/create/[occasion]">): Promise<Metadata> {
   const { occasion } = await params;
   const name = occasion.replace(/-/g, " ");
+  const seo = occasionSeo(occasion);
   return {
-    title: `Create a ${name} invitation`,
-    description: `Design a free online ${name} invitation with RSVPs and share it with a single link.`,
+    title: seo?.title ?? `Create a ${name} invitation`,
+    description: seo?.description ?? `Design a free online ${name} invitation with RSVPs and share it with a single link.`,
     alternates: { canonical: `/create/${encodeURIComponent(occasion)}` },
   };
 }
@@ -88,6 +90,7 @@ export default async function CreateOccasionPage({ params }: PageProps<"/create/
   return (
     <CreateShell wide>
       <SetupWizard occasion={occasion} templates={templatesResult.data.templates} signedIn={signedIn} />
+      <OccasionInfo slug={occasionSlug} />
     </CreateShell>
   );
 }
