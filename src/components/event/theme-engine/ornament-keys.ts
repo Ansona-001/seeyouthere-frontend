@@ -126,6 +126,9 @@ const CLEARANCE: Record<string, { top?: number; topFluid?: number; bottom?: numb
   // The hanging flowers are 56.3% as tall as they are wide, but only the sides reach low; the bottom flowers rise about 200px on a phone.
   wildflower: { topFluid: 46 },
   wildflower_page: { bottom: 200 },
+  // The party-bunting band is 36.7% as tall as it is wide; the silver and pink balls rise about 90px from the bottom on a phone.
+  glitterball: { topFluid: 37 },
+  glitterball_page: { bottom: 150 },
   // Washing line: items hang to about y=104 of a 120px-tall band (about 162px deep at the 600px desktop copy).
   clothesline: { top: 135 },
   lovebirds: { top: 150 },

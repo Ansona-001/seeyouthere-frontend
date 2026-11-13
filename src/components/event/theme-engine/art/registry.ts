@@ -172,6 +172,10 @@ export const ART: Record<string, ComponentType<ArtProps>> = {
   wildflower_page: makeRasterPage({
     bottom: { src: "/themes/wildflower-bottom.webp", width: 900, height: 540, flip: false },
   }),
+  glitterball: makeRasterTop({ src: "/themes/disco-top.webp", width: 900, height: 330, solid: true, noFade: true }),
+  glitterball_page: makeRasterPage({
+    bottom: { src: "/themes/disco-bottom.webp", width: 900, height: 330, flip: false },
+  }),
   autumn_page: makeRasterPage({
     wash: "/themes/autumn-wash.webp",
     bottom: { src: "/themes/autumn-canopy.webp", width: 1000, height: 266 },

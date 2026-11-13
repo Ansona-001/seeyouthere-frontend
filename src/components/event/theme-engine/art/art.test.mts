@@ -34,6 +34,8 @@ const BACKEND: Record<string, { min: number; max: number; foil: boolean; placeme
   marigold_page: { min: 0, max: 0, foil: false, placements: ["page"] },
   wildflower: { min: 0, max: 0, foil: false, placements: ["top"] },
   wildflower_page: { min: 0, max: 0, foil: false, placements: ["page"] },
+  glitterball: { min: 0, max: 0, foil: false, placements: ["top"] },
+  glitterball_page: { min: 0, max: 0, foil: false, placements: ["page"] },
   doodles: { min: 2, max: 4, foil: false, placements: ["scatter", "edges"] },
   clothesline: { min: 3, max: 5, foil: false, placements: ["top"] },
   little_house: { min: 4, max: 6, foil: false, placements: ["hero_top"] },
@@ -45,7 +47,7 @@ const PALETTE = ["#112233", "#445566", "#778899", "#AABBCC", "#DDEEFF", "#102030
 
 // React 19 hoists a preload hint for a raster's constant src; it is the only markup outside the layer box.
 // Rasters: one constant same-origin <img>-based layer each, no SVG.
-const RASTER_KEYS: ReadonlySet<string> = new Set(["mimosa", "autumn", "autumn_page", "marigold", "marigold_page", "wildflower", "wildflower_page"]);
+const RASTER_KEYS: ReadonlySet<string> = new Set(["mimosa", "autumn", "autumn_page", "marigold", "marigold_page", "wildflower", "wildflower_page", "glitterball", "glitterball_page"]);
 const PRELOAD_LINK = /<link rel="preload"[^>]*\/>/g;
 function render(key: string, placement: string, colors: readonly string[], extra: Record<string, unknown> = {}): string {
   return renderToStaticMarkup(createElement(ART[key], { placement, colors, region: "page", density: "dense", ...extra })).replace(PRELOAD_LINK, "");
@@ -205,6 +207,8 @@ test("clearance reaches the text column for the keys that reserve it", () => {
   assert.deepEqual(artClearance([layer("fizz", "hero_top", "hero")], drawn), { ...none, reserve: 240 });
   assert.deepEqual(artClearance([layer("wildflower", "top")], drawn), { ...none, topFluid: 46 });
   assert.deepEqual(artClearance([layer("wildflower_page", "page")], drawn), { ...none, bottom: 200 });
+  assert.deepEqual(artClearance([layer("glitterball", "top")], drawn), { ...none, topFluid: 37 });
+  assert.deepEqual(artClearance([layer("glitterball_page", "page")], drawn), { ...none, bottom: 150 });
   assert.deepEqual(artClearance([layer("mimosa", "top", "hero")], drawn), none);
   assert.deepEqual(artClearance([layer("mimosa", "top"), layer("olive_branches", "corners")], drawn), { top: 118, topFluid: 27, bottom: 70, reserve: 0 });
   assert.deepEqual(artClearance([layer("balloons", "hero_top", "hero")], drawn), none);
@@ -264,4 +268,17 @@ test("wildflower is one constant same-origin raster band and its bottom flowers 
   for (const html of [top, page]) assert.ok(!/<script|<svg|\bhref\b|\bon\w+=|style=|ev-sway/i.test(html), html);
   for (const placement of ALL_PLACEMENTS.filter((p) => p !== "top")) assert.equal(render("wildflower", placement, []), "", placement);
   for (const placement of ALL_PLACEMENTS.filter((p) => p !== "page")) assert.equal(render("wildflower_page", placement, []), "", placement);
+});
+
+test("glitterball is one constant same-origin raster band and its bottom balls one upright image, never animated", () => {
+  const top = render("glitterball", "top", []);
+  assert.equal(count(top, /<img\b/g), 1);
+  assert.match(top, /<img src="\/themes\/disco-top\.webp" alt="" width="900" height="330" /);
+  const page = render("glitterball_page", "page", []);
+  assert.equal(count(page, /<img\b/g), 1);
+  assert.match(page, /<img src="\/themes\/disco-bottom\.webp" alt="" width="900" height="330" /);
+  assert.ok(!/-scale-y-100/.test(page), "the balls stay upright");
+  for (const html of [top, page]) assert.ok(!/<script|<svg|\bhref\b|\bon\w+=|style=|ev-sway/i.test(html), html);
+  for (const placement of ALL_PLACEMENTS.filter((p) => p !== "top")) assert.equal(render("glitterball", placement, []), "", placement);
+  for (const placement of ALL_PLACEMENTS.filter((p) => p !== "page")) assert.equal(render("glitterball_page", placement, []), "", placement);
 });
