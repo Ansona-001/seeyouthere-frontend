@@ -12,7 +12,7 @@ import { DeleteAccountDialog } from "./delete-account-dialog";
 import { ProfileForm } from "./profile-form";
 import { SessionsList } from "./sessions-list";
 
-export const metadata: Metadata = { title: "Account" };
+export const metadata: Metadata = { title: "Account", robots: { index: false, follow: false } };
 
 export default async function AccountPage() {
   const user = await getCurrentUser();

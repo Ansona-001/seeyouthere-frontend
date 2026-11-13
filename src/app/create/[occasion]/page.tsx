@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { Analytics } from "@/components/analytics";
 import { EmptyState } from "@/components/brand/empty-state";
 import { SiteFooter } from "@/components/brand/site-footer";
 import { SiteHeader } from "@/components/brand/site-header";
@@ -15,7 +16,12 @@ import { SetupWizard } from "./setup-wizard";
 
 export async function generateMetadata({ params }: PageProps<"/create/[occasion]">): Promise<Metadata> {
   const { occasion } = await params;
-  return { title: `Create a ${occasion.replace(/-/g, " ")} event` };
+  const name = occasion.replace(/-/g, " ");
+  return {
+    title: `Create a ${name} invitation`,
+    description: `Design a free online ${name} invitation with RSVPs and share it with a single link.`,
+    alternates: { canonical: `/create/${encodeURIComponent(occasion)}` },
+  };
 }
 
 /**
@@ -96,6 +102,7 @@ function CreateShell({ children, wide = false }: { children: ReactNode; wide?: b
         {children}
       </main>
       <SiteFooter />
+      <Analytics />
     </>
   );
 }

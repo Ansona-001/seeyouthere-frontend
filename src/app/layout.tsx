@@ -6,6 +6,7 @@ import "./globals.css";
 // UI font, also two of the eight fonts an event theme can use) — loaded once
 // in lib/fonts.ts so we never ship the same Google Font twice.
 import { eventFontVariables } from "@/lib/fonts";
+import { SITE_DESCRIPTION, SITE_NAME, siteUrl } from "@/lib/site";
 
 // next/font downloads this at build time and serves it from our own domain.
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -13,21 +14,14 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 // Not part of the event-theme font allowlist in lib/fonts.ts.
 const gloock = Gloock({ variable: "--font-gloock", subsets: ["latin"], weight: "400", display: "swap" });
 
-// Lets relative OG/Twitter image URLs (e.g. an event's hero photo, served as
-// `/media/<event>/<media>/og.jpg` on this same origin — build-out plan
-// §6.2, §10) resolve to absolute URLs in generated metadata.
-function siteUrl(): URL {
-  try {
-    return new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3100");
-  } catch {
-    return new URL("http://localhost:3100");
-  }
-}
-
 export const metadata: Metadata = {
   metadataBase: siteUrl(),
-  title: { default: "See You There", template: "%s · See You There" },
-  description: "Free event pages for birthdays, weddings, housewarmings and every other gathering.",
+  title: { default: SITE_NAME, template: `%s · ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  // No canonical here: it would be inherited by every page, including event pages.
+  openGraph: { type: "website", siteName: SITE_NAME, title: SITE_NAME, description: SITE_DESCRIPTION },
+  twitter: { card: "summary_large_image" },
 };
 
 // Cream paper, so the mobile browser chrome blends with the page.

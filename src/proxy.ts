@@ -36,7 +36,7 @@ export function proxy(request: NextRequest) {
     "font-src 'self'",
     // Host-uploaded music is fetched and played from a blob: URL.
     "media-src 'self' blob:",
-    `connect-src 'self' ${apiOrigin()}`,
+    `connect-src 'self' ${apiOrigin()} https://cloudflareinsights.com`,
     // Rich-blocks video embeds (click-to-load facade, `src/lib/video.ts`)
     // only ever point at one of these two constant origins — never a raw
     // user-supplied URL. Needs security review alongside the video facade.

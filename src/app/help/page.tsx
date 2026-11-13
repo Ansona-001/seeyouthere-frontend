@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { Analytics } from "@/components/analytics";
 import { SiteFooter } from "@/components/brand/site-footer";
 import { SiteHeader } from "@/components/brand/site-header";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/support";
 
 export const metadata: Metadata = {
   title: "Help and contact",
+  alternates: { canonical: "/help" },
   description: "Answers to common questions about creating, publishing and sharing your invitation, and how to reach us.",
 };
 
@@ -137,6 +139,7 @@ export default function HelpPage() {
         </section>
       </main>
       <SiteFooter />
+      <Analytics />
     </>
   );
 }

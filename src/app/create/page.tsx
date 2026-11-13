@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { Analytics } from "@/components/analytics";
 import { EmptyState } from "@/components/brand/empty-state";
 import { SiteFooter } from "@/components/brand/site-footer";
 import { SiteHeader } from "@/components/brand/site-header";
@@ -8,7 +9,11 @@ import { serverApi } from "@/lib/server-api";
 
 import { OccasionCoverflow } from "./occasion-coverflow";
 
-export const metadata: Metadata = { title: "Create an event" };
+export const metadata: Metadata = {
+  title: "Create an event",
+  description: "Pick an occasion and design a free online invitation with RSVPs in minutes.",
+  alternates: { canonical: "/create" },
+};
 
 /**
  * Occasion picker (build-out plan §11.1). Works for signed-in and anonymous
@@ -41,6 +46,7 @@ export default async function CreatePage() {
         )}
       </main>
       <SiteFooter />
+      <Analytics />
     </>
   );
 }

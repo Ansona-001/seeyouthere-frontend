@@ -1,9 +1,13 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+import { Analytics } from "@/components/analytics";
 import { SiteFooter } from "@/components/brand/site-footer";
 import { SiteHeader } from "@/components/brand/site-header";
+import { JsonLd } from "@/components/json-ld";
 import { Button } from "@/components/ui/button";
+import { SITE_DESCRIPTION, SITE_NAME, siteUrl } from "@/lib/site";
 
 import { OccasionStrip } from "./occasion-strip";
 
@@ -99,9 +103,25 @@ function OccasionRow() {
   );
 }
 
+export const metadata: Metadata = {
+  title: { absolute: `${SITE_NAME}: free online invitations and RSVPs` },
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: { url: "/" },
+};
+
 export default function HomePage() {
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: SITE_NAME,
+          url: siteUrl().origin,
+          description: SITE_DESCRIPTION,
+        }}
+      />
       <SiteHeader
         links={
           <>
@@ -247,6 +267,7 @@ export default function HomePage() {
         </section>
       </main>
       <SiteFooter />
+      <Analytics />
     </>
   );
 }
