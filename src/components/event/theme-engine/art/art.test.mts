@@ -34,6 +34,11 @@ const BACKEND: Record<string, { min: number; max: number; foil: boolean; placeme
   marigold_page: { min: 0, max: 0, foil: false, placements: ["page"] },
   wildflower: { min: 0, max: 0, foil: false, placements: ["top"] },
   wildflower_page: { min: 0, max: 0, foil: false, placements: ["page"] },
+  doodles: { min: 2, max: 4, foil: false, placements: ["scatter", "edges"] },
+  clothesline: { min: 3, max: 5, foil: false, placements: ["top"] },
+  little_house: { min: 4, max: 6, foil: false, placements: ["hero_top"] },
+  lovebirds: { min: 3, max: 5, foil: false, placements: ["top_corners"] },
+  fizz: { min: 4, max: 6, foil: false, placements: ["hero_top"] },
 };
 const ALL_PLACEMENTS = ["hero", "hero_top", "top", "page", "edges", "scatter", "corners", "top_corners", "bottom_corners"];
 const PALETTE = ["#112233", "#445566", "#778899", "#AABBCC", "#DDEEFF", "#102030", "#405060", "#708090"];
@@ -194,6 +199,10 @@ test("clearance reaches the text column for the keys that reserve it", () => {
   assert.deepEqual(artClearance([layer("autumn_page", "page")], drawn), { ...none, bottom: 130 });
   assert.deepEqual(artClearance([layer("marigold", "top")], drawn), { ...none, topFluid: 61 });
   assert.deepEqual(artClearance([layer("marigold_page", "page")], drawn), { ...none, bottom: 160 });
+  assert.deepEqual(artClearance([layer("clothesline", "top")], drawn), { ...none, top: 135 });
+  assert.deepEqual(artClearance([layer("lovebirds", "top_corners")], drawn), { ...none, top: 150 });
+  assert.deepEqual(artClearance([layer("little_house", "hero_top", "hero")], drawn), { ...none, reserve: 244 });
+  assert.deepEqual(artClearance([layer("fizz", "hero_top", "hero")], drawn), { ...none, reserve: 240 });
   assert.deepEqual(artClearance([layer("wildflower", "top")], drawn), { ...none, topFluid: 46 });
   assert.deepEqual(artClearance([layer("wildflower_page", "page")], drawn), { ...none, bottom: 200 });
   assert.deepEqual(artClearance([layer("mimosa", "top", "hero")], drawn), none);

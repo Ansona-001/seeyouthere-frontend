@@ -5,16 +5,18 @@ import { SiteFooter } from "@/components/brand/site-footer";
 import { SiteHeader } from "@/components/brand/site-header";
 import { Button } from "@/components/ui/button";
 
+import { OccasionStrip } from "./occasion-strip";
+
 // Mirrors the occasion catalog seeded in the API (slug -> /create/[slug]).
 // Kept static so the landing page needs no API round-trip and no client JS.
 // Card art: real renders of our themes, cropped and pre-optimised in public/landing.
 const OCCASIONS = [
-  { slug: "wedding", art: "wedding", name: "Weddings", caption: "Invites and save the dates", backdrop: "backdrop-linen", tilt: "-rotate-3" },
-  { slug: "birthday", art: "birthday", name: "Birthdays", caption: "From first to fiftieth", backdrop: "backdrop-confetti", tilt: "rotate-3" },
-  { slug: "baby-shower", art: "baby-shower", name: "Baby showers", caption: "Soft, sweet, a little silly", backdrop: "backdrop-watercolour", tilt: "-rotate-2" },
-  { slug: "housewarming", art: "housewarming", name: "Housewarmings", caption: "New keys, open doors", backdrop: "backdrop-oak", tilt: "rotate-2" },
-  { slug: "engagement", art: "engagement", name: "Engagements", caption: "Tell everyone, properly", backdrop: "backdrop-foil", tilt: "rotate-3" },
-  { slug: "party", art: "milestone", name: "Parties", caption: "Milestones and late nights", backdrop: "backdrop-marble", tilt: "-rotate-2" },
+  { slug: "wedding", art: "wedding", name: "Weddings", caption: "Invites and save the dates", backdrop: "backdrop-forest", tilt: "-rotate-3" },
+  { slug: "birthday", art: "birthday", name: "Birthdays", caption: "From first to fiftieth", backdrop: "backdrop-linen", tilt: "rotate-3" },
+  { slug: "baby-shower", art: "baby-shower", name: "Baby showers", caption: "Soft, sweet, beautifully simple", backdrop: "backdrop-forest", tilt: "-rotate-2" },
+  { slug: "housewarming", art: "housewarming", name: "Housewarmings", caption: "New keys, open doors", backdrop: "backdrop-sage", tilt: "rotate-2" },
+  { slug: "engagement", art: "engagement", name: "Engagements", caption: "Tell everyone, properly", backdrop: "backdrop-brass", tilt: "rotate-3" },
+  { slug: "party", art: "party", name: "Parties", caption: "Milestones and late nights", backdrop: "backdrop-linen", tilt: "-rotate-2" },
 ] as const;
 
 type IconName = "all" | "wedding" | "engagement" | "birthday" | "baby-shower" | "housewarming" | "party";
@@ -64,13 +66,36 @@ function CardArt({
     <Image
       src={`/landing/card-${name}.webp`}
       alt={alt}
-      width={320}
-      height={480}
+      width={390}
+      height={520}
       // Already cropped and compressed; the site's custom loader only serves media renditions.
       unoptimized
       priority={priority}
       className={`absolute rounded-md shadow-xl ring-1 ring-black/10 ${className}`}
     />
+  );
+}
+
+function OccasionRow() {
+  return (
+    <ul className="flex shrink-0 gap-4 pr-4 sm:gap-5 sm:pr-5">
+      {OCCASIONS.map((o) => (
+        <li key={o.slug} className="w-44 shrink-0 sm:w-60">
+          <Link href={`/create/${o.slug}`} className={`group block rounded-3xl ${linkFocus}`}>
+            <span className={`relative block aspect-[7/8] overflow-hidden rounded-3xl ring-1 ring-border ${o.backdrop}`}>
+              <CardArt
+                name={o.art}
+                className={`top-1/2 left-1/2 w-[54%] -translate-x-1/2 -translate-y-1/2 transition-transform duration-(--duration-base) group-hover:-translate-y-[53%] motion-reduce:transition-none ${o.tilt}`}
+              />
+            </span>
+            <span className="mt-3 flex flex-col gap-0.5 px-1">
+              <span className="font-heading text-xl text-brand-heading">{o.name}</span>
+              <span className="text-sm text-muted-foreground">{o.caption}</span>
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -121,20 +146,20 @@ export default function HomePage() {
               className="absolute inset-0 opacity-40 [background-image:repeating-linear-gradient(0deg,color-mix(in_oklab,var(--brand-on-forest)_8%,transparent)_0_1px,transparent_1px_4px),repeating-linear-gradient(90deg,color-mix(in_oklab,var(--brand-on-forest)_6%,transparent)_0_1px,transparent_1px_4px)]"
             />
             <CardArt
-              name="wedding"
-              alt="Example wedding invitation in the Olive Grove design"
+              name="letterpress"
+              alt="Example wedding invitation in the Letterpress design"
               priority
-              className="top-1/2 left-1/2 w-32 -translate-x-[118%] -translate-y-[48%] -rotate-[9deg] sm:w-40 lg:w-48"
-            />
-            <CardArt
-              name="milestone"
-              alt="Example 50th birthday invitation in the Gilt Noir design"
-              priority
-              className="top-1/2 left-1/2 w-32 translate-x-[18%] -translate-y-[46%] rotate-[7deg] sm:w-40 lg:w-48"
+              className="top-1/2 left-1/2 w-32 -translate-x-[124%] -translate-y-[48%] -rotate-[8deg] sm:w-40 lg:w-48"
             />
             <CardArt
               name="birthday"
-              alt="Example kids' birthday invitation in the Sprinkles design"
+              alt="Example 50th birthday invitation in the Gilt Noir design"
+              priority
+              className="top-1/2 left-1/2 w-32 translate-x-[24%] -translate-y-[46%] rotate-[8deg] sm:w-40 lg:w-48"
+            />
+            <CardArt
+              name="wedding"
+              alt="Example wedding invitation in the Wildflower design"
               priority
               className="top-1/2 left-1/2 z-10 w-32 -translate-x-1/2 -translate-y-[52%] -rotate-[2deg] sm:w-40 lg:w-48"
             />
@@ -176,35 +201,17 @@ export default function HomePage() {
           </ul>
         </nav>
 
-        <section
-          id="designs"
-          className="mx-auto w-full max-w-6xl scroll-mt-4 px-4 sm:px-6"
-          aria-labelledby="occasions-title"
-        >
-          <h2 id="occasions-title" className="font-heading text-3xl text-brand-heading sm:text-5xl">
-            What do you want to send?
-          </h2>
-          <p className="mt-2 text-muted-foreground">Pick an occasion to start your invitation.</p>
-          <ul className="mt-8 grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-3">
-            {OCCASIONS.map((o) => (
-              <li key={o.slug}>
-                <Link href={`/create/${o.slug}`} className={`group block rounded-3xl ${linkFocus}`}>
-                  <span
-                    className={`relative block aspect-[7/8] overflow-hidden rounded-3xl ring-1 ring-border ${o.backdrop}`}
-                  >
-                    <CardArt
-                      name={o.art}
-                      className={`top-1/2 left-1/2 w-[40%] -translate-x-1/2 -translate-y-1/2 transition-transform duration-(--duration-base) group-hover:-translate-y-[53%] motion-reduce:transition-none ${o.tilt}`}
-                    />
-                  </span>
-                  <span className="mt-3 flex flex-col gap-0.5 px-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
-                    <span className="font-heading text-xl text-brand-heading sm:text-2xl">{o.name}</span>
-                    <span className="text-sm text-muted-foreground">{o.caption}</span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+        <section id="designs" className="scroll-mt-4" aria-labelledby="occasions-title">
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+            <h2 id="occasions-title" className="font-heading text-3xl text-brand-heading sm:text-5xl">
+              What do you want to send?
+            </h2>
+            <p className="mt-2 text-muted-foreground">Pick an occasion to start your invitation.</p>
+          </div>
+          {/* Endless, slowly drifting row; drag or use the arrows to go either way (client island). */}
+          <OccasionStrip>
+            <OccasionRow />
+          </OccasionStrip>
         </section>
 
         <section id="how" className="scroll-mt-4 bg-brand-linen py-14 sm:py-20" aria-labelledby="how-title">

@@ -4,10 +4,15 @@ import { makeArt } from "./layout.ts";
 import { makeRasterPage, makeRasterTop } from "./raster.ts";
 import * as balloons from "./shapes/balloons.ts";
 import * as botanicalWash from "./shapes/botanical_wash.ts";
+import * as clothesline from "./shapes/clothesline.ts";
 import * as clouds from "./shapes/clouds.ts";
 import * as confetti from "./shapes/confetti.ts";
 import * as daisies from "./shapes/daisies.ts";
 import * as decoFans from "./shapes/deco_fans.ts";
+import * as doodles from "./shapes/doodles.ts";
+import * as fizz from "./shapes/fizz.ts";
+import * as littleHouse from "./shapes/little_house.ts";
+import * as lovebirds from "./shapes/lovebirds.ts";
 import * as mirrorBall from "./shapes/mirror_ball.ts";
 import * as oliveBranches from "./shapes/olive_branches.ts";
 import * as openDoorPlants from "./shapes/open_door_plants.ts";
@@ -144,6 +149,19 @@ export const ART: Record<string, ComponentType<ArtProps>> = {
       small: "w-[min(34cqi,130px)] @min-[900px]/ev:w-[min(16cqi,180px)]",
     },
   }),
+  doodles: makeArt({ placements: ["scatter", "edges"], scatter: { shape: doodles.scatter }, edges: doodles.edges }),
+  clothesline: makeArt({ placements: ["top"], top: clothesline.main }),
+  little_house: makeArt({ placements: ["hero_top"], heroTop: { shape: littleHouse.main, width: "w-[min(100%,420px)]" } }),
+  lovebirds: makeArt({
+    placements: ["top_corners"],
+    sway: true,
+    corner: {
+      shape: lovebirds.main,
+      big: "w-[min(44cqi,176px)] @min-[900px]/ev:w-[min(20cqi,250px)]",
+      small: "w-[min(44cqi,176px)] @min-[900px]/ev:w-[min(20cqi,250px)]",
+    },
+  }),
+  fizz: makeArt({ placements: ["hero_top"], heroTop: { shape: fizz.main, width: "w-[min(100%,440px)]" } }),
   mimosa: makeRasterTop({ src: "/themes/mimosa-canopy.webp", width: 1130, height: 480 }),
   autumn: makeRasterTop({ src: "/themes/autumn-canopy.webp", width: 1000, height: 266, solid: true }),
   marigold: makeRasterTop({ src: "/themes/marigold-top.webp", width: 900, height: 547, solid: true, noFade: true }),

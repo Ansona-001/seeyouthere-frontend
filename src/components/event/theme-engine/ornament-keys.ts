@@ -126,6 +126,11 @@ const CLEARANCE: Record<string, { top?: number; topFluid?: number; bottom?: numb
   // The hanging flowers are 56.3% as tall as they are wide, but only the sides reach low; the bottom flowers rise about 200px on a phone.
   wildflower: { topFluid: 46 },
   wildflower_page: { bottom: 200 },
+  // Washing line: items hang to about y=104 of a 120px-tall band (about 162px deep at the 600px desktop copy).
+  clothesline: { top: 135 },
+  lovebirds: { top: 150 },
+  little_house: { reserve: 244 },
+  fizz: { reserve: 240 },
 };
 
 /** Art keys of the stationery-style themes (Harvest, Marigold): a hero that opens the page and cards drawn as flat paper tags. */
