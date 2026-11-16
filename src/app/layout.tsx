@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist_Mono, Gloock } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 // eventFontVariables already carries Figtree/Bricolage Grotesque (the site's
@@ -10,9 +10,6 @@ import { SITE_DESCRIPTION, SITE_NAME, siteUrl } from "@/lib/site";
 
 // next/font downloads this at build time and serves it from our own domain.
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-// The app's display face (--font-heading in globals.css). One weight, preloaded.
-// Not part of the event-theme font allowlist in lib/fonts.ts.
-const gloock = Gloock({ variable: "--font-gloock", subsets: ["latin"], weight: "400", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: siteUrl(),
@@ -24,14 +21,14 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
-// Cream paper, so the mobile browser chrome blends with the page.
-export const viewport: Viewport = { themeColor: "#F6F0E4" };
+// The page ground (--background), so the mobile browser chrome blends with the page.
+export const viewport: Viewport = { themeColor: "#FFFDF8" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${eventFontVariables} ${geistMono.variable} ${gloock.variable} h-full antialiased`}
+      className={`${eventFontVariables} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">{children}</body>
     </html>

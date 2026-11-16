@@ -9,7 +9,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-figtree);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-gloock), Georgia, serif;
+  --font-heading: var(--font-bricolage), var(--font-figtree), system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -71,72 +71,72 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Design tokens: "The stationer's table" (design/tokens.css). Same shadcn variable names, so
+/* Design tokens: "Paper and ink" (warm paper ground, near-black ink, sand fields, gold accents; the landing page adds one colour per occasion). Same shadcn variable names, so
    every shadcn component inherits the palette. Dark mode follows the same tokens but is not
    shipped yet (nothing adds .dark). */
 :root {
-  --background: oklch(0.957 0.017 84.6); /* #F6F0E4 Cream paper: the stationer's table */
-  --foreground: oklch(0.274 0.024 154.3); /* #1E2B22 Forest ink */
-  --card: oklch(0.991 0.010 87.5); /* #FFFCF5 Ivory card stock */
-  --card-foreground: oklch(0.274 0.024 154.3); /* #1E2B22 */
-  --popover: oklch(0.991 0.010 87.5); /* #FFFCF5 */
-  --popover-foreground: oklch(0.274 0.024 154.3); /* #1E2B22 */
-  --primary: oklch(0.342 0.047 157.8); /* #22402F Deep forest: primary actions, headings */
-  --primary-foreground: oklch(0.974 0.017 88.0); /* #FBF6EA */
-  --secondary: oklch(0.915 0.025 124.3); /* #DFE6D4 Sage wash: selected chips, quiet fills */
-  --secondary-foreground: oklch(0.274 0.024 154.3); /* #1E2B22 */
-  --muted: oklch(0.924 0.023 84.6); /* #EDE5D5 Linen */
-  --muted-foreground: oklch(0.479 0.030 129.2); /* #58614F Moss: secondary text */
-  --accent: oklch(0.905 0.028 86.6); /* #E8DFCB Hover / highlighted rows */
-  --accent-foreground: oklch(0.274 0.024 154.3); /* #1E2B22 */
+  --background: oklch(0.994 0.007 88.6); /* #FFFDF8 Paper: the page ground */
+  --foreground: oklch(0.209 0.030 299.1); /* #1A1524 Ink */
+  --card: oklch(1.000 0.000 89.9); /* #FFFFFF White: dialogs, fields, popovers */
+  --card-foreground: oklch(0.209 0.030 299.1); /* #1A1524 */
+  --popover: oklch(1.000 0.000 89.9); /* #FFFFFF */
+  --popover-foreground: oklch(0.209 0.030 299.1); /* #1A1524 */
+  --primary: oklch(0.209 0.030 299.1); /* #1A1524 Ink: primary actions (paper text 17.6:1) */
+  --primary-foreground: oklch(0.994 0.007 88.6); /* #FFFDF8 */
+  --secondary: oklch(0.944 0.017 88.0); /* #F1ECE0 Sand wash: selected chips, quiet fills */
+  --secondary-foreground: oklch(0.209 0.030 299.1); /* #1A1524 */
+  --muted: oklch(0.959 0.016 86.4); /* #F6F1E6 Pale sand */
+  --muted-foreground: oklch(0.468 0.035 300.3); /* #5D566B Secondary text */
+  --accent: oklch(0.935 0.018 86.1); /* #EFE9DC Hover / highlighted rows */
+  --accent-foreground: oklch(0.209 0.030 299.1); /* #1A1524 */
   --destructive: oklch(0.494 0.155 28.1); /* #A8322A Rosehip red */
-  --border: oklch(0.865 0.032 82.8); /* #DDD1BB Hairlines (decorative, not a boundary) */
-  --input: oklch(0.604 0.036 83.6); /* #8C8069 Field borders: 3:1 non-text contrast */
-  --ring: oklch(0.478 0.084 156.3); /* #2F6B49 Focus ring */
-  --chart-1: oklch(0.342 0.047 157.8); /* #22402F Going */
-  --chart-2: oklch(0.664 0.109 76.8); /* #B98A3E Maybe */
-  --chart-3: oklch(0.611 0.086 118.9); /* #7E8B4E */
-  --chart-4: oklch(0.596 0.114 38.7); /* #B8654A Declined */
-  --chart-5: oklch(0.577 0.049 232.4); /* #5C7F92 */
-  --sidebar: oklch(0.936 0.020 84.6); /* #F0E9DB */
-  --sidebar-foreground: oklch(0.274 0.024 154.3); /* #1E2B22 */
-  --sidebar-primary: oklch(0.342 0.047 157.8); /* #22402F */
-  --sidebar-primary-foreground: oklch(0.974 0.017 88.0); /* #FBF6EA */
-  --sidebar-accent: oklch(0.905 0.028 86.6); /* #E8DFCB */
-  --sidebar-accent-foreground: oklch(0.274 0.024 154.3); /* #1E2B22 */
-  --sidebar-border: oklch(0.865 0.032 82.8); /* #DDD1BB */
-  --sidebar-ring: oklch(0.478 0.084 156.3); /* #2F6B49 */
-  --brand-forest: oklch(0.342 0.047 157.8); /* #22402F Logo, fields of colour */
-  --brand-forest-deep: oklch(0.283 0.044 153.0); /* #17301F */
-  --brand-olive: oklch(0.504 0.073 121.2); /* #5E6B3A Botanical accents */
-  --brand-brass: oklch(0.664 0.109 76.8); /* #B98A3E Decorative only (2.7:1 on cream): dots, rules, foil */
-  --brand-brass-ink: oklch(0.493 0.090 78.0); /* #7D5A1B Brass you can read: meta text, small links */
-  --brand-heading: oklch(0.342 0.047 157.8); /* #22402F Display headings */
-  --brand-ink-logo: oklch(0.342 0.047 157.8); /* #22402F */
-  --brand-forest-field: oklch(0.342 0.047 157.8); /* #22402F Large forest regions (hero, footer) */
-  --brand-on-forest: oklch(0.957 0.017 84.6); /* #F6F0E4 */
-  --brand-on-forest-muted: oklch(0.842 0.026 132.2); /* #C5CFBE */
-  --brand-brass-bright: oklch(0.771 0.105 81.9); /* #D6AE63 Brass on forest */
-  --brand-linen-field: oklch(0.933 0.020 84.6); /* #EFE8DA Alternate section ground */
-  --brand-sage-field: oklch(0.915 0.025 124.3); /* #DFE6D4 */
-  --brand-primary-hover: oklch(0.397 0.057 154.2); /* #2D5039 */
-  --brand-placeholder: oklch(0.524 0.022 93.8); /* #6E6A5C */
-  --brand-success: oklch(0.478 0.084 156.3); /* #2F6B49 */
-  --brand-toast: oklch(0.274 0.024 154.3); /* #1E2B22 Inverse surface */
-  --brand-toast-fg: oklch(0.957 0.017 84.6); /* #F6F0E4 */
-  --brand-toast-muted: oklch(0.818 0.027 128.8); /* #BEC7B5 */
-  --brand-toast-action: oklch(0.829 0.089 84.7); /* #E2C383 */
+  --border: oklch(0.914 0.017 84.6); /* #E8E2D6 Sand hairlines (decorative, not a boundary) */
+  --input: oklch(0.624 0.025 302.7); /* #8A8494 Field borders: 3:1 non-text contrast */
+  --ring: oklch(0.468 0.035 300.3); /* #5D566B Focus ring */
+  --chart-1: oklch(0.563 0.119 158.9); /* #1F8A5B Going */
+  --chart-2: oklch(0.819 0.156 83.2); /* #F4B92F Maybe */
+  --chart-3: oklch(0.636 0.097 250.5); /* #5C8FC4 */
+  --chart-4: oklch(0.581 0.181 35.3); /* #CF4520 Declined */
+  --chart-5: oklch(0.624 0.025 302.7); /* #8A8494 */
+  --sidebar: oklch(0.959 0.016 86.4); /* #F6F1E6 */
+  --sidebar-foreground: oklch(0.209 0.030 299.1); /* #1A1524 */
+  --sidebar-primary: oklch(0.209 0.030 299.1); /* #1A1524 */
+  --sidebar-primary-foreground: oklch(0.994 0.007 88.6); /* #FFFDF8 */
+  --sidebar-accent: oklch(0.935 0.018 86.1); /* #EFE9DC */
+  --sidebar-accent-foreground: oklch(0.209 0.030 299.1); /* #1A1524 */
+  --sidebar-border: oklch(0.914 0.017 84.6); /* #E8E2D6 */
+  --sidebar-ring: oklch(0.468 0.035 300.3); /* #5D566B */
+  --brand-forest: oklch(0.209 0.030 299.1); /* #1A1524 Logo, fields of colour (ink; the name is historical) */
+  --brand-forest-deep: oklch(0.166 0.025 298.9); /* #100C18 */
+  --brand-olive: oklch(0.474 0.088 163.6); /* #1F6B4E Quiet accents */
+  --brand-brass: oklch(0.819 0.156 83.2); /* #F4B92F Gold: decorative only (1.7:1 on paper): dots, rules, keylines (the name is historical) */
+  --brand-brass-ink: oklch(0.508 0.108 73.3); /* #8A5A00 Gold you can read: meta text, small links */
+  --brand-heading: oklch(0.209 0.030 299.1); /* #1A1524 Display headings */
+  --brand-ink-logo: oklch(0.209 0.030 299.1); /* #1A1524 */
+  --brand-forest-field: oklch(0.209 0.030 299.1); /* #1A1524 Large dark regions (footer, tiles) */
+  --brand-on-forest: oklch(0.977 0.020 77.3); /* #FFF6E9 */
+  --brand-on-forest-muted: oklch(0.843 0.021 308.2); /* #CFC8D6 */
+  --brand-brass-bright: oklch(0.819 0.156 83.2); /* #F4B92F Gold on dark regions */
+  --brand-linen-field: oklch(0.974 0.014 88.7); /* #FAF6EC Alternate section ground */
+  --brand-sage-field: oklch(0.959 0.016 86.4); /* #F6F1E6 */
+  --brand-primary-hover: oklch(0.292 0.046 296.3); /* #2E2740 */
+  --brand-placeholder: oklch(0.552 0.033 300.5); /* #756E83 */
+  --brand-success: oklch(0.474 0.088 163.6); /* #1F6B4E */
+  --brand-toast: oklch(0.209 0.030 299.1); /* #1A1524 Inverse surface */
+  --brand-toast-fg: oklch(0.977 0.020 77.3); /* #FFF6E9 */
+  --brand-toast-muted: oklch(0.843 0.021 308.2); /* #CFC8D6 */
+  --brand-toast-action: oklch(0.819 0.156 83.2); /* #F4B92F */
   --brand-toast-err: oklch(0.784 0.100 28.7); /* #F2A094 */
-  --brand-chrome-bar: oklch(0.924 0.023 84.6); /* #EDE5D5 */
-  --brand-bezel: oklch(0.274 0.024 154.3); /* #1E2B22 */
+  --brand-chrome-bar: oklch(0.959 0.016 86.4); /* #F6F1E6 */
+  --brand-bezel: oklch(0.209 0.030 299.1); /* #1A1524 */
 
   /* Shape */
   --radius: 0.75rem;
 
-  /* Elevation: forest-tinted, offset + soft blur (never zero-offset halos) */
-  --shadow-1: 0 1px 2px oklch(0.274 0.024 154.3 / 0.06), 0 2px 8px -2px oklch(0.274 0.024 154.3 / 0.08); /* cards, inputs */
-  --shadow-2: 0 2px 4px oklch(0.274 0.024 154.3 / 0.05), 0 12px 28px -10px oklch(0.274 0.024 154.3 / 0.22); /* popovers, hovered tiles, toasts */
-  --shadow-3: 0 4px 10px oklch(0.274 0.024 154.3 / 0.06), 0 30px 64px -18px oklch(0.26 0.04 155 / 0.38); /* dialogs, drawers */
+  /* Elevation: ink-tinted, offset + soft blur (never zero-offset halos) */
+  --shadow-1: 0 1px 2px oklch(0.21 0.03 299 / 0.06), 0 2px 8px -2px oklch(0.21 0.03 299 / 0.08); /* cards, inputs */
+  --shadow-2: 0 2px 4px oklch(0.21 0.03 299 / 0.05), 0 12px 28px -10px oklch(0.21 0.03 299 / 0.22); /* popovers, hovered tiles, toasts */
+  --shadow-3: 0 4px 10px oklch(0.21 0.03 299 / 0.06), 0 30px 64px -18px oklch(0.19 0.04 299 / 0.38); /* dialogs, drawers */
 
   /* Motion (emil-design-eng): UI stays under 300ms; exits faster than entrances */
   --duration-press: 120ms;   /* :active scale(0.97) */
@@ -247,9 +247,10 @@
     outline: 2px solid var(--ring);
     outline-offset: 3px;
   }
-  /* Gloock has a single weight: never let the browser fake a bold. */
+  /* Bricolage Grotesque as a display face: bold and slightly tight. Sizes and heavier weights are set per heading. */
   .font-heading {
-    font-synthesis-weight: none;
+    font-weight: 700;
+    letter-spacing: -0.02em;
     text-wrap: balance;
   }
 }
@@ -429,39 +430,156 @@
   }
 }
 
-/* Landing-page tile backdrops: quiet stationery grounds built from the brand palette (forest, linen,
-   sage, brass) so the invitation is the colourful thing. Each carries a thin brass keyline inset from the edge. */
+/* ---- Landing page ---- */
+/* The hero takes one ground colour and one text colour from the invitation on show, and the occasion
+   tiles reuse the same pairs. Every pair clears 4.5:1. Light only, like the rest of the site. */
+:root {
+  --occasion-wedding: oklch(0.564 0.178 35.2); /* #C8411D Poppy */
+  --occasion-wedding-on: oklch(0.977 0.020 77.3); /* #FFF6E9 */
+  --occasion-birthday: oklch(0.819 0.156 83.2); /* #F4B92F Gold */
+  --occasion-birthday-on: oklch(0.209 0.030 299.1); /* #1A1524 */
+  --occasion-baby-shower: oklch(0.889 0.045 236.0); /* #BFE0F5 Sky */
+  --occasion-baby-shower-on: oklch(0.277 0.069 261.5); /* #14274A */
+  --occasion-housewarming: oklch(0.474 0.088 163.6); /* #1F6B4E Green */
+  --occasion-housewarming-on: oklch(0.958 0.018 89.4); /* #F6F1E4 */
+  --occasion-engagement: oklch(0.858 0.066 4.3); /* #F7BFCB Blush */
+  --occasion-engagement-on: oklch(0.327 0.051 164.9); /* #173D2E */
+  --occasion-party: oklch(0.701 0.200 6.6); /* #FF5C8A Hot pink */
+  --occasion-party-on: oklch(0.208 0.061 303.9); /* #1E0F2E */
+  --envelope: oklch(0.970 0.031 84.6); /* #FFF4DE */
+  --envelope-shade: oklch(0.891 0.048 83.9); /* #EAD9B8 Inside of the envelope */
+}
+[data-occasion="wedding"] {
+  --ground: var(--occasion-wedding);
+  --on: var(--occasion-wedding-on);
+}
+[data-occasion="birthday"] {
+  --ground: var(--occasion-birthday);
+  --on: var(--occasion-birthday-on);
+}
+[data-occasion="baby-shower"] {
+  --ground: var(--occasion-baby-shower);
+  --on: var(--occasion-baby-shower-on);
+}
+[data-occasion="housewarming"] {
+  --ground: var(--occasion-housewarming);
+  --on: var(--occasion-housewarming-on);
+}
+[data-occasion="engagement"] {
+  --ground: var(--occasion-engagement);
+  --on: var(--occasion-engagement-on);
+}
+[data-occasion="party"] {
+  --ground: var(--occasion-party);
+  --on: var(--occasion-party-on);
+}
+
 @layer components {
-  .backdrop-forest,
-  .backdrop-linen,
-  .backdrop-sage,
-  .backdrop-brass {
-    outline: 1px solid color-mix(in oklab, var(--brand-brass) 55%, transparent);
-    outline-offset: -10px;
+  /* A region painted in the occasion's colours. The shared header, buttons and focus rings inside it
+     read these tokens, so they follow the occasion without knowing about it. */
+  .landing-hero {
+    --foreground: var(--on);
+    --brand-heading: var(--on);
+    --logo-dot: var(--on);
+    --primary: var(--on);
+    --primary-foreground: var(--ground);
+    --brand-primary-hover: color-mix(in oklab, var(--on) 86%, var(--ground));
+    --accent: color-mix(in oklab, var(--on) 14%, transparent);
+    --accent-foreground: var(--on);
+    --ring: var(--on);
+    background-color: var(--ground);
+    color: var(--on);
   }
-  .backdrop-forest {
-    background-color: var(--brand-forest-field);
-    background-image:
-      radial-gradient(70% 55% at 50% 42%, color-mix(in oklab, var(--brand-forest-field) 72%, white), transparent 78%),
-      repeating-linear-gradient(0deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 4px);
+  /* The closing doorway: a unit-length path so it can be drawn with a dash offset. */
+  .landing-door path {
+    stroke-dasharray: 1;
   }
-  .backdrop-linen {
-    background-color: var(--brand-linen-field);
-    background-image:
-      radial-gradient(70% 55% at 50% 42%, color-mix(in oklab, var(--brand-linen-field) 60%, white), transparent 78%),
-      repeating-linear-gradient(0deg, color-mix(in oklab, var(--brand-forest) 5%, transparent) 0 1px, transparent 1px 4px);
+  .landing-door circle {
+    transform-box: fill-box;
+    transform-origin: center;
   }
-  .backdrop-sage {
-    background-color: var(--brand-sage-field);
-    background-image:
-      radial-gradient(70% 55% at 50% 42%, color-mix(in oklab, var(--brand-sage-field) 55%, white), transparent 78%),
-      repeating-linear-gradient(0deg, color-mix(in oklab, var(--brand-forest) 6%, transparent) 0 1px, transparent 1px 4px);
+}
+
+@keyframes lp-rise {
+  from { translate: 0 110%; }
+  to { translate: 0 0; }
+}
+@keyframes lp-fade-up {
+  from { opacity: 0; translate: 0 16px; }
+  to { opacity: 1; translate: 0 0; }
+}
+/* The flap starts closed over the pocket, then swings up and back behind the card. */
+@keyframes lp-flap {
+  0% { transform: rotateX(-180deg); z-index: 5; }
+  49% { z-index: 5; }
+  50% { z-index: 1; }
+  100% { transform: rotateX(0deg); z-index: 1; }
+}
+@keyframes lp-deal {
+  from { transform: translateY(76%) rotate(0deg); }
+  to { transform: translateY(-24%) rotate(-3deg); }
+}
+@keyframes lp-pop {
+  from { opacity: 0; scale: 0.5; translate: 0 10px; }
+  to { opacity: 1; scale: 1; translate: 0 0; }
+}
+@keyframes lp-bob {
+  from { translate: 0 0; }
+  to { translate: 0 -10px; }
+}
+/* Cover-flow loop for the "Pick an occasion" illustration. One cycle takes a card through all six places:
+   front, first left, second left, out of sight (where it crosses behind to the other side), second
+   right, first right, and back to the front. Each card starts a sixth of a cycle after the last. */
+@keyframes lp-flow {
+  0%, 13% { transform: translate(-50%, -50%); z-index: 10; opacity: 1; }
+  16.67%, 29.67% { transform: translate(-50%, -50%) translateX(-70%) rotateY(55deg) scale(0.86); z-index: 9; opacity: 1; }
+  33.33%, 46.33% { transform: translate(-50%, -50%) translateX(-100%) rotateY(55deg) scale(0.86); z-index: 8; opacity: 1; }
+  50%, 56% { transform: translate(-50%, -50%) translateX(-100%) rotateY(55deg) scale(0.86); z-index: 0; opacity: 0; }
+  56.01%, 63% { transform: translate(-50%, -50%) translateX(100%) rotateY(-55deg) scale(0.86); z-index: 0; opacity: 0; }
+  66.67%, 79.67% { transform: translate(-50%, -50%) translateX(100%) rotateY(-55deg) scale(0.86); z-index: 8; opacity: 1; }
+  83.33%, 96.33% { transform: translate(-50%, -50%) translateX(70%) rotateY(-55deg) scale(0.86); z-index: 9; opacity: 1; }
+  100% { transform: translate(-50%, -50%); z-index: 10; opacity: 1; }
+}
+/* The name under the fan: visible only while its card is at the front. */
+@keyframes lp-flow-label {
+  0%, 13% { opacity: 1; }
+  16.67%, 96.33% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes lp-blink {
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-hero {
+    transition:
+      background-color 700ms var(--ease-out),
+      color 500ms var(--ease-out);
   }
-  .backdrop-brass {
-    background-color: color-mix(in oklab, var(--brand-brass-bright) 38%, var(--background));
-    background-image:
-      radial-gradient(70% 55% at 50% 42%, color-mix(in oklab, var(--brand-brass-bright) 22%, white), transparent 78%),
-      repeating-linear-gradient(0deg, color-mix(in oklab, var(--brand-brass-ink) 8%, transparent) 0 1px, transparent 1px 4px);
+  /* Scroll reveals. Elements are only hidden once LandingEffects has marked them "pending", so the
+     page is complete without JavaScript. --d staggers neighbours. */
+  [data-reveal] {
+    transition:
+      opacity 700ms var(--ease-out),
+      translate 800ms var(--ease-out);
+    transition-delay: calc(var(--d, 0) * 80ms);
+  }
+  [data-reveal="pending"] {
+    opacity: 0;
+    translate: 0 28px;
+  }
+  .landing-door path {
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1.6s var(--ease-out) 0.2s;
+  }
+  .landing-door circle {
+    transition: scale 0.6s var(--ease-spring) 1.5s;
+  }
+  .landing-door[data-reveal="pending"] path {
+    stroke-dashoffset: 1;
+  }
+  .landing-door[data-reveal="pending"] circle {
+    scale: 0;
   }
 }
 
