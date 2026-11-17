@@ -134,6 +134,13 @@ const CLEARANCE: Record<string, { top?: number; topFluid?: number; bottom?: numb
   lovebirds: { top: 150 },
   little_house: { reserve: 244 },
   fizz: { reserve: 240 },
+  // Line and light drawings: the height of each at a 390px-wide hero, plus a little air.
+  constellation: { reserve: 190 },
+  ribbon_bow: { reserve: 186 },
+  candles: { reserve: 240 },
+  mobile: { reserve: 190 },
+  lit_house: { reserve: 246 },
+  sunset: { reserve: 210 },
 };
 
 /** Art keys of the stationery-style themes (Harvest, Marigold): a hero that opens the page and cards drawn as flat paper tags. */

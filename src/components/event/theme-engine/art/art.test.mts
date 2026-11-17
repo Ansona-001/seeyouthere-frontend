@@ -41,6 +41,12 @@ const BACKEND: Record<string, { min: number; max: number; foil: boolean; placeme
   little_house: { min: 4, max: 6, foil: false, placements: ["hero_top"] },
   lovebirds: { min: 3, max: 5, foil: false, placements: ["top_corners"] },
   fizz: { min: 4, max: 6, foil: false, placements: ["hero_top"] },
+  constellation: { min: 2, max: 2, foil: false, placements: ["hero_top"] },
+  ribbon_bow: { min: 3, max: 3, foil: false, placements: ["hero_top"] },
+  candles: { min: 4, max: 4, foil: false, placements: ["hero_top"] },
+  mobile: { min: 3, max: 3, foil: false, placements: ["hero_top"] },
+  lit_house: { min: 2, max: 2, foil: false, placements: ["hero_top"] },
+  sunset: { min: 3, max: 3, foil: false, placements: ["hero_top"] },
 };
 const ALL_PLACEMENTS = ["hero", "hero_top", "top", "page", "edges", "scatter", "corners", "top_corners", "bottom_corners"];
 const PALETTE = ["#112233", "#445566", "#778899", "#AABBCC", "#DDEEFF", "#102030", "#405060", "#708090"];
@@ -135,6 +141,14 @@ test("the mirror ball clip path id is unique per mount", () => {
   assert.notEqual(ids[0], ids[1]);
 });
 
+test("the sunset clip path id is unique per mount", () => {
+  const html = render("sunset", "hero_top", PALETTE.slice(0, 3));
+  assert.ok(!/id="ev-sun-clip"/.test(html));
+  const id = /<clipPath id="([^"]+)"/.exec(html)?.[1];
+  assert.ok(id?.startsWith("ev-sun-clip-"));
+  assert.ok(html.includes(`clip-path="url(#${id})"`));
+});
+
 test("tiled placements get unique pattern ids", () => {
   const html = render("confetti", "scatter", PALETTE.slice(0, 5));
   const ids = [...html.matchAll(/<pattern id="([^"]+)"/g)].map((m) => m[1]);
@@ -173,9 +187,9 @@ test("no filter, foreign object, script, image or external reference anywhere un
   for (const url of files) {
     const src = readFileSync(url, "utf8");
     for (const re of forbidden) assert.ok(!re.test(src), `${url.pathname}: ${re}`);
-    // The only url(...) targets: the foil gradient, the mirror ball's clip path, the tile pattern built in layout.ts,
+    // The only url(...) targets: the foil gradient, the mirror ball's and the sunset's clip paths, the tile pattern built in layout.ts,
     // and raster.ts's constant, code-supplied wash image (never user input).
-    for (const m of src.matchAll(/url\(([^)]*)\)/g)) assert.match(m[1], /^(#(ev-foil-grad|ev-mb-clip|\$\{patternId\})|\$\{spec\.wash\})$/, `${url.pathname}: ${m[0]}`);
+    for (const m of src.matchAll(/url\(([^)]*)\)/g)) assert.match(m[1], /^(#(ev-foil-grad|ev-mb-clip|ev-sun-clip|\$\{patternId\})|\$\{spec\.wash\})$/, `${url.pathname}: ${m[0]}`);
   }
 });
 
@@ -205,6 +219,12 @@ test("clearance reaches the text column for the keys that reserve it", () => {
   assert.deepEqual(artClearance([layer("lovebirds", "top_corners")], drawn), { ...none, top: 150 });
   assert.deepEqual(artClearance([layer("little_house", "hero_top", "hero")], drawn), { ...none, reserve: 244 });
   assert.deepEqual(artClearance([layer("fizz", "hero_top", "hero")], drawn), { ...none, reserve: 240 });
+  assert.deepEqual(artClearance([layer("constellation", "hero_top", "hero")], drawn), { ...none, reserve: 190 });
+  assert.deepEqual(artClearance([layer("ribbon_bow", "hero_top", "hero")], drawn), { ...none, reserve: 186 });
+  assert.deepEqual(artClearance([layer("candles", "hero_top", "hero")], drawn), { ...none, reserve: 240 });
+  assert.deepEqual(artClearance([layer("mobile", "hero_top", "hero")], drawn), { ...none, reserve: 190 });
+  assert.deepEqual(artClearance([layer("lit_house", "hero_top", "hero")], drawn), { ...none, reserve: 246 });
+  assert.deepEqual(artClearance([layer("sunset", "hero_top", "hero")], drawn), { ...none, reserve: 210 });
   assert.deepEqual(artClearance([layer("wildflower", "top")], drawn), { ...none, topFluid: 46 });
   assert.deepEqual(artClearance([layer("wildflower_page", "page")], drawn), { ...none, bottom: 200 });
   assert.deepEqual(artClearance([layer("glitterball", "top")], drawn), { ...none, topFluid: 37 });

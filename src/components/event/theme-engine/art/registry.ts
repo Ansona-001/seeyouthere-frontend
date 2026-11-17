@@ -4,22 +4,28 @@ import { makeArt } from "./layout.ts";
 import { makeRasterPage, makeRasterTop } from "./raster.ts";
 import * as balloons from "./shapes/balloons.ts";
 import * as botanicalWash from "./shapes/botanical_wash.ts";
+import * as candles from "./shapes/candles.ts";
 import * as clothesline from "./shapes/clothesline.ts";
 import * as clouds from "./shapes/clouds.ts";
 import * as confetti from "./shapes/confetti.ts";
+import * as constellation from "./shapes/constellation.ts";
 import * as daisies from "./shapes/daisies.ts";
 import * as decoFans from "./shapes/deco_fans.ts";
 import * as doodles from "./shapes/doodles.ts";
 import * as fizz from "./shapes/fizz.ts";
+import * as litHouse from "./shapes/lit_house.ts";
 import * as littleHouse from "./shapes/little_house.ts";
 import * as lovebirds from "./shapes/lovebirds.ts";
 import * as mirrorBall from "./shapes/mirror_ball.ts";
+import * as mobile from "./shapes/mobile.ts";
 import * as oliveBranches from "./shapes/olive_branches.ts";
 import * as openDoorPlants from "./shapes/open_door_plants.ts";
 import * as printersCorners from "./shapes/printers_corners.ts";
+import * as ribbonBow from "./shapes/ribbon_bow.ts";
 import * as risoShapes from "./shapes/riso_shapes.ts";
 import * as sparkles from "./shapes/sparkles.ts";
 import * as steppedArches from "./shapes/stepped_arches.ts";
+import * as sunset from "./shapes/sunset.ts";
 import * as terrazzoChips from "./shapes/terrazzo_chips.ts";
 
 /**
@@ -162,6 +168,13 @@ export const ART: Record<string, ComponentType<ArtProps>> = {
     },
   }),
   fizz: makeArt({ placements: ["hero_top"], heroTop: { shape: fizz.main, width: "w-[min(100%,440px)]" } }),
+  // Line and light: one line drawing above the hero text each; their motion hooks live in globals.css.
+  constellation: makeArt({ placements: ["hero_top"], heroTop: { shape: constellation.main, width: "w-[min(100%,420px)]" } }),
+  ribbon_bow: makeArt({ placements: ["hero_top"], heroTop: { shape: ribbonBow.main, width: "w-[min(100%,420px)]" } }),
+  candles: makeArt({ placements: ["hero_top"], heroTop: { shape: candles.main, width: "w-[min(100%,420px)]" } }),
+  mobile: makeArt({ placements: ["hero_top"], heroTop: { shape: mobile.main, width: "w-[min(100%,420px)]" } }),
+  lit_house: makeArt({ placements: ["hero_top"], heroTop: { shape: litHouse.main, width: "w-[min(100%,420px)]" } }),
+  sunset: makeArt({ placements: ["hero_top"], heroTop: { shape: sunset.main, width: "w-[min(100%,420px)]" }, scopedId: "ev-sun-clip" }),
   mimosa: makeRasterTop({ src: "/themes/mimosa-canopy.webp", width: 1130, height: 480 }),
   autumn: makeRasterTop({ src: "/themes/autumn-canopy.webp", width: 1000, height: 266, solid: true }),
   marigold: makeRasterTop({ src: "/themes/marigold-top.webp", width: 900, height: 547, solid: true, noFade: true }),

@@ -385,15 +385,43 @@
   from { opacity: 0; translate: 0 12px; }
   to { opacity: 1; translate: 0 0; }
 }
+@keyframes ev-swing {
+  from { rotate: -3deg; }
+  to { rotate: 3deg; }
+}
+@keyframes ev-twinkle {
+  from { opacity: 0.2; }
+  to { opacity: 1; }
+}
+@keyframes ev-light {
+  from { opacity: 0; scale: 0; }
+  to { opacity: 1; scale: 1; }
+}
+@keyframes ev-flicker {
+  0% { scale: 1; rotate: -2deg; }
+  40% { scale: 0.93 1.07; rotate: 2deg; }
+  70% { scale: 1.04 0.96; rotate: -1deg; }
+  100% { scale: 0.97 1.04; rotate: 1.5deg; }
+}
+@keyframes ev-sunset {
+  from { translate: 0 -72px; }
+  to { translate: 0 0; }
+}
+@keyframes ev-shimmer {
+  from { scale: 0.7 1; }
+  to { scale: 1.12 1; }
+}
 @media (prefers-reduced-motion: no-preference) {
-  [data-ev-motion="draw_on"] .ev-draw {
+  [data-ev-motion="draw_on"] .ev-draw,
+  [data-ev-motion="lights"] .ev-draw {
     stroke-dasharray: 1;
     animation:
       ev-draw 1.3s var(--ease-out) both,
       ev-wash 0.7s ease-out both;
     animation-delay: calc(var(--i, 0) * 40ms);
   }
-  [data-ev-motion="draw_on"] .ev-fruit {
+  [data-ev-motion="draw_on"] .ev-fruit,
+  [data-ev-motion="lights"] .ev-fruit {
     animation: ev-wash 0.6s ease-out both;
     animation-delay: calc(0.5s + var(--i, 0) * 30ms);
   }
@@ -420,6 +448,11 @@
     animation: ev-sway 6.5s ease-in-out infinite alternate;
     animation-delay: calc(var(--i, 0) * -1.7s);
   }
+  /* Hanging charms: a wider swing than the piece they hang from, each on its own phase. */
+  [data-ev-motion="sway"] .ev-swing {
+    animation: ev-swing 4.4s ease-in-out infinite alternate;
+    animation-delay: calc(var(--i, 0) * -1.3s);
+  }
   [data-ev-motion="sway"] .ev-bloom {
     animation: ev-wash 0.7s ease-out both;
     animation-delay: calc(var(--i, 0) * 40ms);
@@ -427,6 +460,34 @@
   [data-ev-engine="2"][data-ev-motion="sway"] .ev-rise {
     animation: ev-rise 0.9s var(--ease-out) both;
     animation-delay: calc(0.1s + var(--i, 0) * 160ms);
+  }
+  /* Lights: line art draws itself (above), then things light up one by one and keep a slow ambient loop. */
+  [data-ev-motion="lights"] .ev-lit {
+    animation: ev-wash 1.2s ease-out both;
+    animation-delay: calc(1.5s + var(--i, 0) * 0.3s);
+  }
+  [data-ev-motion="lights"] .ev-twinkle {
+    animation: ev-twinkle 3.2s ease-in-out infinite alternate;
+    animation-delay: calc(var(--i, 0) * -0.9s);
+  }
+  [data-ev-motion="lights"] .ev-flame {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation:
+      ev-light 0.6s var(--ease-spring) both,
+      ev-flicker 2.6s ease-in-out infinite alternate;
+    animation-delay: calc(0.3s + var(--i, 0) * 0.3s), calc(0.9s + var(--i, 0) * 0.3s);
+  }
+  [data-ev-motion="lights"] .ev-sun {
+    animation: ev-sunset 5s var(--ease-out) both;
+  }
+  [data-ev-motion="lights"] .ev-shimmer {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation:
+      ev-wash 1.6s ease-out both,
+      ev-shimmer 2.6s ease-in-out infinite alternate;
+    animation-delay: 2.4s, calc(2.4s + var(--i, 0) * 0.4s);
   }
 }
 

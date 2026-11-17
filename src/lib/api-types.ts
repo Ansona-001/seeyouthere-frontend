@@ -414,7 +414,7 @@ export type Theme = {
   music?: "none" | "music_box";
 };
 
-export type Motion = "none" | "draw_on" | "pop_and_settle" | "foil_sheen" | "sway";
+export type Motion = "none" | "draw_on" | "pop_and_settle" | "foil_sheen" | "sway" | "lights";
 
 /**
  * Plain strings on purpose: the runtime treats every value as untrusted and

@@ -34,6 +34,7 @@ const MOTIONS = {
   pop_and_settle: 0,
   foil_sheen: 0,
   sway: 0,
+  lights: 0,
 } as const;
 const HEADING_SCALES = { regular: 0, display: 0, classic: 0 } as const;
 
