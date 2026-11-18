@@ -17,15 +17,15 @@ import { LandingHero } from "./landing-hero";
 // Mirrors the occasion catalog seeded in the API (slug -> /create/[slug]).
 // Kept static so the landing page needs no API round-trip.
 // Card art: real renders of our themes, cropped and pre-optimised in public/landing.
-// `tile` is the grid footprint: weddings take a 2x2 block, the wide ones two columns from md up, and
-// parties always two, and On stage runs the full width of the last row from md up, so no row is left with a
-// gap. `delay` staggers the scroll reveal.
+// `tile` is the grid footprint. Phones (2 columns): Weddings, Parties and On stage run full width, the rest pair up.
+// From md (4 columns x 4 rows) it is a bento: Weddings is a 2x2 block top-left and On stage its mirror
+// bottom-right (placed explicitly), with the 2-wide tiles filling the rest. `delay` staggers the scroll reveal.
 const OCCASIONS = [
   {
     slug: "wedding",
     name: "Weddings",
     caption: "Invites and save the dates",
-    tile: "col-span-2 row-span-2",
+    tile: "col-span-2 md:row-span-2",
     delay: "",
   },
   {
@@ -52,7 +52,7 @@ const OCCASIONS = [
   },
   {
     slug: "engagement",
-    name: "Engagements",
+    name: "Engage­ments",
     caption: "Tell everyone, properly",
     tile: "md:col-span-2",
     delay: "[--d:1]",
@@ -68,7 +68,7 @@ const OCCASIONS = [
     slug: "function",
     name: "On stage",
     caption: "Concerts, awards and programmes",
-    tile: "col-span-2 md:col-span-4",
+    tile: "col-span-2 md:col-start-3 md:row-span-2 md:row-start-3",
     delay: "[--d:3]",
   },
 ] as const;
@@ -250,8 +250,7 @@ export default function HomePage() {
               leans toward the pointer (LandingEffects feeds --rx / --ry). */}
             <ul className="mt-8 grid auto-rows-[13rem] grid-cols-2 gap-3.5 md:auto-rows-[14.5rem] md:grid-cols-4">
               {OCCASIONS.map((o) => {
-                const big = o.slug === "wedding";
-                const wide = o.slug === "function";
+                const big = o.slug === "wedding" || o.slug === "function";
                 return (
                   <li key={o.slug} data-reveal className={`${o.tile} ${o.delay}`}>
                     <Link
@@ -282,10 +281,8 @@ export default function HomePage() {
                         slug={o.slug}
                         className={`absolute h-auto rounded-lg shadow-[0_16px_28px_-12px_rgb(0_0_0/0.5)] transition-[transform,bottom] duration-[450ms] ease-(--ease-spring) [transform:rotateX(var(--rx,0deg))_rotateY(var(--ry,0deg))_rotate(8deg)] group-hover:[transform:rotateX(var(--rx,0deg))_rotateY(var(--ry,0deg))_rotate(0deg)_scale(1.04)] group-focus-visible:[transform:rotate(0deg)_scale(1.04)] motion-reduce:transition-none ${
                           big
-                            ? "right-[7%] -bottom-[8%] w-[46%] group-hover:bottom-0 group-focus-visible:bottom-0"
-                            : wide
-                              ? "right-[8%] -bottom-[16%] w-[44%] group-hover:-bottom-[6%] group-focus-visible:-bottom-[6%] md:right-[12%] md:-bottom-[34%] md:w-[20%] md:group-hover:-bottom-[24%] md:group-focus-visible:-bottom-[24%]"
-                              : "right-[8%] -bottom-[16%] w-[44%] group-hover:-bottom-[6%] group-focus-visible:-bottom-[6%]"
+                            ? "right-[5%] -bottom-[24%] w-[36%] group-hover:-bottom-[14%] group-focus-visible:-bottom-[14%] md:right-[7%] md:-bottom-[8%] md:w-[46%] md:group-hover:bottom-0 md:group-focus-visible:bottom-0"
+                            : "right-[8%] -bottom-[16%] w-[44%] group-hover:-bottom-[6%] group-focus-visible:-bottom-[6%]"
                         }`}
                       />
                     </Link>

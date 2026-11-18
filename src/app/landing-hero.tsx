@@ -102,6 +102,31 @@ export function LandingHero() {
   const inEnvelope = bySlug(shown);
 
   useEffect(() => {
+    // Pins the hero's height unit. Mobile WebKit browsers (Safari, Chrome on iPhone) can resize `svh` as the
+    // address bar collapses on scroll, which made the headline and envelope grow and shrink. Measure it once
+    // here and again only when the width changes (rotation), and expose it as --svh for the hero's sizes.
+    const section = sectionRef.current;
+    // Touch devices only: on desktop the hero should keep following the window's height.
+    if (!section || !window.matchMedia("(pointer: coarse)").matches) return;
+    const probe = document.createElement("div");
+    probe.style.cssText = "position:fixed;top:0;left:0;width:0;height:100svh;visibility:hidden;pointer-events:none";
+    document.body.appendChild(probe);
+    let width = -1;
+    const pin = () => {
+      if (window.innerWidth === width) return;
+      width = window.innerWidth;
+      const height = probe.getBoundingClientRect().height;
+      if (height > 0) section.style.setProperty("--svh", `${height / 100}px`);
+    };
+    pin();
+    window.addEventListener("resize", pin, { passive: true });
+    return () => {
+      window.removeEventListener("resize", pin);
+      probe.remove();
+    };
+  }, []);
+
+  useEffect(() => {
     const top = sectionRef.current?.closest<HTMLElement>("[data-landing-top]");
     if (top) top.dataset.occasion = selected;
   }, [selected]);
@@ -187,13 +212,13 @@ export function LandingHero() {
     <section
       ref={sectionRef}
       aria-labelledby="hero-title"
-      className="landing-hero flex min-h-[calc(100svh-5.5rem)] flex-col justify-center overflow-hidden rounded-b-[2.25rem]"
+      className="landing-hero flex min-h-[calc(var(--svh,1svh)*100-5.5rem)] flex-col justify-center overflow-hidden rounded-b-[2.25rem]"
     >
       <div className="mx-auto grid w-full max-w-6xl grid-cols-[minmax(0,1fr)] items-center gap-4 px-4 py-5 sm:px-6 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] md:content-center md:gap-x-7 md:gap-y-0 md:py-8">
         <div className="md:col-start-1 md:row-start-1 md:self-end">
           <h1
             id="hero-title"
-            className="font-heading text-[clamp(2.4rem,min(9.5vw,13svh),7.25rem)] leading-[0.98] font-extrabold"
+            className="font-heading text-[clamp(2.4rem,min(9.5vw,calc(var(--svh,1svh)*13)),7.25rem)] leading-[0.98] font-extrabold"
           >
             <span className="sr-only">{HEADLINE.join(" ")}</span>
             {/* Each word rises out of its own clipped line once, on load. */}
@@ -226,7 +251,7 @@ export function LandingHero() {
         <div
           ref={stageRef}
           aria-hidden
-          className="relative mx-auto aspect-[1/1.08] md:col-start-2 md:row-span-2 md:row-start-1 md:self-center h-[min(42svh,27.5rem)] [perspective:900px] md:h-auto md:w-full md:max-w-[27.5rem] motion-safe:animate-[lp-bob_7s_ease-in-out_2.6s_infinite_alternate]"
+          className="relative mx-auto aspect-[1/1.08] md:col-start-2 md:row-span-2 md:row-start-1 md:self-center h-[min(calc(var(--svh,1svh)*42),27.5rem)] [perspective:900px] md:h-auto md:w-full md:max-w-[27.5rem] motion-safe:animate-[lp-bob_7s_ease-in-out_2.6s_infinite_alternate]"
         >
           {/* Unmounted while the card is away, so each new set pops in from scratch. */}
           {swapping
