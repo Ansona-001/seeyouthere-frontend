@@ -10,6 +10,7 @@ const OCCASION_SUFFIX: Readonly<Record<string, string>> = {
   birthday: "birthday",
   "baby-shower": "baby-shower",
   housewarming: "housewarming",
+  function: "event",
 };
 
 /**

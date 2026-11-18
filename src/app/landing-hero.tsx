@@ -46,6 +46,12 @@ const OCCASIONS = [
     cta: "Create a party invite",
     replies: ["Dani is going", "Kofi and Bea are going", "Wren can’t make it"],
   },
+  {
+    slug: "function",
+    label: "On stage",
+    cta: "Create a stage event invite",
+    replies: ["Anita is attending", "The Rao family are attending", "Victor can’t make it"],
+  },
 ] as const;
 
 type Occasion = (typeof OCCASIONS)[number];

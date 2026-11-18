@@ -17,6 +17,7 @@ const CARD_IMAGES: Record<string, string> = {
   "baby-shower": "/landing/card-baby-shower.webp",
   housewarming: "/landing/card-housewarming.webp",
   party: "/landing/card-party.webp",
+  function: "/landing/card-function.webp",
 };
 
 const SWIPE_PX = 40;
@@ -48,7 +49,7 @@ export function OccasionCoverflow({ occasions }: { occasions: Occasion[] }) {
       role="group"
       aria-roledescription="carousel"
       aria-label="Occasions"
-      className="flex flex-col items-center gap-6"
+      className="flex flex-col items-center gap-4"
       onKeyDown={(e) => {
         if (e.key === "ArrowLeft") go(-1);
         else if (e.key === "ArrowRight") go(1);
@@ -57,7 +58,7 @@ export function OccasionCoverflow({ occasions }: { occasions: Occasion[] }) {
       }}
     >
       <div
-        className="relative h-[22rem] w-full touch-pan-y overflow-hidden select-none [--cf-unit:0.7px] [perspective:1100px] sm:h-[28rem] sm:[--cf-unit:1px]"
+        className="relative h-[16rem] w-full touch-pan-y overflow-x-clip select-none [--cf-unit:0.7px] [perspective:1100px] sm:h-[20rem] sm:[--cf-unit:1px]"
         onPointerDown={(e) => {
           dragStart.current = e.clientX;
         }}
@@ -97,7 +98,7 @@ export function OccasionCoverflow({ occasions }: { occasions: Occasion[] }) {
                 }
               }}
               className={cn(
-                "absolute top-1/2 left-1/2 block w-44 overflow-hidden rounded-2xl bg-card shadow-xl ring-1 ring-foreground/10 outline-none sm:w-60",
+                "absolute top-1/2 left-1/2 block w-40 overflow-hidden rounded-2xl bg-card shadow-xl ring-1 ring-foreground/10 outline-none sm:w-56",
                 "transition-[transform,opacity] duration-500 ease-out focus-visible:ring-3 focus-visible:ring-ring/60 motion-reduce:transition-none",
                 // Hidden cards fade without sliding, so one wrapping round the back is never seen crossing.
                 hidden && "pointer-events-none opacity-0 transition-[opacity]",

@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 
 import { FutureDateTimeInput } from "@/components/future-datetime-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { api, ApiError, type Event } from "@/lib/api";
 import type { Occasion, TemplateSummary } from "@/lib/api-types";
 
@@ -95,7 +96,12 @@ function SetupWizardInner({
 }) {
   const router = useRouter();
   const hasQuestions = occasion.setup_questions.length > 0;
+  // Occasions with an end-date question (events that can run over a range) keep it behind a switch under
+  // the start question, so a single date stays the simple case.
+  const startQuestion = occasion.setup_questions.find((q) => q.target === "datetime.start_local");
+  const endQuestion = occasion.setup_questions.find((q) => q.target === "datetime.end_local");
   const [answers, setAnswers] = useState<Record<string, string>>(initial?.answers ?? {});
+  const [hasEnd, setHasEnd] = useState(Boolean(endQuestion && initial?.answers[endQuestion.key]));
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -119,9 +125,25 @@ function SetupWizardInner({
 
   const missingRequired = occasion.setup_questions.some((q) => q.required && !answerFor(q.key, q.type).trim());
 
+  // "To" needs a "From" and must come after it (both are zone-less ISO strings, so string order is time order).
+  const rangeProblem = (() => {
+    if (!startQuestion || !endQuestion || !hasEnd) return null;
+    const start = answerFor(startQuestion.key, startQuestion.type).trim();
+    const end = answerFor(endQuestion.key, endQuestion.type).trim();
+    if (end === "") return null;
+    if (start === "") return "Add the start date and time too.";
+    return end <= start ? "The end must be after the start." : null;
+  })();
+
+  function toggleEnd(on: boolean) {
+    setHasEnd(on);
+    // Switching off drops any end already picked, so it can't be sent by accident.
+    if (!on && endQuestion) setAnswers((a) => ({ ...a, [endQuestion.key]: "" }));
+  }
+
   function submit(e: FormEvent) {
     e.preventDefault();
-    if (missingRequired) return;
+    if (missingRequired || rangeProblem) return;
     void create();
   }
 
@@ -165,10 +187,10 @@ function SetupWizardInner({
   const submitLabel = pending ? "Creating…" : signedIn ? "Create my event" : "Log in to create my event";
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-5">
       <header className="text-center">
         <p className="text-sm font-medium text-brand-brass-ink">Almost there</p>
-        <h1 className="mt-1 font-heading text-4xl text-brand-heading sm:text-5xl">
+        <h1 className="mt-1 font-heading text-3xl text-brand-heading sm:text-4xl">
           {hasQuestions ? "Tell us a bit more" : "Ready to start?"}
         </h1>
         {!hasQuestions && (
@@ -183,12 +205,17 @@ function SetupWizardInner({
       )}
 
       {hasQuestions ? (
-        <form onSubmit={submit} className="mx-auto flex w-full max-w-md flex-col gap-5 rounded-3xl bg-card p-6 shadow-sm ring-1 ring-border">
+        // Two columns from sm up. "From" and "To" sit side by side when the end is on; everything else is full width.
+        <form
+          onSubmit={submit}
+          className={`mx-auto grid w-full grid-cols-1 gap-3.5 rounded-3xl bg-card p-5 shadow-sm ring-1 ring-border sm:grid-cols-2 ${endQuestion ? "max-w-xl" : "max-w-md"}`}
+        >
           {/* The time zone question is not shown: the event starts in the creator's zone and follows the venue's map link once one is added in the editor. */}
-          {occasion.setup_questions.filter((q) => q.type !== "timezone").map((q) => (
-            <div key={q.key} className="grid gap-1.5">
+          {occasion.setup_questions.filter((q) => q.type !== "timezone" && (q.key !== endQuestion?.key || hasEnd)).map((q) => (
+            <Fragment key={q.key}>
+            <div className={`grid gap-1.5 ${hasEnd && q.key === startQuestion?.key ? "" : q.key === endQuestion?.key ? "" : "sm:col-span-2"}`}>
               <Label htmlFor={`q-${q.key}`}>
-                {q.label}
+                {q.key === startQuestion?.key && hasEnd ? "From" : q.label}
                 {!q.required && <span className="text-muted-foreground"> (optional)</span>}
               </Label>
               {q.type === "date_time" ? (
@@ -197,6 +224,8 @@ function SetupWizardInner({
                   timeZone={tzQuestion ? answerFor(tzQuestion.key, "timezone") : browserTimezone}
                   value={answerFor(q.key, q.type)}
                   onValueChange={(value) => setAnswers((a) => ({ ...a, [q.key]: value }))}
+                  // The end can't be picked before the start.
+                  notBefore={q.key === endQuestion?.key && startQuestion ? answerFor(startQuestion.key, startQuestion.type) : undefined}
                   required={q.required}
                   autoFocus={occasion.setup_questions[0].key === q.key}
                 />
@@ -212,8 +241,23 @@ function SetupWizardInner({
                 />
               )}
             </div>
+            {/* The switch sits under the last date field that is showing. */}
+            {startQuestion && endQuestion && q.key === (hasEnd ? endQuestion.key : startQuestion.key) && (
+              <div className="flex items-center gap-3 sm:col-span-2">
+                <Switch id="q-has-end" checked={hasEnd} onCheckedChange={toggleEnd} />
+                <Label htmlFor="q-has-end" className="min-h-9">
+                  Add an end date and time
+                </Label>
+              </div>
+            )}
+            </Fragment>
           ))}
-          <Button type="submit" size="lg" disabled={missingRequired || pending}>
+          {rangeProblem && (
+            <p role="alert" className="text-sm font-medium text-destructive sm:col-span-2">
+              {rangeProblem}
+            </p>
+          )}
+          <Button type="submit" size="lg" className="sm:col-span-2" disabled={missingRequired || rangeProblem !== null || pending}>
             {submitLabel}
           </Button>
         </form>

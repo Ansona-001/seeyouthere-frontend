@@ -34,6 +34,7 @@ test("adds the occasion word so the link says what the event is", () => {
   assert.equal(suggestSlug("Sam", "baby-shower"), "sam-baby-shower");
   assert.equal(suggestSlug("Sam's birthday", "birthday"), "sams-birthday");
   assert.equal(suggestSlug("Alex & Sam's Wedding", "wedding"), "alex-and-sams-wedding");
+  assert.equal(suggestSlug("Annual Awards Night", "function"), "annual-awards-night-event");
 });
 
 test("leaves the title alone for occasions without a suffix", () => {

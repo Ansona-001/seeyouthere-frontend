@@ -12,6 +12,8 @@ type OccasionSeo = {
   points: readonly { title: string; body: string }[];
   /** Occasion-specific questions; the shared ones below are appended. */
   faqs: readonly Faq[];
+  /** What the FAQs call the page when the slug reads badly ("function"). Defaults to the slug with spaces. */
+  noun?: string;
 };
 
 const sharedFaqs = (noun: string): Faq[] => [
@@ -107,6 +109,39 @@ const SEO: Record<string, OccasionSeo> = {
     points: pointsFor("party"),
     faqs: [],
   },
+  function: {
+    title: "Free event page for concerts, awards and programmes with RSVP",
+    description:
+      "Create a free event page for a concert, stage programme, award night or organisational function. Set the from and to dates, add the programme and collect RSVPs with one link.",
+    heading: "Free event pages for concerts, awards and functions",
+    intro:
+      "Put the dates, venue and programme on one page. Add speakers or performers, share a single link, and let guests register their attendance online.",
+    noun: "event",
+    points: [
+      {
+        title: "From and to dates",
+        body: "Set when your event starts and ends, whether it is one evening or several days.",
+      },
+      {
+        title: "A programme and a lineup",
+        body: "List the schedule slot by slot and introduce your speakers, performers or award presenters.",
+      },
+      {
+        title: "RSVPs in one place",
+        body: "Guests register from the link and you see every answer, headcount and note on your dashboard.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Can I run a multi-day event?",
+        a: "Yes. Choose a start and an end date and time up to 14 days apart, and list each day's sessions in the programme.",
+      },
+      {
+        q: "Can I show the speakers or performers?",
+        a: "Yes. Add a lineup section with names, roles and photos from the editor.",
+      },
+    ],
+  },
 };
 
 /** Title/description for the occasion page's metadata, or undefined for an unknown slug. */
@@ -118,7 +153,7 @@ export function occasionSeo(slug: string): Pick<OccasionSeo, "title" | "descript
 export function OccasionInfo({ slug }: { slug: string }) {
   const seo = Object.hasOwn(SEO, slug) ? SEO[slug] : undefined;
   if (!seo) return null;
-  const faqs = [...seo.faqs, ...sharedFaqs(slug.replace(/-/g, " "))];
+  const faqs = [...seo.faqs, ...sharedFaqs(seo.noun ?? slug.replace(/-/g, " "))];
 
   return (
     <section aria-labelledby="occasion-info-heading" className="mx-auto w-full max-w-3xl border-t pt-10">

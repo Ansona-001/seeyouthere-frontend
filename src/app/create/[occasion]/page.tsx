@@ -100,7 +100,8 @@ function CreateShell({ children, wide = false }: { children: ReactNode; wide?: b
     <>
       <SiteHeader />
       <main
-        className={`mx-auto flex w-full flex-1 flex-col gap-8 px-4 py-10 sm:px-6 sm:py-14 ${wide ? "max-w-5xl" : "max-w-xl"}`}
+        // The setup form (wide) is tighter so it fits a laptop screen without scrolling.
+        className={`mx-auto flex w-full flex-1 flex-col px-4 sm:px-6 ${wide ? "max-w-5xl gap-6 py-6 sm:py-8" : "max-w-xl gap-8 py-10 sm:py-14"}`}
       >
         {children}
       </main>

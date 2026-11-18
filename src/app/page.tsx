@@ -18,7 +18,8 @@ import { LandingHero } from "./landing-hero";
 // Kept static so the landing page needs no API round-trip.
 // Card art: real renders of our themes, cropped and pre-optimised in public/landing.
 // `tile` is the grid footprint: weddings take a 2x2 block, the wide ones two columns from md up, and
-// parties always two so the last row is never left with a gap. `delay` staggers the scroll reveal.
+// parties always two, and On stage runs the full width of the last row from md up, so no row is left with a
+// gap. `delay` staggers the scroll reveal.
 const OCCASIONS = [
   {
     slug: "wedding",
@@ -63,12 +64,19 @@ const OCCASIONS = [
     tile: "col-span-2",
     delay: "[--d:2]",
   },
+  {
+    slug: "function",
+    name: "On stage",
+    caption: "Concerts, awards and programmes",
+    tile: "col-span-2 md:col-span-4",
+    delay: "[--d:3]",
+  },
 ] as const;
 
 // The "Pick an occasion" illustration: a small, self-running copy of the cover-flow picker on /create.
 // `pose` is where each card rests (and stays, under reduced motion). `step` is how far round the loop it
 // starts, so the shared lp-flow animation brings each card to the front in turn.
-const FLOW_SECONDS = 15; // must match the 15s in the lp-flow / lp-flow-label classes below
+const FLOW_SECONDS = 17.5; // seven places at 2.5s each; must match the 17.5s in the lp-flow / lp-flow-label classes below
 const SIDE = "translate(-50%,-50%)";
 const FAN = [
   { slug: "birthday", name: "Birthday", step: 0, pose: `z-10 [transform:${SIDE}]` },
@@ -84,21 +92,22 @@ const FAN = [
     step: 2,
     pose: `z-8 [transform:${SIDE}_translateX(-100%)_rotateY(55deg)_scale(0.86)]`,
   },
-  { slug: "party", name: "Party", step: 3, pose: `opacity-0 [transform:${SIDE}_scale(0.86)]` },
+  { slug: "function", name: "On stage", step: 3, pose: `opacity-0 [transform:${SIDE}_scale(0.86)]` },
+  { slug: "party", name: "Party", step: 4, pose: `opacity-0 [transform:${SIDE}_scale(0.86)]` },
   {
     slug: "housewarming",
     name: "Housewarming",
-    step: 4,
+    step: 5,
     pose: `z-8 [transform:${SIDE}_translateX(100%)_rotateY(-55deg)_scale(0.86)]`,
   },
   {
     slug: "baby-shower",
     name: "Baby shower",
-    step: 5,
+    step: 6,
     pose: `z-9 [transform:${SIDE}_translateX(70%)_rotateY(-55deg)_scale(0.86)]`,
   },
 ] as const;
-const flowDelay = (step: number): CSSProperties => ({ animationDelay: `${(-step * FLOW_SECONDS) / 6}s` });
+const flowDelay = (step: number): CSSProperties => ({ animationDelay: `${(-step * FLOW_SECONDS) / FAN.length}s` });
 
 // Sample details for the "How it works" illustrations. They match the wedding card's names and date.
 const DETAILS = [
@@ -216,6 +225,7 @@ export default function HomePage() {
             <ul className="mt-8 grid auto-rows-[13rem] grid-cols-2 gap-3.5 md:auto-rows-[14.5rem] md:grid-cols-4">
               {OCCASIONS.map((o) => {
                 const big = o.slug === "wedding";
+                const wide = o.slug === "function";
                 return (
                   <li key={o.slug} data-reveal className={`${o.tile} ${o.delay}`}>
                     <Link
@@ -247,7 +257,9 @@ export default function HomePage() {
                         className={`absolute h-auto rounded-lg shadow-[0_16px_28px_-12px_rgb(0_0_0/0.5)] transition-[transform,bottom] duration-[450ms] ease-(--ease-spring) [transform:rotateX(var(--rx,0deg))_rotateY(var(--ry,0deg))_rotate(8deg)] group-hover:[transform:rotateX(var(--rx,0deg))_rotateY(var(--ry,0deg))_rotate(0deg)_scale(1.04)] group-focus-visible:[transform:rotate(0deg)_scale(1.04)] motion-reduce:transition-none ${
                           big
                             ? "right-[7%] -bottom-[8%] w-[46%] group-hover:bottom-0 group-focus-visible:bottom-0"
-                            : "right-[8%] -bottom-[16%] w-[44%] group-hover:-bottom-[6%] group-focus-visible:-bottom-[6%]"
+                            : wide
+                              ? "right-[8%] -bottom-[16%] w-[44%] group-hover:-bottom-[6%] group-focus-visible:-bottom-[6%] md:right-[12%] md:-bottom-[34%] md:w-[20%] md:group-hover:-bottom-[24%] md:group-focus-visible:-bottom-[24%]"
+                              : "right-[8%] -bottom-[16%] w-[44%] group-hover:-bottom-[6%] group-focus-visible:-bottom-[6%]"
                         }`}
                       />
                     </Link>
@@ -275,7 +287,7 @@ export default function HomePage() {
                         key={c.slug}
                         slug={c.slug}
                         style={flowDelay(c.step)}
-                        className={`absolute top-1/2 left-1/2 h-auto w-[38%] rounded-lg shadow-md ring-1 ring-foreground/10 motion-safe:animate-[lp-flow_15s_var(--ease-in-out)_infinite] ${c.pose}`}
+                        className={`absolute top-1/2 left-1/2 h-auto w-[38%] rounded-lg shadow-md ring-1 ring-foreground/10 motion-safe:animate-[lp-flow_17.5s_var(--ease-in-out)_infinite] ${c.pose}`}
                       />
                     ))}
                   </div>
@@ -288,7 +300,7 @@ export default function HomePage() {
                         <span
                           key={c.slug}
                           style={flowDelay(c.step)}
-                          className={`absolute inset-0 motion-safe:animate-[lp-flow-label_15s_linear_infinite] ${c.step === 0 ? "" : "opacity-0"}`}
+                          className={`absolute inset-0 motion-safe:animate-[lp-flow-label_17.5s_linear_infinite] ${c.step === 0 ? "" : "opacity-0"}`}
                         >
                           {c.name}
                         </span>

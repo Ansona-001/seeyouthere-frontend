@@ -542,6 +542,8 @@
   --occasion-engagement-on: oklch(0.327 0.051 164.9); /* #173D2E */
   --occasion-party: oklch(0.701 0.200 6.6); /* #FF5C8A Hot pink */
   --occasion-party-on: oklch(0.208 0.061 303.9); /* #1E0F2E */
+  --occasion-function: oklch(0.391 0.125 17.9); /* #7A1F2B Curtain */
+  --occasion-function-on: oklch(0.962 0.038 83.8); /* #FFF1D6 */
   --envelope: oklch(0.970 0.031 84.6); /* #FFF4DE */
   --envelope-shade: oklch(0.891 0.048 83.9); /* #EAD9B8 Inside of the envelope */
 }
@@ -568,6 +570,10 @@
 [data-occasion="party"] {
   --ground: var(--occasion-party);
   --on: var(--occasion-party-on);
+}
+[data-occasion="function"] {
+  --ground: var(--occasion-function);
+  --on: var(--occasion-function-on);
 }
 
 @layer components {
@@ -623,23 +629,24 @@
   from { translate: 0 0; }
   to { translate: 0 -10px; }
 }
-/* Cover-flow loop for the "Pick an occasion" illustration. One cycle takes a card through all six places:
-   front, first left, second left, out of sight (where it crosses behind to the other side), second
-   right, first right, and back to the front. Each card starts a sixth of a cycle after the last. */
+/* Cover-flow loop for the "Pick an occasion" illustration. One cycle takes a card through all seven places:
+   front, first left, second left, out of sight on the left, out of sight on the right (it crosses behind
+   between the two), second right, first right, and back to the front. Each card starts a seventh of a
+   cycle after the last. */
 @keyframes lp-flow {
-  0%, 13% { transform: translate(-50%, -50%); z-index: 10; opacity: 1; }
-  16.67%, 29.67% { transform: translate(-50%, -50%) translateX(-70%) rotateY(55deg) scale(0.86); z-index: 9; opacity: 1; }
-  33.33%, 46.33% { transform: translate(-50%, -50%) translateX(-100%) rotateY(55deg) scale(0.86); z-index: 8; opacity: 1; }
-  50%, 56% { transform: translate(-50%, -50%) translateX(-100%) rotateY(55deg) scale(0.86); z-index: 0; opacity: 0; }
-  56.01%, 63% { transform: translate(-50%, -50%) translateX(100%) rotateY(-55deg) scale(0.86); z-index: 0; opacity: 0; }
-  66.67%, 79.67% { transform: translate(-50%, -50%) translateX(100%) rotateY(-55deg) scale(0.86); z-index: 8; opacity: 1; }
-  83.33%, 96.33% { transform: translate(-50%, -50%) translateX(70%) rotateY(-55deg) scale(0.86); z-index: 9; opacity: 1; }
+  0%, 11.14% { transform: translate(-50%, -50%); z-index: 10; opacity: 1; }
+  14.29%, 25.43% { transform: translate(-50%, -50%) translateX(-70%) rotateY(55deg) scale(0.86); z-index: 9; opacity: 1; }
+  28.57%, 39.71% { transform: translate(-50%, -50%) translateX(-100%) rotateY(55deg) scale(0.86); z-index: 8; opacity: 1; }
+  42.86%, 55% { transform: translate(-50%, -50%) translateX(-100%) rotateY(55deg) scale(0.86); z-index: 0; opacity: 0; }
+  55.01%, 68.29% { transform: translate(-50%, -50%) translateX(100%) rotateY(-55deg) scale(0.86); z-index: 0; opacity: 0; }
+  71.43%, 82.57% { transform: translate(-50%, -50%) translateX(100%) rotateY(-55deg) scale(0.86); z-index: 8; opacity: 1; }
+  85.71%, 96.86% { transform: translate(-50%, -50%) translateX(70%) rotateY(-55deg) scale(0.86); z-index: 9; opacity: 1; }
   100% { transform: translate(-50%, -50%); z-index: 10; opacity: 1; }
 }
 /* The name under the fan: visible only while its card is at the front. */
 @keyframes lp-flow-label {
-  0%, 13% { opacity: 1; }
-  16.67%, 96.33% { opacity: 0; }
+  0%, 11.14% { opacity: 1; }
+  14.29%, 96.86% { opacity: 0; }
   100% { opacity: 1; }
 }
 @keyframes lp-blink {

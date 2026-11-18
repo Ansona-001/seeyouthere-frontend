@@ -522,6 +522,7 @@ export type SetupQuestionType = "text" | "date_time" | "timezone" | "place";
 export type SetupQuestionTarget =
   | "title_var"
   | "datetime.start_local"
+  | "datetime.end_local"
   | "datetime.timezone"
   | "location.name"
   | "location.address"
