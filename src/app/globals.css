@@ -381,6 +381,36 @@
   from { rotate: -1deg; }
   to { rotate: 1deg; }
 }
+/* Hanging flowers in a breeze: pinned along the top edge, the strand tips drift a few pixels either way. */
+@keyframes ev-hang {
+  0% { transform: skewX(-0.9deg); }
+  40% { transform: skewX(0.5deg) scaleY(1.006); }
+  70% { transform: skewX(-0.2deg); }
+  100% { transform: skewX(0.9deg) scaleY(1.004); }
+}
+/* One strand on its own: an uneven pendulum so it reads as wind, not a metronome. */
+@keyframes ev-strand {
+  0% { rotate: -2deg; }
+  35% { rotate: 1.2deg; }
+  60% { rotate: -0.4deg; }
+  100% { rotate: 2deg; }
+}
+/* A hanging band (makeRasterTop `hang`) is 8 copies of one image, each showing a 12.5% strip. A strip fades in over
+   its left neighbour and runs opaque 4% past its own right edge, under the next strip's fade, so strips bending
+   differently never open a gap. At rest the copies line up into the original image. */
+.ev-hang {
+  --l: calc((var(--hang-n) - 1) * 12.5%);
+  --r: calc(var(--hang-n) * 12.5%);
+  mask-image: linear-gradient(to right, transparent calc(var(--l) - 2.5%), #000 calc(var(--l) + 2.5%), #000 calc(var(--r) + 4%), transparent 0);
+}
+.ev-hang:nth-child(1) { --hang-n: 1; --hang-d: 6.4s; --hang-at: 0s; mask-image: linear-gradient(to right, #000 16.5%, transparent 0); }
+.ev-hang:nth-child(2) { --hang-n: 2; --hang-d: 7.1s; --hang-at: -0.9s; }
+.ev-hang:nth-child(3) { --hang-n: 3; --hang-d: 6.8s; --hang-at: -1.8s; }
+.ev-hang:nth-child(4) { --hang-n: 4; --hang-d: 7.6s; --hang-at: -2.7s; }
+.ev-hang:nth-child(5) { --hang-n: 5; --hang-d: 6.6s; --hang-at: -3.6s; }
+.ev-hang:nth-child(6) { --hang-n: 6; --hang-d: 7.3s; --hang-at: -4.5s; }
+.ev-hang:nth-child(7) { --hang-n: 7; --hang-d: 6.9s; --hang-at: -5.4s; }
+.ev-hang:nth-child(8) { --hang-n: 8; --hang-d: 7.8s; --hang-at: -6.3s; }
 @keyframes ev-rise {
   from { opacity: 0; translate: 0 12px; }
   to { opacity: 1; translate: 0 0; }
@@ -452,6 +482,11 @@
   [data-ev-motion="sway"] .ev-swing {
     animation: ev-swing 4.4s ease-in-out infinite alternate;
     animation-delay: calc(var(--i, 0) * -1.3s);
+  }
+  /* Each strip on its own period, phased so a slow wave runs across the canopy and neighbours stay close. */
+  [data-ev-motion="sway"] .ev-hang {
+    transform-origin: 0 0;
+    animation: ev-hang var(--hang-d) ease-in-out var(--hang-at) infinite alternate;
   }
   [data-ev-motion="sway"] .ev-bloom {
     animation: ev-wash 0.7s ease-out both;
@@ -868,4 +903,46 @@
   .ev-loader-dot {
     animation: none;
   }
+}
+
+/* ---- Opening cover (IntroCover): a closed card, two paper panels on a gold seam, parts on tap ---- */
+/* The artwork has a white ground and multiplies into the paper; --intro-bow-w/h size the bow so the seam can stop behind its knot.
+   The 4s failsafe is what lifts the card without scripts: the CSP blocks the un-nonced noscript style in production. */
+.ev-intro { --intro-bow-w: min(50vw, 40vh, 480px); --intro-bow-h: calc(var(--intro-bow-w) * 0.945); position: fixed; inset: 0; z-index: 60; overflow: hidden; touch-action: none; overscroll-behavior: contain; background: var(--ev-bg); color: var(--ev-accent-ink); animation: ev-loader-failsafe 0s linear 4s forwards; }
+.ev-intro[data-js] { animation: none; }
+/* A half-strength wash of the surface colour over the cold-press grain keeps the paper soft; the grain multiplies into the surface beneath. */
+.ev-intro-panel { position: absolute; top: 0; bottom: 0; width: 50%; background: linear-gradient(color-mix(in srgb, var(--ev-surface) 55%, transparent)), var(--intro-paper) 0 0 / 220px, var(--ev-surface); background-blend-mode: normal, multiply; will-change: transform; box-shadow: inset 0 0 120px rgb(0 0 0 / 0.06); }
+.ev-intro-panel-l { left: 0; }
+.ev-intro-panel-r { right: 0; }
+/* The seam is hidden from the bow's top edge to the bottom of its knot (about 45% down the bow), so gold never multiplies through the satin. */
+.ev-intro-seam { position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; translate: -50% 0; background: var(--intro-foil); box-shadow: 0 0 18px color-mix(in srgb, var(--ev-accent-ink) 30%, transparent); mask-image: linear-gradient(to bottom, #000 calc(42% - var(--intro-bow-h) * 0.46), transparent 0, transparent calc(42% - var(--intro-bow-h) * 0.04), #000 0); }
+.ev-intro-strand { position: absolute; top: -1%; left: 2%; width: min(22vw, 220px); height: auto; transform-origin: 50% 0; mix-blend-mode: multiply; pointer-events: none; }
+.ev-intro-strand-r { left: auto; right: 2%; transform: scaleX(-1); }
+.ev-intro-bow { position: absolute; left: 50%; top: 42%; width: var(--intro-bow-w); height: auto; translate: -50% -50%; mix-blend-mode: multiply; will-change: opacity, transform; pointer-events: none; }
+.ev-intro-tap { position: absolute; inset: 0; width: 100%; border: 0; background: transparent; color: inherit; cursor: pointer; }
+/* The cover focuses its button when it is ready, which counts as keyboard focus, so a ring would frame the whole screen
+   on load: keyboard focus underlines the hint instead. */
+.ev-intro-tap:focus-visible { outline: none; }
+.ev-intro-tap:focus-visible .ev-intro-hint { text-decoration: underline 1px; text-underline-offset: 8px; }
+/* After opening, the title takes focus only so screen readers start there; it is not a control, so it draws no ring. */
+[data-ev-intro-open] h1[tabindex="-1"]:focus { outline: none; }
+.ev-intro-hint { position: absolute; left: 50%; bottom: max(12vh, calc(env(safe-area-inset-bottom) + 56px)); translate: -50% 0; font: 400 32px/1.2 var(--ev-font-accent); white-space: nowrap; opacity: 0; transition: opacity .6s ease .2s; }
+.ev-intro[data-ready] .ev-intro-hint { opacity: .9; }
+.ev-intro[data-open] { background: transparent; pointer-events: none; }
+.ev-intro[data-open] .ev-intro-bow { opacity: 0; transform: scale(1.08); transition: opacity .5s ease, transform .5s ease; }
+.ev-intro[data-open] .ev-intro-seam, .ev-intro[data-open] .ev-intro-hint { opacity: 0; transition: opacity .3s ease; }
+.ev-intro[data-open] .ev-intro-panel { transition: transform .9s cubic-bezier(.65, 0, .35, 1) .35s; }
+.ev-intro[data-open] .ev-intro-panel-l { transform: translateX(-100%); }
+.ev-intro[data-open] .ev-intro-panel-r { transform: translateX(100%); }
+@keyframes ev-intro-pulse { 0%, 100% { opacity: .9; } 50% { opacity: .45; } }
+@keyframes ev-rise-again { from { opacity: 0; translate: 0 12px; } to { opacity: 1; translate: 0 0; } }
+@media (prefers-reduced-motion: no-preference) {
+  .ev-intro[data-ready]:not([data-open]) .ev-intro-hint { animation: ev-intro-pulse 2.6s ease-in-out 1.2s infinite; }
+  /* The strands start swaying as soon as the cover shows, out of step with each other. */
+  .ev-intro .ev-intro-strand { animation: ev-strand 6.5s ease-in-out infinite alternate; }
+  .ev-intro .ev-intro-strand-r { animation-duration: 7.3s; animation-delay: -3.1s; }
+  [data-ev-engine="2"][data-ev-intro-open] .ev-rise { animation: ev-rise-again .9s var(--ease-out) calc(.6s + var(--i, 0) * 160ms) both; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ev-intro { display: none; }
 }

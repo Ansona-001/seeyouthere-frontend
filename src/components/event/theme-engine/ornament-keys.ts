@@ -116,6 +116,9 @@ const CLEARANCE: Record<string, { top?: number; topFluid?: number; bottom?: numb
   mirror_ball: { reserve: 236 },
   // The canopy is 42.5% as tall as it is wide, so its clearance is a share of the page width.
   mimosa: { topFluid: 27 },
+  // The wisteria canopy is 37.8% as tall as it is wide; its strands hang to the bottom edge, so the names start below them.
+  // It is never drawn narrower than 600px (HANG_MIN_WIDTH in art/raster.ts), so on a phone the gap is 33% of 600px.
+  wisteria: { topFluid: 33, top: 198 },
   // The autumn leaf band is 26.6% as tall as it is wide; the extra share keeps the names off the leaves.
   autumn: { topFluid: 24 },
   // The same band mirrored along the bottom of the page: keep the footer clear of it.

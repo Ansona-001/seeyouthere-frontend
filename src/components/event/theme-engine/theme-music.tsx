@@ -88,7 +88,12 @@ export function ThemeMusic({ src, download = false }: { src: string; download?: 
       };
     }
 
+    let started = false;
     const start = () => {
+      if (started) return;
+      started = true;
+      window.removeEventListener("load", start);
+      window.removeEventListener("pointerdown", start, { capture: true });
       if (download) {
         (async () => {
           try {
@@ -109,10 +114,15 @@ export function ThemeMusic({ src, download = false }: { src: string; download?: 
     };
     // Start once the page's own images and fonts are in, so the track (up to 5 MB) never competes with the first screen.
     if (document.readyState === "complete") start();
-    else window.addEventListener("load", start, { once: true });
+    else {
+      window.addEventListener("load", start, { once: true });
+      // A tap before the page finishes loading (the opening cover) must still start the track inside that gesture.
+      window.addEventListener("pointerdown", start, { once: true, capture: true });
+    }
 
     return () => {
       window.removeEventListener("load", start);
+      window.removeEventListener("pointerdown", start, { capture: true });
       abort.abort();
       cleanup();
       window.clearInterval(ramp);

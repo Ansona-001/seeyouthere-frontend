@@ -176,6 +176,7 @@ export const ART: Record<string, ComponentType<ArtProps>> = {
   lit_house: makeArt({ placements: ["hero_top"], heroTop: { shape: litHouse.main, width: "w-[min(100%,420px)]" } }),
   sunset: makeArt({ placements: ["hero_top"], heroTop: { shape: sunset.main, width: "w-[min(100%,420px)]" }, scopedId: "ev-sun-clip" }),
   mimosa: makeRasterTop({ src: "/themes/mimosa-canopy.webp", width: 1130, height: 480 }),
+  wisteria: makeRasterTop({ src: "/themes/wisteria-canopy.webp", width: 1280, height: 484, multiply: true, hang: true }),
   autumn: makeRasterTop({ src: "/themes/autumn-canopy.webp", width: 1000, height: 266, solid: true }),
   marigold: makeRasterTop({ src: "/themes/marigold-top.webp", width: 900, height: 547, solid: true, noFade: true }),
   marigold_page: makeRasterPage({

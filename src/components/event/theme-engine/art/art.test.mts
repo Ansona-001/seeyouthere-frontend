@@ -5,6 +5,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { artClearance } from "../ornament-keys.ts";
+import { HANG_MIN_WIDTH, HANG_STRIPS } from "./raster.ts";
 import { ART } from "./registry.ts";
 
 const HERE = new URL(".", import.meta.url);
@@ -28,6 +29,7 @@ const BACKEND: Record<string, { min: number; max: number; foil: boolean; placeme
   printers_corners: { min: 1, max: 1, foil: true, placements: ["corners"] },
   daisies: { min: 2, max: 3, foil: false, placements: ["corners", "edges"] },
   mimosa: { min: 0, max: 0, foil: false, placements: ["top"] },
+  wisteria: { min: 0, max: 0, foil: false, placements: ["top"] },
   autumn: { min: 0, max: 0, foil: false, placements: ["top"] },
   autumn_page: { min: 0, max: 0, foil: false, placements: ["page"] },
   marigold: { min: 0, max: 0, foil: false, placements: ["top"] },
@@ -53,7 +55,7 @@ const PALETTE = ["#112233", "#445566", "#778899", "#AABBCC", "#DDEEFF", "#102030
 
 // React 19 hoists a preload hint for a raster's constant src; it is the only markup outside the layer box.
 // Rasters: one constant same-origin <img>-based layer each, no SVG.
-const RASTER_KEYS: ReadonlySet<string> = new Set(["mimosa", "autumn", "autumn_page", "marigold", "marigold_page", "wildflower", "wildflower_page", "glitterball", "glitterball_page"]);
+const RASTER_KEYS: ReadonlySet<string> = new Set(["mimosa", "wisteria", "autumn", "autumn_page", "marigold", "marigold_page", "wildflower", "wildflower_page", "glitterball", "glitterball_page"]);
 const PRELOAD_LINK = /<link rel="preload"[^>]*\/>/g;
 function render(key: string, placement: string, colors: readonly string[], extra: Record<string, unknown> = {}): string {
   return renderToStaticMarkup(createElement(ART[key], { placement, colors, region: "page", density: "dense", ...extra })).replace(PRELOAD_LINK, "");
@@ -211,6 +213,7 @@ test("clearance reaches the text column for the keys that reserve it", () => {
   assert.deepEqual(artClearance([layer("open_door_plants", "bottom_corners")], drawn), { ...none, bottom: 170 });
   assert.deepEqual(artClearance([layer("clouds", "top")], drawn), { ...none, top: 120 });
   assert.deepEqual(artClearance([layer("mimosa", "top")], drawn), { ...none, topFluid: 27 });
+  assert.deepEqual(artClearance([layer("wisteria", "top")], drawn), { ...none, topFluid: 33, top: Math.round(HANG_MIN_WIDTH * 0.33) });
   assert.deepEqual(artClearance([layer("autumn", "top")], drawn), { ...none, topFluid: 24 });
   assert.deepEqual(artClearance([layer("autumn_page", "page")], drawn), { ...none, bottom: 130 });
   assert.deepEqual(artClearance([layer("marigold", "top")], drawn), { ...none, topFluid: 61 });
@@ -244,6 +247,26 @@ test("mimosa is one constant same-origin raster: a single img, nothing else, nev
   for (const [key, spec] of Object.entries(BACKEND)) {
     if (RASTER_KEYS.has(key)) continue;
     for (const placement of spec.placements) assert.ok(!render(key, placement, PALETTE.slice(0, spec.max)).includes("<img"), `${key}/${placement}`);
+  }
+});
+
+test("wisteria is one constant same-origin raster band that multiplies into the paper and hangs in the breeze", () => {
+  const html = render("wisteria", "top", []);
+  // One strip per copy, all of the same constant file; the blend sits on their shared wrapper.
+  assert.equal(count(html, /<img\b/g), HANG_STRIPS);
+  assert.equal(count(html, /<img src="\/themes\/wisteria-canopy\.webp" alt="" width="1280" height="484" decoding="async" loading="eager" class="ev-hang\b[^"]*"\/>/g), HANG_STRIPS);
+  assert.match(html, /<div class="[^"]*\bisolate mix-blend-multiply\b[^"]*"><img/);
+  assert.equal(count(html, /mix-blend-multiply/g), 1);
+  assert.ok(html.includes(`w-[max(100%,${HANG_MIN_WIDTH}px)]`), "the band keeps its minimum width on a phone");
+  // Every strip needs its own mask and timing in the stylesheet, or it would cover the whole band.
+  const css = readFileSync(new URL("../../../../app/globals.css", import.meta.url), "utf8");
+  for (let n = 1; n <= HANG_STRIPS; n++) assert.match(css, new RegExp(`\\.ev-hang:nth-child\\(${n}\\) \\{ --hang-n: ${n};`), `strip ${n}`);
+  assert.ok(!css.includes(`.ev-hang:nth-child(${HANG_STRIPS + 1})`), "no rule for a strip that is never rendered");
+  assert.ok(!/<script|<svg|\bhref\b|\bon\w+=|style=|ev-sway/i.test(html), html);
+  for (const placement of ALL_PLACEMENTS.filter((p) => p !== "top")) assert.equal(render("wisteria", placement, []), "", placement);
+  assert.ok(!render("mimosa", "top", []).includes("mix-blend-multiply"), "multiply is opt-in");
+  for (const key of RASTER_KEYS) {
+    if (key !== "wisteria") assert.ok(!render(key, key.endsWith("_page") ? "page" : "top", []).includes("ev-hang"), `${key}: hang is opt-in`);
   }
 });
 

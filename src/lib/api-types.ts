@@ -412,6 +412,8 @@ export type Theme = {
   motion?: Motion;
   /** Background music on the public page; unknown values play nothing. */
   music?: "none" | "music_box";
+  /** Opening reveal on the public page ("tap to open"); unknown values show no cover. */
+  intro?: "none" | "wisteria";
 };
 
 export type Motion = "none" | "draw_on" | "pop_and_settle" | "foil_sheen" | "sway" | "lights";

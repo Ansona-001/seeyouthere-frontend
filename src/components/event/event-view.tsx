@@ -36,9 +36,11 @@ import { WishesBlock } from "./blocks/wishes-block";
 import { DecorationDivider } from "./decorations";
 import { EventFooter } from "./footer";
 import { EventLayoutShell } from "./layouts";
+import { IntroCover } from "./intro-cover";
 import { LoadGate } from "./load-gate";
 import { ScrollReveal } from "./scroll-reveal";
 import { EventTheme } from "./theme";
+import { INTROS } from "./theme-engine/intros";
 import { HeroV2 } from "./theme-engine/hero";
 import { customMusicSrc, MUSIC_TRACKS } from "./theme-engine/music-tracks";
 import { ART } from "./theme-engine/art/registry";
@@ -170,7 +172,12 @@ export function EventView({
   // the hero and the sections appear together. Never in the editor preview or the admin template preview.
   const gateBackground = safeHex(theme.palette.background);
   const gateInk = safeHex(theme.accent_ink) ?? safeHex(theme.palette.accent);
-  const gate = mode === "live" && gateBackground && gateInk ? <LoadGate background={gateBackground} ink={gateInk} /> : null;
+  const introKey = mode === "live" && theme.engine === 2 ? ownKey(INTROS, theme.intro) : null;
+  const gate = introKey ? (
+    <IntroCover intro={introKey} theme={theme} />
+  ) : mode === "live" && gateBackground && gateInk ? (
+    <LoadGate background={gateBackground} ink={gateInk} />
+  ) : null;
 
   if (theme.engine === 2) {
     // Theme engine v2: container-query shell, layered background. The v2 hero

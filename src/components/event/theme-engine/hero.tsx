@@ -37,9 +37,13 @@ const TITLE_FONT: Partial<Record<FontKey, string>> = {
   // About 15% larger than Great Vibes: it is narrower, so the same names fill the column the same way.
   birthstone: "font-normal tracking-normal leading-[1.1] text-[clamp(2.9rem,19.5cqi,4.9rem)] @min-[900px]/ev:text-[74px]",
 };
-/** The invitation hero sets its own title size; Birthstone gets the same 15% boost as above. */
+/** The invitation hero sets its own title size (and face, where it differs); Birthstone gets the same 15% boost as above. */
 const INVITATION_TITLE_SIZE: Partial<Record<FontKey, string>> = {
   birthstone: "text-[clamp(2.6rem,16.1cqi,4rem)]",
+  // Wisteria: engraved-stationery names (upright, spaced capitals) so the painted canopy stays the centrepiece;
+  // the script ampersand between them carries the flourish.
+  cormorant_garamond:
+    "not-italic font-medium uppercase tracking-[.14em] leading-[1.18] text-[clamp(1.5rem,7.2cqi,2.25rem)] @min-[900px]/ev:text-[40px]",
   // Playfair is wide and heavy; Heirloom's long couple names wrapped to three lines at the default size.
   playfair_display: "text-[clamp(1.75rem,10.5cqi,2.75rem)] @min-[900px]/ev:text-[52px]",
 };
