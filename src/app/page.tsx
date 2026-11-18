@@ -167,6 +167,14 @@ function Step({
   );
 }
 
+// public/brand-square.png: the logo on forest green, 1200x1200 (square, so Google's thumbnail crop keeps all of it).
+const BRAND_IMAGE = {
+  "@type": "ImageObject",
+  url: new URL("/brand-square.png", siteUrl()).toString(),
+  width: 1200,
+  height: 1200,
+} as const;
+
 export const metadata: Metadata = {
   title: { absolute: `${SITE_NAME}: free online invitations and RSVPs` },
   description: SITE_DESCRIPTION,
@@ -177,13 +185,31 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <>
+      {/* The square brand image is what Google is told to use as this page's thumbnail and the site's logo. */}
       <JsonLd
         data={{
           "@context": "https://schema.org",
-          "@type": "WebSite",
-          name: SITE_NAME,
-          url: siteUrl().origin,
-          description: SITE_DESCRIPTION,
+          "@graph": [
+            {
+              "@type": "WebSite",
+              name: SITE_NAME,
+              url: siteUrl().origin,
+              description: SITE_DESCRIPTION,
+            },
+            {
+              "@type": "WebPage",
+              url: siteUrl().origin,
+              name: SITE_NAME,
+              primaryImageOfPage: BRAND_IMAGE,
+              image: BRAND_IMAGE.url,
+            },
+            {
+              "@type": "Organization",
+              name: SITE_NAME,
+              url: siteUrl().origin,
+              logo: BRAND_IMAGE.url,
+            },
+          ],
         }}
       />
       {/* The header and the hero share one colour pair, set here for the first paint and updated by
