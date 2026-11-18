@@ -159,10 +159,18 @@ export function LandingHero() {
       }`;
 
   return (
-    <section ref={sectionRef} aria-labelledby="hero-title" className="landing-hero overflow-hidden rounded-b-[2.25rem]">
-      <div className="mx-auto grid w-full max-w-6xl items-center gap-7 px-4 pt-6 pb-14 sm:px-6 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] md:pt-8 md:pb-18">
-        <div>
-          <h1 id="hero-title" className="font-heading text-[clamp(3.2rem,9.5vw,7.25rem)] leading-[0.98] font-extrabold">
+    // Header (~5.5rem) + hero fill exactly one screen, so the envelope is in view without scrolling.
+    <section
+      ref={sectionRef}
+      aria-labelledby="hero-title"
+      className="landing-hero flex min-h-[calc(100svh-5.5rem)] flex-col justify-center overflow-hidden rounded-b-[2.25rem]"
+    >
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-[minmax(0,1fr)] items-center gap-4 px-4 py-5 sm:px-6 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] md:content-center md:gap-x-7 md:gap-y-0 md:py-8">
+        <div className="md:col-start-1 md:row-start-1 md:self-end">
+          <h1
+            id="hero-title"
+            className="font-heading text-[clamp(2.4rem,min(9.5vw,13svh),7.25rem)] leading-[0.98] font-extrabold"
+          >
             <span className="sr-only">{HEADLINE.join(" ")}</span>
             {/* Each word rises out of its own clipped line once, on load. */}
             {HEADLINE.map((word, i) => (
@@ -178,39 +186,14 @@ export function LandingHero() {
               </span>
             ))}
           </h1>
-          <p className="mt-5 max-w-[30rem] text-lg leading-normal motion-safe:animate-[lp-fade-up_0.8s_var(--ease-out)_420ms_both] sm:text-xl">
+          <p className="mt-3 max-w-[30rem] text-base leading-normal motion-safe:animate-[lp-fade-up_0.8s_var(--ease-out)_420ms_both] sm:mt-5 sm:text-xl">
             Pick a design, add the when and where, and send it by link. Every reply lands in one tidy list.
           </p>
-          <div className="mt-7 motion-safe:animate-[lp-fade-up_0.8s_var(--ease-out)_520ms_both]">
+          <div className="mt-4 motion-safe:animate-[lp-fade-up_0.8s_var(--ease-out)_520ms_both] sm:mt-7">
             <Button size="lg" render={<Link href={`/create/${occasion.slug}`} />} nativeButton={false}>
               {occasion.cta}
             </Button>
           </div>
-
-          <fieldset
-            className="mt-8 motion-safe:animate-[lp-fade-up_0.8s_var(--ease-out)_620ms_both]"
-            onPointerDown={() => setAuto(false)}
-          >
-            <legend className="mb-2.5 font-semibold">See it for your occasion</legend>
-            <div className="flex flex-wrap gap-2">
-              {OCCASIONS.map((o) => (
-                <label
-                  key={o.slug}
-                  className="inline-flex h-11 cursor-pointer items-center rounded-full px-4 font-semibold ring-[1.5px] ring-(--on)/45 transition-[background-color,color,translate] duration-(--duration-base) ease-(--ease-out) ring-inset hover:-translate-y-0.5 has-checked:bg-(--on) has-checked:text-(--ground) has-checked:ring-0 has-focus-visible:outline-2 has-focus-visible:outline-offset-3 has-focus-visible:outline-(--on) motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-                >
-                  <input
-                    type="radio"
-                    name="hero-occasion"
-                    value={o.slug}
-                    checked={selected === o.slug}
-                    onChange={() => choose(o.slug)}
-                    className="sr-only"
-                  />
-                  {o.label}
-                </label>
-              ))}
-            </div>
-          </fieldset>
         </div>
 
         {/* An open envelope handing over the invitation, with replies landing around it. Decorative:
@@ -218,7 +201,7 @@ export function LandingHero() {
         <div
           ref={stageRef}
           aria-hidden
-          className="relative mx-auto aspect-[1/1.08] w-full max-w-[27.5rem] [perspective:900px] motion-safe:animate-[lp-bob_7s_ease-in-out_2.6s_infinite_alternate]"
+          className="relative mx-auto aspect-[1/1.08] md:col-start-2 md:row-span-2 md:row-start-1 md:self-center h-[min(32svh,27.5rem)] [perspective:900px] md:h-auto md:w-full md:max-w-[27.5rem] motion-safe:animate-[lp-bob_7s_ease-in-out_2.6s_infinite_alternate]"
         >
           {/* Unmounted while the card is away, so each new set pops in from scratch. */}
           {swapping
@@ -261,6 +244,32 @@ export function LandingHero() {
             <div className="absolute inset-0 z-3 rounded-[10px] bg-(--envelope) [clip-path:polygon(0_0,50%_56%,100%_0,100%_100%,0_100%)] after:absolute after:inset-0 after:bg-linear-to-b after:from-transparent after:from-40% after:to-black/10" />
           </div>
         </div>
+
+        <fieldset
+          className="min-w-0 md:col-start-1 md:row-start-2 md:self-start motion-safe:animate-[lp-fade-up_0.8s_var(--ease-out)_620ms_both] sm:mt-0 md:mt-8"
+          onPointerDown={() => setAuto(false)}
+        >
+          <legend className="mb-2 font-semibold sm:mb-2.5">What are you celebrating?</legend>
+          {/* One swipeable row on phones with the scrollbar hidden; wraps from sm up. */}
+          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
+            {OCCASIONS.map((o) => (
+              <label
+                key={o.slug}
+                className="inline-flex h-11 shrink-0 cursor-pointer items-center rounded-full px-4 font-semibold ring-[1.5px] ring-(--on)/45 transition-[background-color,color,translate] duration-(--duration-base) ease-(--ease-out) ring-inset hover:-translate-y-0.5 has-checked:bg-(--on) has-checked:text-(--ground) has-checked:ring-0 has-focus-visible:outline-2 has-focus-visible:outline-offset-3 has-focus-visible:outline-(--on) motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+              >
+                <input
+                  type="radio"
+                  name="hero-occasion"
+                  value={o.slug}
+                  checked={selected === o.slug}
+                  onChange={() => choose(o.slug)}
+                  className="sr-only"
+                />
+                {o.label}
+              </label>
+            ))}
+          </div>
+        </fieldset>
       </div>
     </section>
   );

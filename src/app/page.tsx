@@ -202,7 +202,7 @@ export default function HomePage() {
           <LandingHero />
           <section
             id="designs"
-            className="mx-auto w-full max-w-6xl scroll-mt-4 px-4 pt-14 sm:px-6 sm:pt-20"
+            className="mx-auto flex min-h-svh w-full max-w-6xl scroll-mt-0 flex-col justify-center px-4 py-14 sm:px-6"
             aria-labelledby="occasions-title"
           >
             <div data-reveal className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
@@ -259,7 +259,7 @@ export default function HomePage() {
 
           <section
             id="how"
-            className="mx-auto w-full max-w-6xl scroll-mt-4 px-4 pt-14 sm:px-6 sm:pt-20"
+            className="mx-auto flex min-h-svh w-full max-w-6xl scroll-mt-0 flex-col justify-center px-4 py-14 sm:px-6"
             aria-labelledby="how-title"
           >
             <h2 id="how-title" data-reveal className={sectionTitle}>
@@ -356,7 +356,7 @@ export default function HomePage() {
       {/* Closing: the logo's doorway, drawn large, on the same dark field as the footer below it. */}
       <div className="mt-14 rounded-t-[2.25rem] bg-brand-field text-brand-on-forest sm:mt-20">
         <section
-          className="mx-auto grid w-full max-w-6xl items-end gap-8 px-4 pt-16 pb-10 sm:px-6 sm:pt-20 md:grid-cols-[minmax(0,1fr)_18.75rem]"
+          className="mx-auto grid min-h-[75svh] w-full max-w-6xl items-center gap-8 px-4 pt-16 pb-10 sm:px-6 sm:pt-20 md:grid-cols-[minmax(0,1fr)_18.75rem]"
           aria-labelledby="cta-title"
         >
           <div data-reveal>
