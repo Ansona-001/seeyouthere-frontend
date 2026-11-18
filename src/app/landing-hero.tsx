@@ -57,6 +57,10 @@ const HEADLINE = ["Invitations", "worth", "opening"] as const;
 const CYCLE_MS = 4200;
 // Time the card takes to sink into the envelope before it is swapped for the next design.
 const SWAP_MS = 340;
+// Pill shared by the picker's radio labels (md up) and the phone links; `has-checked` / `data-current` mark the
+// occasion in the envelope.
+const CHIP =
+  "inline-flex h-11 shrink-0 cursor-pointer items-center rounded-full px-4 font-semibold ring-[1.5px] ring-(--on)/45 transition-[background-color,color,translate] duration-(--duration-base) ease-(--ease-out) ring-inset hover:-translate-y-0.5 has-checked:bg-(--on) has-checked:text-(--ground) has-checked:ring-0 has-focus-visible:outline-2 has-focus-visible:outline-offset-3 has-focus-visible:outline-(--on) data-current:bg-(--on) data-current:text-(--ground) data-current:ring-0 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-(--on) motion-reduce:transition-none motion-reduce:hover:translate-y-0";
 const REPLY_POSITION = ["top-[4%] left-0", "top-[40%] right-0", "bottom-[22%] left-[2%]"] as const;
 
 const cardSrc = (slug: Slug) => `/landing/card-${slug}.webp`;
@@ -85,6 +89,7 @@ export function LandingHero() {
   const [settled, setSettled] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
+  const rowRef = useRef<HTMLUListElement>(null);
 
   const swapping = shown !== selected;
   const occasion = bySlug(selected);
@@ -94,6 +99,19 @@ export function LandingHero() {
     const top = sectionRef.current?.closest<HTMLElement>("[data-landing-top]");
     if (top) top.dataset.occasion = selected;
   }, [selected]);
+
+  useEffect(() => {
+    // Phones: slide the lit pill to the middle of the row while the picker cycles. Scrolls the row only, never
+    // the page; skipped once someone has touched the row so it never pulls against their swipe.
+    const row = rowRef.current;
+    if (!auto || !row || row.clientWidth === 0) return;
+    const pill = row.children[OCCASIONS.findIndex((o) => o.slug === selected)];
+    if (!(pill instanceof HTMLElement)) return;
+    row.scrollTo({
+      left: pill.offsetLeft - (row.clientWidth - pill.offsetWidth) / 2,
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+    });
+  }, [selected, auto]);
 
   useEffect(() => {
     // Warm the cache so a swap never shows an empty card.
@@ -189,7 +207,8 @@ export function LandingHero() {
           <p className="mt-3 max-w-[30rem] text-base leading-normal motion-safe:animate-[lp-fade-up_0.8s_var(--ease-out)_420ms_both] sm:mt-5 sm:text-xl">
             Pick a design, add the when and where, and send it by link. Every reply lands in one tidy list.
           </p>
-          <div className="mt-4 motion-safe:animate-[lp-fade-up_0.8s_var(--ease-out)_520ms_both] sm:mt-7">
+          {/* From md up; on phones each occasion below is itself the way in, which leaves the room to the envelope. */}
+          <div className="mt-7 hidden motion-safe:animate-[lp-fade-up_0.8s_var(--ease-out)_520ms_both] md:block">
             <Button size="lg" render={<Link href={`/create/${occasion.slug}`} />} nativeButton={false}>
               {occasion.cta}
             </Button>
@@ -201,7 +220,7 @@ export function LandingHero() {
         <div
           ref={stageRef}
           aria-hidden
-          className="relative mx-auto aspect-[1/1.08] md:col-start-2 md:row-span-2 md:row-start-1 md:self-center h-[min(32svh,27.5rem)] [perspective:900px] md:h-auto md:w-full md:max-w-[27.5rem] motion-safe:animate-[lp-bob_7s_ease-in-out_2.6s_infinite_alternate]"
+          className="relative mx-auto aspect-[1/1.08] md:col-start-2 md:row-span-2 md:row-start-1 md:self-center h-[min(42svh,27.5rem)] [perspective:900px] md:h-auto md:w-full md:max-w-[27.5rem] motion-safe:animate-[lp-bob_7s_ease-in-out_2.6s_infinite_alternate]"
         >
           {/* Unmounted while the card is away, so each new set pops in from scratch. */}
           {swapping
@@ -246,17 +265,13 @@ export function LandingHero() {
         </div>
 
         <fieldset
-          className="min-w-0 md:col-start-1 md:row-start-2 md:self-start motion-safe:animate-[lp-fade-up_0.8s_var(--ease-out)_620ms_both] sm:mt-0 md:mt-8"
+          className="mt-8 hidden min-w-0 motion-safe:animate-[lp-fade-up_0.8s_var(--ease-out)_620ms_both] md:col-start-1 md:row-start-2 md:block md:self-start"
           onPointerDown={() => setAuto(false)}
         >
-          <legend className="mb-2 font-semibold sm:mb-2.5">What are you celebrating?</legend>
-          {/* One swipeable row on phones with the scrollbar hidden; wraps from sm up. */}
-          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
+          <legend className="mb-2.5 font-semibold">What are you celebrating?</legend>
+          <div className="flex flex-wrap gap-2">
             {OCCASIONS.map((o) => (
-              <label
-                key={o.slug}
-                className="inline-flex h-11 shrink-0 cursor-pointer items-center rounded-full px-4 font-semibold ring-[1.5px] ring-(--on)/45 transition-[background-color,color,translate] duration-(--duration-base) ease-(--ease-out) ring-inset hover:-translate-y-0.5 has-checked:bg-(--on) has-checked:text-(--ground) has-checked:ring-0 has-focus-visible:outline-2 has-focus-visible:outline-offset-3 has-focus-visible:outline-(--on) motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-              >
+              <label key={o.slug} className={CHIP}>
                 <input
                   type="radio"
                   name="hero-occasion"
@@ -270,6 +285,32 @@ export function LandingHero() {
             ))}
           </div>
         </fieldset>
+
+        {/* Phones: one swipeable row of links straight to each occasion's editor (no separate button). The pill
+            of the design in the envelope is lit, so the cycling still shows which card is which. */}
+        <nav
+          aria-labelledby="hero-occasions"
+          className="min-w-0 motion-safe:animate-[lp-fade-up_0.8s_var(--ease-out)_620ms_both] md:hidden"
+        >
+          <p id="hero-occasions" className="mb-2 font-semibold">
+            What are you celebrating?
+          </p>
+          {/* `relative` makes the row each pill's offsetParent, so offsetLeft is measured within the row. */}
+          <ul
+            ref={rowRef}
+            onPointerDown={() => setAuto(false)}
+            className="relative -mx-4 flex gap-2 overflow-x-auto px-4 py-1 [scrollbar-width:none] sm:-mx-6 sm:px-6 [&::-webkit-scrollbar]:hidden"
+          >
+            {OCCASIONS.map((o) => (
+              <li key={o.slug} className="shrink-0">
+                <Link href={`/create/${o.slug}`} data-current={selected === o.slug ? "" : undefined} className={CHIP}>
+                  {o.label}
+                  <span className="sr-only"> invite</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </section>
   );
