@@ -29,7 +29,7 @@ export async function SiteHeader({ links }: { links?: ReactNode }) {
       <nav aria-label="Account" className={`flex items-center gap-1 sm:gap-2 ${TEXT_LINE}`}>
         {user ? (
           <Button variant="ghost" size="sm" render={<Link href="/app" />} nativeButton={false}>
-            Your events
+            Your invites
           </Button>
         ) : (
           <Button variant="ghost" size="sm" render={<Link href="/login" />} nativeButton={false}>
@@ -37,7 +37,7 @@ export async function SiteHeader({ links }: { links?: ReactNode }) {
           </Button>
         )}
         <Button size="sm" render={<Link href="/create" />} nativeButton={false}>
-          Create an event
+          Create an invite
         </Button>
       </nav>
     </header>

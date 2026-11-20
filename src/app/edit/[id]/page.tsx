@@ -6,7 +6,7 @@ import { serverApi } from "@/lib/server-api";
 
 import { Editor } from "./editor";
 
-export const metadata: Metadata = { title: "Edit your event" };
+export const metadata: Metadata = { title: "Edit" };
 
 /**
  * Event builder/editor (build-out plan §11.1, §11.4). Works for a signed-in
@@ -32,7 +32,7 @@ export default async function EditEventPage({ params }: PageProps<"/edit/[id]">)
   if (event.role === "viewer") {
     return (
       <p className="mx-auto max-w-lg px-4 py-16 text-center text-sm text-muted-foreground">
-        You have view-only access to this event. Ask the owner for editor access to make changes.
+        You have view-only access to this page. Ask the owner for editor access to make changes.
       </p>
     );
   }

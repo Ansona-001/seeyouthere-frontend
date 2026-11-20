@@ -20,7 +20,7 @@ export default async function EventDashboardLayout({ children, params }: LayoutP
 
   return (
     <div className="flex flex-col gap-6">
-      <EventNav eventId={event.id} title={event.title} role={event.role} />
+      <EventNav eventId={event.id} title={event.title} role={event.role} kind={event.kind} />
       {children}
     </div>
   );

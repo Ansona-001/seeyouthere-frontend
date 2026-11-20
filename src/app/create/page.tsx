@@ -10,7 +10,7 @@ import { serverApi } from "@/lib/server-api";
 import { OccasionCoverflow } from "./occasion-coverflow";
 
 export const metadata: Metadata = {
-  title: "Create an event",
+  title: "Create an invite",
   description: "Pick an occasion and design a free online invitation with RSVPs in minutes.",
   alternates: { canonical: "/create" },
 };

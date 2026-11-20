@@ -597,18 +597,24 @@ export type RegionPrice = { region: Region; currency: Currency; amount_minor: nu
 /** Regional prices and unlock state of an event's current template; null on the event when the template is free. IN is always offered; order IN, AE, INT. */
 export type EventPremium = { paid: boolean; prices: RegionPrice[] };
 
+/** "hosted" events issue entry passes and have a door check-in; "invite" is the default. */
+export type EventKind = "invite" | "hosted";
+
 export type Event = {
   id: string;
   /** null until a slug is set. */
   slug: string | null;
   title: string;
   occasion_slug: string;
+  kind: EventKind;
   status: EventStatus;
   visibility: Visibility;
   has_password: boolean;
   rsvp_mode: RsvpMode;
   remove_branding: boolean;
   notify_rsvps: boolean;
+  /** Hosted events: show and email entry passes (QR codes). Always true-or-ignored for invites. */
+  entry_passes: boolean;
   starts_at: string | null;
   /** Derived from the `datetime` block's `end_local`; null when there is no end time. Never compute this client-side. */
   ends_at: string | null;
@@ -638,6 +644,7 @@ export type EventSummary = {
   slug: string | null;
   title: string;
   occasion_slug: string;
+  kind: EventKind;
   status: EventStatus;
   starts_at: string | null;
   role: EventRole;
@@ -658,7 +665,8 @@ export type SlugAvailability = {
 // Public event page (§4.4)
 // ---------------------------------------------------------------------------
 
-export type ClosedReason = "deadline" | "capacity" | null;
+/** "invite_only": the event takes RSVPs only from a personal invite link and this visitor has none. */
+export type ClosedReason = "deadline" | "capacity" | "invite_only" | null;
 
 export type PublicRsvpConfig = {
   enabled: boolean;
@@ -676,6 +684,10 @@ export type PublicEventData = {
   slug: string;
   title: string;
   occasion_slug: string;
+  /** Optional until the API exposes it on the public payload; the RSVP form needs it to require an email. */
+  kind?: EventKind;
+  /** When false the viewer never gets a pass and the page and emails don't mention one. */
+  entry_passes?: boolean;
   visibility: Visibility;
   rsvp_mode: RsvpMode;
   starts_at: string | null;
@@ -695,11 +707,16 @@ export type PublicEventData = {
 
 export type PhotoItem = { id: string; src: string; width: number; height: number };
 
+/** Present only for hosted events: for an invited guest who has not declined, or a registration RSVP that says yes. */
+export type EntryPass = { token: string; admits: number; checked_in_at: string | null };
+
 export type PublicEvent = {
   event: PublicEventData;
   viewer: {
     guest: { name: string; household_size: number } | null;
     rsvp: Rsvp | null;
+    /** Shared by invited guests and registrations; null when the viewer has no pass. */
+    pass: EntryPass | null;
   };
   photos: { items: PhotoItem[]; next_cursor: string | null };
   wishes: PublicWish[];
@@ -756,6 +773,52 @@ export type Guest = {
   rsvp: { attending: AttendingStatus; count: number; updated_at: string } | null;
   /** Only populated for the owner/editor viewing their own guest list. */
   invite_url: string | null;
+  /** Hosted events only; 0 / null while nobody from this guest has arrived. */
+  checked_in_at: string | null;
+  checked_in_count: number;
+};
+
+export type CheckInResult = {
+  result: "checked_in" | "already_checked_in";
+  source: "guest" | "registration";
+  event_id: string;
+  event_title: string;
+  /** For a registration, `household_size` is the pass's admit count. */
+  guest: { id: string; name: string; household_size: number };
+  rsvp: { attending: AttendingStatus; count: number } | null;
+  checked_in_at: string;
+  checked_in_count: number;
+  checked_in_by_name: string | null;
+};
+
+export type CheckInSummary = {
+  guests: number;
+  invited_people: number;
+  registrations: number;
+  expected_people: number;
+  checked_in_passes: number;
+  checked_in_people: number;
+};
+
+/** A hosted-event registration (an RSVP with no invite). `email` is null for viewers. */
+export type Registration = {
+  id: string;
+  name: string;
+  email: string | null;
+  attending: AttendingStatus;
+  count: number;
+  checked_in_at: string | null;
+  checked_in_count: number;
+};
+
+export type RegistrationsListResponse = { registrations: Registration[]; next_cursor: string | null };
+
+export type RegistrationCheckIn = {
+  id: string;
+  name: string;
+  checked_in_at: string | null;
+  checked_in_count: number;
+  count: number;
 };
 
 export type GuestsListResponse = { guests: Guest[]; next_cursor: string | null };

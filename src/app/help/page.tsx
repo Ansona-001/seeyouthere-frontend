@@ -4,7 +4,9 @@ import Link from "next/link";
 import { Analytics } from "@/components/analytics";
 import { SiteFooter } from "@/components/brand/site-footer";
 import { SiteHeader } from "@/components/brand/site-header";
+import { AppShell } from "@/components/app-shell/app-shell";
 import { Button } from "@/components/ui/button";
+import { getCurrentUser } from "@/lib/session";
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/support";
 
 export const metadata: Metadata = {
@@ -33,7 +35,7 @@ const TOPICS: Topic[] = [
       },
       {
         q: "Do my guests need an account?",
-        a: "No. Guests open your link and reply to the invitation without signing up. You only need to log in to create and manage events.",
+        a: "No. Guests open your link and reply to the invitation without signing up. You only need to log in to create and manage invites and events.",
       },
       {
         q: "How do I log in?",
@@ -46,7 +48,7 @@ const TOPICS: Topic[] = [
     items: [
       {
         q: "Are my changes saved automatically?",
-        a: "Drafts save automatically a moment after you stop typing; once an event is published, press Save changes. If a section can't be saved, it is marked “Needs attention” with the problem shown under the field.",
+        a: "Drafts save automatically a moment after you stop typing; once an invite or event is published, press Save changes. If a section can't be saved, it is marked “Needs attention” with the problem shown under the field.",
       },
       {
         q: "Why can't I publish yet?",
@@ -54,11 +56,11 @@ const TOPICS: Topic[] = [
       },
       {
         q: "Can I change my invitation link after publishing?",
-        a: "No. Choose the link carefully before you publish. If you need a different one, create a new event.",
+        a: "No. Choose the link carefully before you publish. If you need a different one, create a new invite.",
       },
       {
         q: "How do I take my invitation offline?",
-        a: "Open the event in the editor and choose Unpublish in Settings. Guests can no longer open it until you publish again.",
+        a: "Open the invite in the editor and choose Unpublish in Settings. Guests can no longer open it until you publish again.",
       },
     ],
   },
@@ -69,7 +71,7 @@ const TOPICS: Topic[] = [
         q: "Where can I see who has replied?",
         a: (
           <>
-            Open your event from <Link href="/app" className={linkClass}>your events</Link> to see replies and manage your guest list.
+            Open your invite from <Link href="/app" className={linkClass}>your invites and events</Link> to see replies and manage your guest list.
           </>
         ),
       },
@@ -91,11 +93,30 @@ const TOPICS: Topic[] = [
   },
 ];
 
-export default function HelpPage() {
+// Signed-in users get the help page inside the app shell (so the navigation rail stays); visitors get the public page.
+export default async function HelpPage() {
+  if (await getCurrentUser()) {
+    return (
+      <AppShell>
+        <HelpContent className="mx-auto w-full max-w-3xl" />
+      </AppShell>
+    );
+  }
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 px-4 py-12 sm:py-16">
+      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-12 sm:py-16">
+        <HelpContent />
+      </main>
+      <SiteFooter />
+      <Analytics />
+    </>
+  );
+}
+
+function HelpContent({ className }: { className?: string }) {
+  return (
+    <div className={`flex flex-col gap-10 ${className ?? ""}`}>
         <header>
           <h1 className="font-heading text-4xl text-brand-heading sm:text-5xl">Help and contact</h1>
           <p className="mt-2 text-muted-foreground">Quick answers below. If you can&rsquo;t find yours, email us and a person will reply.</p>
@@ -137,9 +158,6 @@ export default function HelpPage() {
             <span className="text-sm text-muted-foreground">{SUPPORT_EMAIL}</span>
           </div>
         </section>
-      </main>
-      <SiteFooter />
-      <Analytics />
-    </>
+    </div>
   );
 }

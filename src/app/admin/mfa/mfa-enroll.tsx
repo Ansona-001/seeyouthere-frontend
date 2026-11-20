@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 
+import { QrCode } from "@/components/qr-code";
 import { Button } from "@/components/ui/button";
 import { api, ApiError } from "@/lib/api";
 
 import { CodeForm } from "./code-form";
-import { QrCode } from "./qr-code";
 
 type EnrollResponse = { secret: string; otpauth_uri: string };
 

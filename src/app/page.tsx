@@ -73,6 +73,18 @@ const OCCASIONS = [
   },
 ] as const;
 
+// Hosting section copy.
+const HOST_POINTS = [
+  "A full event website with sections you can rename, reorder and add to",
+  "Open registration, or a guest list only",
+  "Optional entry passes with a QR code, and door check-in",
+] as const;
+const COUNTDOWN = [
+  ["39", "days"],
+  ["23", "hours"],
+  ["53", "minutes"],
+] as const;
+
 // The "Pick an occasion" illustration: a small, self-running copy of the cover-flow picker on /create.
 // `pose` is where each card rests (and stays, under reduced motion). `step` is how far round the loop it
 // starts, so the shared lp-flow animation brings each card to the front in turn.
@@ -225,6 +237,9 @@ export default function HomePage() {
                 </a>
                 <a href="#how" className={navLink}>
                   How it works
+                </a>
+                <a href="#host" className={navLink}>
+                  Host an event
                 </a>
                 <Link href="/help" className={navLink}>
                   Help
@@ -384,6 +399,84 @@ export default function HomePage() {
                 </div>
               </Step>
             </ol>
+          </section>
+
+          {/* Hosting: a sketch of the event website a host gets, with the same registration and check-in story as /host. */}
+          <section
+            id="host"
+            className="mx-auto grid w-full max-w-6xl scroll-mt-0 items-center gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 md:gap-14 md:py-24"
+            aria-labelledby="host-title"
+          >
+            <div data-reveal>
+              <p className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">For hosts</p>
+              <h2 id="host-title" className={`${sectionTitle} mt-2`}>
+                Hosting an event?
+              </h2>
+              <p className="mt-4 max-w-md text-lg text-muted-foreground">
+                Give your conference, concert or gala its own website: About, date and time, countdown, programme and
+                registration, all ready to edit. Guests register in a tap, and you check them in at the door.
+              </p>
+              <ul className="mt-5 grid gap-2 text-base font-medium">
+                {HOST_POINTS.map((point) => (
+                  <li key={point} className="flex items-start gap-2.5">
+                    <span aria-hidden className="mt-2 size-2 shrink-0 rounded-full bg-primary" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-7 flex flex-wrap items-center gap-3">
+                <Button size="lg" render={<Link href="/create/function?kind=hosted" />} nativeButton={false}>
+                  Host an event
+                </Button>
+                <Link
+                  href="/host"
+                  className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4"
+                >
+                  How hosting works
+                </Link>
+              </div>
+            </div>
+
+            {/* The event website in miniature: top bar with section links and Register, hero, countdown. */}
+            <div
+              data-reveal
+              aria-hidden
+              className="[--d:1] overflow-hidden rounded-[1.4rem] bg-card shadow-[0_24px_48px_-24px_rgb(0_0_0/0.35)] ring-1 ring-foreground/10"
+            >
+              <div className="flex items-center gap-3 border-b px-4 py-2.5">
+                <span className="font-heading text-lg">Spring Gala</span>
+                <span className="mx-auto hidden gap-4 text-sm text-muted-foreground sm:flex">
+                  <span>About</span>
+                  <span>Programme</span>
+                  <span>Venue</span>
+                </span>
+                <span className="ml-auto rounded-full bg-primary px-3.5 py-1.5 text-sm font-semibold text-primary-foreground sm:ml-0">
+                  Register
+                </span>
+              </div>
+              <div className="grid justify-items-center gap-1.5 px-4 py-8 text-center">
+                <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                  Sat 12 June · 6:00 PM
+                </span>
+                <span className="font-heading text-4xl leading-none">Spring Gala</span>
+                <span className="text-muted-foreground">An evening of music and recognition</span>
+                <div className="mt-4 flex gap-4 font-heading">
+                  {COUNTDOWN.map(([n, label]) => (
+                    <span key={label} className="grid justify-items-center">
+                      <span className="text-3xl leading-none">{n}</span>
+                      <span className="mt-1 font-sans text-[0.6875rem] tracking-wide text-muted-foreground uppercase">
+                        {label}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <ul className="grid gap-1.5 border-t bg-muted/40 px-4 py-3 text-sm font-medium">
+                <li className="flex justify-between"><span>18:00</span><span>Doors open and registration</span></li>
+                <li className="flex justify-between"><span>19:00</span><span>Welcome address</span></li>
+                <li className="flex justify-between"><span>19:30</span><span>Main programme</span></li>
+              </ul>
+            </div>
           </section>
         </main>
       </div>

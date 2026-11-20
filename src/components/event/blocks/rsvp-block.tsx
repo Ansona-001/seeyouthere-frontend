@@ -14,6 +14,8 @@ export function RsvpBlock({
   maxPartySize,
   spotsLeft,
   closedReason,
+  hosted,
+  entryPasses,
   guestName,
   existingRsvp,
   onSuccess,
@@ -26,6 +28,8 @@ export function RsvpBlock({
   maxPartySize: number;
   spotsLeft: number | null;
   closedReason: ClosedReason;
+  hosted?: boolean;
+  entryPasses?: boolean;
   guestName?: string;
   existingRsvp?: Rsvp | null;
   onSuccess?: (rsvp: Rsvp) => void;
@@ -34,18 +38,27 @@ export function RsvpBlock({
 }) {
   const card = (
     <EvCard as="div" className={badge ? undefined : "mx-auto mt-6 max-w-md"}>
-      <RsvpForm
-        mode={mode}
-        slug={slug}
-        fields={effectiveFields}
-        questions={block.questions}
-        maxPartySize={maxPartySize}
-        spotsLeft={spotsLeft}
-        closedReason={closedReason}
-        guestName={guestName}
-        existingRsvp={existingRsvp}
-        onSuccess={onSuccess}
-      />
+      {closedReason === "invite_only" ? (
+        <div role="status" className="rounded-lg bg-(--ev-surface) px-3 py-4 text-center text-(--ev-muted)">
+          <p className="font-medium text-(--ev-text)">RSVP from your personal invite link.</p>
+          <p className="mt-1 text-sm">Open the link we sent you, then reply here.</p>
+        </div>
+      ) : (
+        <RsvpForm
+          mode={mode}
+          slug={slug}
+          fields={effectiveFields}
+          questions={block.questions}
+          maxPartySize={maxPartySize}
+          spotsLeft={spotsLeft}
+          closedReason={closedReason}
+          hosted={hosted}
+          entryPasses={entryPasses}
+          guestName={guestName}
+          existingRsvp={existingRsvp}
+          onSuccess={onSuccess}
+        />
+      )}
     </EvCard>
   );
   return (

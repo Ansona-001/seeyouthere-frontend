@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { paymentRequiredDetails, UnlockDesignDialog } from "@/components/unlock-design-dialog";
 import { api, ApiError, type Event, type PaymentRequiredDetails, type RsvpMode, type SlugAvailability, type Visibility } from "@/lib/api";
+import { kindNoun } from "@/lib/kind";
 import { suggestSlug } from "@/lib/slug";
 import { displayUrl } from "@/lib/urls";
 
@@ -59,17 +60,17 @@ export function SettingsPanel({
   if (state.role === "anon") {
     return (
       <div className="flex flex-col gap-3 rounded-xl border border-input bg-card p-3 text-sm">
-        <p className="text-muted-foreground">Sign in to choose a link and publish this event.</p>
+        <p className="text-muted-foreground">Sign in to choose a link and publish this {kindNoun(state.kind)}.</p>
         <Link href={`/login?next=${encodeURIComponent(`/edit/${state.id}`)}`} className={buttonVariants({})}>
           Sign in to publish
         </Link>
-        <DeleteDraftButton eventId={state.id} isAnon onDeleted={() => router.push("/create")} />
+        <DeleteDraftButton noun={kindNoun(state.kind)} eventId={state.id} isAnon onDeleted={() => router.push("/create")} />
       </div>
     );
   }
 
   if (state.role === "editor") {
-    return <p className="text-sm text-muted-foreground">Only the event owner can change settings, publish or delete it.</p>;
+    return <p className="text-sm text-muted-foreground">Only the owner can change settings, publish or delete it.</p>;
   }
 
   return <OwnerSettings state={state} occasionSlug={occasionSlug} dispatch={dispatch} canPublish={canPublish} flushContent={flushContent} templateName={templateName} />;
@@ -197,7 +198,7 @@ function OwnerSettings({
       }
       const { event } = await api<{ event: Event }>(`/v1/events/${state.id}/publish`, { method: "POST", json: { version } });
       dispatch({ type: "applied", event, templateSlug: event.template.slug });
-      setNotice({ scope: "publish", text: "Published. Your invitation is live.", slug: event.slug ?? undefined });
+      setNotice({ scope: "publish", text: `Published. Your ${kindNoun(state.kind)} is live.`, slug: event.slug ?? undefined });
     } catch (err) {
       const payment = paymentRequiredDetails(err);
       if (payment) {
@@ -229,7 +230,7 @@ function OwnerSettings({
       if (version === null) throw new ApiError(409, "unsaved_content", UNSAVED_MESSAGE);
       const { event } = await api<{ event: Event }>(`/v1/events/${state.id}/unpublish`, { method: "POST", json: { version } });
       dispatch({ type: "applied", event, templateSlug: event.template.slug });
-      setNotice({ scope: "publish", text: event.status === "published" ? "Published. Your invitation is live." : "Unpublished. Guests can no longer open your invitation." });
+      setNotice({ scope: "publish", text: event.status === "published" ? `Published. Your ${kindNoun(state.kind)} is live.` : `Unpublished. Guests can no longer open your ${kindNoun(state.kind)}.` });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't reach the server. Please try again.");
       setErrorScope("publish");
@@ -347,7 +348,7 @@ function OwnerSettings({
       <div className="flex flex-col gap-2 border-t pt-4">
         {notReady && (
           <div role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            This event isn&rsquo;t ready to publish yet. Missing: {notReady.map((m) => MISSING_LABELS[m] ?? m).join(", ")}.
+            This {kindNoun(state.kind)} isn&rsquo;t ready to publish yet. Missing: {notReady.map((m) => MISSING_LABELS[m] ?? m).join(", ")}.
           </div>
         )}
         {error && errorScope === "publish" && (
@@ -381,9 +382,9 @@ function OwnerSettings({
           </Button>
         )}
         {state.status === "taken_down" && (
-          <p className="text-sm text-muted-foreground">This event has been taken down and can&rsquo;t be republished.</p>
+          <p className="text-sm text-muted-foreground">This {kindNoun(state.kind)} has been taken down and can&rsquo;t be republished.</p>
         )}
-        <DeleteDraftButton eventId={state.id} isAnon={false} onDeleted={() => router.push("/app")} />
+        <DeleteDraftButton noun={kindNoun(state.kind)} eventId={state.id} isAnon={false} onDeleted={() => router.push("/app")} />
       </div>
 
       {unlock && (
@@ -403,7 +404,7 @@ function OwnerSettings({
   );
 }
 
-function DeleteDraftButton({ eventId, isAnon, onDeleted }: { eventId: string; isAnon: boolean; onDeleted: () => void }) {
+function DeleteDraftButton({ eventId, isAnon, noun, onDeleted }: { eventId: string; isAnon: boolean; noun: "invite" | "event"; onDeleted: () => void }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -422,10 +423,10 @@ function DeleteDraftButton({ eventId, isAnon, onDeleted }: { eventId: string; is
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="destructive" />}>{isAnon ? "Delete draft" : "Delete event"}</DialogTrigger>
+      <DialogTrigger render={<Button variant="destructive" />}>{isAnon ? "Delete draft" : `Delete ${noun}`}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isAnon ? "Delete this draft?" : "Delete this event?"}</DialogTitle>
+          <DialogTitle>{isAnon ? "Delete this draft?" : `Delete this ${noun}?`}</DialogTitle>
           <DialogDescription>This can&rsquo;t be undone. Guests, RSVPs and photos will be permanently removed.</DialogDescription>
         </DialogHeader>
         {error && (

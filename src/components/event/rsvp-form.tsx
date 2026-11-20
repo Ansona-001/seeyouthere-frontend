@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useId, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,10 @@ export type RsvpFormProps = {
   maxPartySize: number;
   spotsLeft: number | null;
   closedReason: ClosedReason;
+  /** Hosted event: without an invite, email is required and "yes" earns an entry pass. */
+  hosted?: boolean;
+  /** Hosted events only: false when the host switched entry passes off. */
+  entryPasses?: boolean;
   /** Set (and locked) when the viewer arrived through an invite link. */
   guestName?: string;
   existingRsvp?: Rsvp | null;
@@ -47,11 +52,17 @@ export function RsvpForm({
   maxPartySize,
   spotsLeft,
   closedReason,
+  hosted = false,
+  entryPasses = true,
   guestName,
   existingRsvp,
   onSuccess,
 }: RsvpFormProps) {
+  const router = useRouter();
   const formId = useId();
+  const registering = hosted && !guestName;
+  // The API refuses to change the email on an existing registration; readOnly (unlike disabled) still submits it.
+  const emailLocked = registering && Boolean(existingRsvp);
   const disabled = mode === "preview";
   const allFields = [...fields, ...questions];
 
@@ -64,6 +75,8 @@ export function RsvpForm({
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  // Hosted registration: the API answers 202 and emails the pass link instead of returning the RSVP.
+  const [checkEmail, setCheckEmail] = useState(false);
 
   const deadlinePassed = closedReason === "deadline";
   const atCapacity = closedReason === "capacity" && spotsLeft !== null && spotsLeft <= 0;
@@ -80,7 +93,7 @@ export function RsvpForm({
     setError(null);
     setPending(true);
     try {
-      const result = await api<{ rsvp: Rsvp }>(`/v1/public/events/${encodeURIComponent(slug)}/rsvp`, {
+      const result = await api<{ rsvp?: Rsvp; status?: "check_email" }>(`/v1/public/events/${encodeURIComponent(slug)}/rsvp`, {
         method: "PUT",
         json: {
           name,
@@ -91,13 +104,44 @@ export function RsvpForm({
           website, // honeypot — empty for real visitors, filled by bots
         },
       });
+      if (result.status === "check_email") {
+        setCheckEmail(true);
+        return;
+      }
       setSubmitted(true);
-      onSuccess?.(result.rsvp);
+      if (result.rsvp) onSuccess?.(result.rsvp);
+      // Re-render on the server so the entry pass appears.
+      router.refresh();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't reach the server. Check your connection.");
     } finally {
       setPending(false);
     }
+  }
+
+  if (checkEmail) {
+    return (
+      <div role="status" className="grid gap-3 rounded-xl bg-(--ev-surface) px-4 py-6 text-center text-(--ev-text)">
+        <p className="text-base font-semibold">Check your email</p>
+        <p className="text-sm">
+          {attending === "yes"
+            ? `If a spot is available, we’ve sent a link to ${email}. ${entryPasses ? "Open it on this device to see your entry pass." : "Open it to confirm your registration."}`
+            : `If a spot is available, we’ve sent a link to ${email}. Open it on this device to change your reply later.`}
+        </p>
+        <p className="text-xs text-(--ev-muted)">Nothing yet? Check spam, or send the form again to get a new email.</p>
+        <Button
+          type="button"
+          variant="outline"
+          className="justify-self-center"
+          onClick={() => {
+            setCheckEmail(false);
+            setEmail("");
+          }}
+        >
+          Use a different email
+        </Button>
+      </div>
+    );
   }
 
   if (submitted) {
@@ -112,7 +156,7 @@ export function RsvpForm({
     <form onSubmit={handleSubmit} className="relative flex flex-col gap-4">
       {deadlinePassed && (
         <p role="alert" className="rounded-lg bg-(--ev-surface) px-3 py-2 text-sm text-(--ev-muted)">
-          RSVPs are closed for this event.
+          {hosted ? "Registration is closed for this event." : "RSVPs are closed for this invite."}
         </p>
       )}
       {yesLocked && attending === "yes" && !deadlinePassed && (
@@ -137,17 +181,27 @@ export function RsvpForm({
       </div>
 
       <div className="grid gap-1.5">
-        <Label htmlFor={`${formId}-email`}>Email (optional)</Label>
+        <Label htmlFor={`${formId}-email`}>{registering ? "Email" : "Email (optional)"}</Label>
         <Input
           className={UNDERLINE_FIELD}
           id={`${formId}-email`}
           type="email"
           autoComplete="email"
+          required={registering}
+          aria-describedby={registering ? `${formId}-email-hint` : undefined}
           maxLength={254}
           value={email ?? ""}
           onChange={(e) => setEmail(e.target.value)}
+          readOnly={emailLocked}
           disabled={formDisabled}
         />
+        {registering && (
+          <p id={`${formId}-email-hint`} className="text-xs text-(--ev-muted)">
+            {emailLocked
+              ? "Your email can’t be changed after registering."
+              : entryPasses ? "We’ll email your entry pass to this address." : "We’ll email you a confirmation link."}
+          </p>
+        )}
       </div>
 
       <fieldset className="grid gap-1.5" disabled={formDisabled}>
@@ -172,6 +226,10 @@ export function RsvpForm({
           ))}
         </div>
       </fieldset>
+
+      {registering && attending === "maybe" && (
+        <p className="text-sm text-(--ev-muted)">{entryPasses ? "Choose Yes to get your entry pass." : "Choose Yes to register."}</p>
+      )}
 
       {attending !== "no" && (
         <div className="grid gap-1.5">

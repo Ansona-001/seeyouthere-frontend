@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { api, ApiError, type Event } from "@/lib/api";
-import type { Occasion, TemplateSummary } from "@/lib/api-types";
+import type { EventKind, Occasion, TemplateSummary } from "@/lib/api-types";
 
 // A visitor who isn't signed in keeps their answers across the login redirect in sessionStorage
 // (this tab only, cleared on restore). Everything read back is re-validated against the live
@@ -74,7 +74,7 @@ function restoreDraft(raw: string | null, occasion: Occasion): Restored | null {
  * and answer-substitution work, so this only needs to collect answers — the
  * created event already has full, editable content.
  */
-export function SetupWizard(props: { occasion: Occasion; templates: TemplateSummary[]; signedIn: boolean }) {
+export function SetupWizard(props: { occasion: Occasion; templates: TemplateSummary[]; signedIn: boolean; kind: EventKind }) {
   // Coming back from login (?resume=1): restore what the visitor had picked and land on the
   // design step. The server renders without it, so the saved choices are read client-side.
   const resume = useSearchParams().get("resume") === "1";
@@ -87,11 +87,13 @@ function SetupWizardInner({
   occasion,
   templates,
   signedIn,
+  kind,
   initial,
 }: {
   occasion: Occasion;
   templates: TemplateSummary[];
   signedIn: boolean;
+  kind: EventKind;
   initial: Restored | null;
 }) {
   const router = useRouter();
@@ -156,7 +158,7 @@ function SetupWizardInner({
     }
     if (!signedIn) {
       saveDraft({ occasion: occasion.slug, answers: finalAnswers });
-      const back = `/create/${occasion.slug}?resume=1`;
+      const back = `/create/${occasion.slug}?resume=1${kind === "hosted" ? "&kind=hosted" : ""}`;
       router.push(`/login?next=${encodeURIComponent(back)}`);
       return;
     }
@@ -164,7 +166,12 @@ function SetupWizardInner({
     try {
       const { event } = await api<{ event: Event }>("/v1/events", {
         method: "POST",
-        json: { occasion_slug: occasion.slug, template_slug: template.slug, answers: finalAnswers },
+        json: {
+          occasion_slug: occasion.slug,
+          template_slug: template.slug,
+          answers: finalAnswers,
+          ...(kind === "hosted" && { kind }),
+        },
       });
       clearDraft();
       router.push(`/edit/${event.id}`);
@@ -184,7 +191,8 @@ function SetupWizardInner({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once on arrival; create reads current state
   }, []);
 
-  const submitLabel = pending ? "Creating…" : signedIn ? "Create my event" : "Log in to create my event";
+  const noun = kind === "hosted" ? "event" : "invite";
+  const submitLabel = pending ? "Creating…" : signedIn ? `Create my ${noun}` : `Log in to create my ${noun}`;
 
   return (
     <div className="flex flex-col gap-5">

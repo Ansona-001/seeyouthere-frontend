@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/brand/empty-state";
 import { SiteFooter } from "@/components/brand/site-footer";
 import { SiteHeader } from "@/components/brand/site-header";
 import { Button } from "@/components/ui/button";
-import type { OccasionsResponse, TemplatesResponse } from "@/lib/api-types";
+import type { EventKind, OccasionsResponse, TemplatesResponse } from "@/lib/api-types";
 import { serverApi } from "@/lib/server-api";
 import { getCurrentUser } from "@/lib/session";
 
@@ -31,8 +31,10 @@ export async function generateMetadata({ params }: PageProps<"/create/[occasion]
  * `POST /v1/events` (build-out plan §11.1, §11.4). The occasion and template
  * catalog are public and rarely change, so both fetches are cached for 5 min.
  */
-export default async function CreateOccasionPage({ params }: PageProps<"/create/[occasion]">) {
+export default async function CreateOccasionPage({ params, searchParams }: PageProps<"/create/[occasion]">) {
   const { occasion: occasionSlug } = await params;
+  // Only the literal "hosted" opts in, and only for the stage occasion; anything else is the default invite flow.
+  const kind: EventKind = (await searchParams).kind === "hosted" && occasionSlug === "function" ? "hosted" : "invite";
 
   const [occasionsResult, templatesResult] = await Promise.all([
     serverApi<OccasionsResponse>("/v1/occasions", { cache: "force-cache", next: { revalidate: 300 } }),
@@ -89,7 +91,7 @@ export default async function CreateOccasionPage({ params }: PageProps<"/create/
 
   return (
     <CreateShell wide>
-      <SetupWizard occasion={occasion} templates={templatesResult.data.templates} signedIn={signedIn} />
+      <SetupWizard occasion={occasion} templates={templatesResult.data.templates} signedIn={signedIn} kind={kind} />
       <OccasionInfo slug={occasionSlug} />
     </CreateShell>
   );

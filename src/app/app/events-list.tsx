@@ -6,8 +6,11 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { api, ApiError, type EventsListResponse, type EventStatus, type EventSummary } from "@/lib/api";
+import { api, ApiError, type EventKind, type EventsListResponse, type EventStatus, type EventSummary } from "@/lib/api";
+import { STATUS_LABEL } from "@/lib/event-status";
 import { formatDateTime } from "@/lib/format";
+
+import { ItemActions } from "./item-actions";
 
 const STATUS_VARIANT: Record<EventStatus, "secondary" | "destructive" | "outline"> = {
   draft: "outline",
@@ -16,19 +19,15 @@ const STATUS_VARIANT: Record<EventStatus, "secondary" | "destructive" | "outline
   taken_down: "destructive",
 };
 
-const STATUS_LABEL: Record<EventStatus, string> = {
-  draft: "Draft",
-  published: "Published",
-  hidden: "Unpublished",
-  taken_down: "Taken down",
-};
-
 export function EventsList({
   initialEvents,
   initialCursor,
+  kind,
 }: {
   initialEvents: EventSummary[];
   initialCursor: string | null;
+  /** Which list this is; the "Load more" request is filtered to the same kind. Omitted = both kinds. */
+  kind?: EventKind;
 }) {
   const [events, setEvents] = useState(initialEvents);
   const [cursor, setCursor] = useState(initialCursor);
@@ -40,7 +39,7 @@ export function EventsList({
     setPending(true);
     setError(null);
     try {
-      const res = await api<EventsListResponse>(`/v1/events?limit=25&cursor=${encodeURIComponent(cursor)}`);
+      const res = await api<EventsListResponse>(`/v1/events?limit=25${kind ? `&kind=${kind}` : ""}&cursor=${encodeURIComponent(cursor)}`);
       setEvents((prev) => [...prev, ...res.events]);
       setCursor(res.next_cursor);
     } catch (err) {
@@ -55,9 +54,9 @@ export function EventsList({
       <ul className="flex flex-col gap-3">
         {events.map((e) => (
           <li key={e.id}>
-            <Card className="transition-shadow focus-within:ring-2 focus-within:ring-ring [@media(hover:hover)]:hover:shadow-md">
+            <Card className="relative transition-shadow focus-within:ring-2 focus-within:ring-ring [@media(hover:hover)]:hover:shadow-md">
               <Link href={`/app/${e.id}`} className="contents outline-none">
-                <CardHeader>
+                <CardHeader className="pr-24">
                   <CardTitle className="flex flex-wrap items-center gap-2 text-2xl">
                     {e.title || "(untitled)"}
                     <Badge variant={STATUS_VARIANT[e.status]}>{STATUS_LABEL[e.status]}</Badge>
@@ -73,6 +72,14 @@ export function EventsList({
                   )}
                 </CardContent>
               </Link>
+              <ItemActions
+                id={e.id}
+                title={e.title}
+                kind={e.kind}
+                role={e.role}
+                onDeleted={() => setEvents((prev) => prev.filter((x) => x.id !== e.id))}
+                className="absolute top-3 right-3"
+              />
             </Card>
           </li>
         ))}

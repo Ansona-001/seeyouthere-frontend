@@ -67,6 +67,9 @@ const SWAP_MS = 340;
 // occasion in the envelope.
 const CHIP =
   "inline-flex h-11 shrink-0 cursor-pointer items-center rounded-full px-4 font-semibold ring-[1.5px] ring-(--on)/45 transition-[background-color,color,translate] duration-(--duration-base) ease-(--ease-out) ring-inset hover:-translate-y-0.5 has-checked:bg-(--on) has-checked:text-(--ground) has-checked:ring-0 has-focus-visible:outline-2 has-focus-visible:outline-offset-3 has-focus-visible:outline-(--on) data-current:bg-(--on) data-current:text-(--ground) data-current:ring-0 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-(--on) motion-reduce:transition-none motion-reduce:hover:translate-y-0";
+// Secondary route for hosts who want entry passes and door check-in (/host).
+const HOST_LINK =
+  "inline-flex items-center justify-center rounded-full font-semibold ring-[1.5px] ring-(--on)/45 transition-[background-color,color] duration-(--duration-base) ring-inset hover:bg-(--on) hover:text-(--ground) focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-(--on) motion-reduce:transition-none";
 const REPLY_POSITION = ["top-[4%] left-0", "top-[40%] right-0", "bottom-[22%] left-[2%]"] as const;
 
 const cardSrc = (slug: Slug) => `/landing/card-${slug}.webp`;
@@ -243,6 +246,9 @@ export function LandingHero() {
             <Button size="lg" render={<Link href={`/create/${occasion.slug}`} />} nativeButton={false}>
               {occasion.cta}
             </Button>
+            <Link href="/host" className={`${HOST_LINK} ml-3 h-12 px-6 text-base`}>
+              Host an event
+            </Link>
           </div>
         </div>
 
@@ -342,6 +348,12 @@ export function LandingHero() {
             ))}
           </ul>
         </nav>
+
+        <p className="motion-safe:animate-[lp-fade-up_0.8s_var(--ease-out)_620ms_both] md:hidden">
+          <Link href="/host" className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4">
+            Hosting with entry passes? Host an event
+          </Link>
+        </p>
       </div>
     </section>
   );

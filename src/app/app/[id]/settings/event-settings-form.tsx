@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { api, ApiError, type Event, type RsvpMode, type SlugAvailability, type Visibility } from "@/lib/api";
+import { kindNoun } from "@/lib/kind";
 
 const VISIBILITY_LABEL: Record<Visibility, string> = {
   unlisted: "Unlisted — anyone with the link can view",
@@ -51,6 +52,7 @@ export function EventSettingsForm({ event }: { event: Event }) {
   const [password, setPassword] = useState("");
   const [rsvpMode, setRsvpMode] = useState<RsvpMode>(event.rsvp_mode);
   const [notifyRsvps, setNotifyRsvps] = useState(event.notify_rsvps);
+  const [entryPasses, setEntryPasses] = useState(event.entry_passes);
   const [hasPassword, setHasPassword] = useState(event.has_password);
   const [status, setStatus] = useState(event.status);
 
@@ -84,6 +86,7 @@ export function EventSettingsForm({ event }: { event: Event }) {
       if (password) body.password = password;
       if (rsvpMode !== event.rsvp_mode) body.rsvp_mode = rsvpMode;
       if (notifyRsvps !== event.notify_rsvps) body.notify_rsvps = notifyRsvps;
+      if (event.kind === "hosted" && entryPasses !== event.entry_passes) body.entry_passes = entryPasses;
 
       const { event: updated } = await api<{ event: Event }>(`/v1/events/${event.id}/settings`, {
         method: "PATCH",
@@ -95,7 +98,7 @@ export function EventSettingsForm({ event }: { event: Event }) {
       router.refresh();
     } catch (err) {
       if (err instanceof ApiError && err.code === "version_conflict") {
-        setError("This event was changed somewhere else. Reload to see the latest version.");
+        setError(`This ${kindNoun(event.kind)} was changed somewhere else. Reload to see the latest version.`);
       } else {
         setError(err instanceof ApiError ? err.message : "Couldn't reach the server. Please try again.");
       }
@@ -133,7 +136,7 @@ export function EventSettingsForm({ event }: { event: Event }) {
         const details = err.details as { missing: string[] } | undefined;
         setNotReady(details?.missing ?? []);
       } else if (err instanceof ApiError && err.code === "version_conflict") {
-        setError("This event was changed somewhere else. Reload to see the latest version.");
+        setError(`This ${kindNoun(event.kind)} was changed somewhere else. Reload to see the latest version.`);
       } else {
         setError(err instanceof ApiError ? err.message : "Couldn't reach the server. Please try again.");
       }
@@ -164,7 +167,7 @@ export function EventSettingsForm({ event }: { event: Event }) {
     <div className="flex max-w-xl flex-col gap-5">
       <Card>
         <CardHeader>
-          <CardTitle>Event page</CardTitle>
+          <CardTitle>{kindNoun(event.kind) === "event" ? "Event" : "Invite"} page</CardTitle>
           <CardDescription>Your link, who can see the page and how guests reply.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -240,18 +243,58 @@ export function EventSettingsForm({ event }: { event: Event }) {
           </div>
         )}
 
-        <div className="grid gap-1.5">
-          <Label htmlFor="settings-rsvp-mode">RSVP mode</Label>
-          <Select value={rsvpMode} onValueChange={(v) => v && setRsvpMode(v as RsvpMode)}>
-            <SelectTrigger id="settings-rsvp-mode" className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="open">Open — anyone with the link can RSVP</SelectItem>
-              <SelectItem value="invite_only">Invite only — only invited guests can RSVP</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {event.kind === "hosted" ? (
+          <fieldset className="grid gap-2">
+            <legend className="text-sm font-medium">Registration</legend>
+            {(
+              [
+                ["open", "Open registration — anyone with the link can register"],
+                ["invite_only", "Guest list only — only people you invite"],
+              ] as const
+            ).map(([value, label]) => (
+              <label key={value} className="flex min-h-11 items-center gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="settings-rsvp-mode"
+                  value={value}
+                  checked={rsvpMode === value}
+                  onChange={() => setRsvpMode(value)}
+                  className="size-4"
+                />
+                {label}
+              </label>
+            ))}
+            <p className="text-xs text-muted-foreground">
+              Invited guests who haven’t replied don’t reserve a spot against capacity.
+            </p>
+          </fieldset>
+        ) : (
+          <div className="grid gap-1.5">
+            <Label htmlFor="settings-rsvp-mode">RSVP mode</Label>
+            <Select value={rsvpMode} onValueChange={(v) => v && setRsvpMode(v as RsvpMode)}>
+              <SelectTrigger id="settings-rsvp-mode" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="open">Open — anyone with the link can RSVP</SelectItem>
+                <SelectItem value="invite_only">Invite only — only invited guests can RSVP</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {event.kind === "hosted" && (
+          <div className="grid gap-1">
+            <div className="flex items-center gap-3">
+              <Switch id="settings-passes" checked={entryPasses} onCheckedChange={setEntryPasses} />
+              <Label htmlFor="settings-passes" className="min-h-11">Give guests an entry pass (QR code)</Label>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Turn this off for events that only need registration: no QR code on the page or in emails. Door check-in
+              then works from the guest list.
+            </p>
+          </div>
+        )}
 
         <div className="flex items-center gap-3">
           <Switch id="settings-notify" checked={notifyRsvps} onCheckedChange={setNotifyRsvps} />
@@ -286,7 +329,7 @@ export function EventSettingsForm({ event }: { event: Event }) {
         <CardContent className="flex flex-col gap-3">
         {notReady && (
           <div role="alert" className="rounded-xl bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
-            This event isn&rsquo;t ready to publish yet. Missing: {notReady.map((m) => (m === "slug" ? "a link (choose one under Link above)" : m)).join(", ")}.
+            This {kindNoun(event.kind)} isn&rsquo;t ready to publish yet. Missing: {notReady.map((m) => (m === "slug" ? "a link (choose one under Link above)" : m)).join(", ")}.
           </div>
         )}
         {status === "draft" && (
@@ -302,25 +345,25 @@ export function EventSettingsForm({ event }: { event: Event }) {
           </Button>
         )}
         {status === "taken_down" && (
-          <p className="text-sm text-muted-foreground">This event has been taken down and can&rsquo;t be republished.</p>
+          <p className="text-sm text-muted-foreground">This {kindNoun(event.kind)} has been taken down and can&rsquo;t be republished.</p>
         )}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Delete this event</CardTitle>
+          <CardTitle>Delete this {kindNoun(event.kind)}</CardTitle>
           <CardDescription>Removes the page, guests, RSVPs and photos for good.</CardDescription>
         </CardHeader>
         <CardContent>
-          <DeleteEventButton eventId={event.id} />
+          <DeleteEventButton eventId={event.id} noun={kindNoun(event.kind)} />
         </CardContent>
       </Card>
     </div>
   );
 }
 
-function DeleteEventButton({ eventId }: { eventId: string }) {
+function DeleteEventButton({ eventId, noun }: { eventId: string; noun: "invite" | "event" }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -340,10 +383,10 @@ function DeleteEventButton({ eventId }: { eventId: string }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="destructive" className="self-start" />}>Delete event</DialogTrigger>
+      <DialogTrigger render={<Button variant="destructive" className="self-start" />}>Delete {noun}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete this event?</DialogTitle>
+          <DialogTitle>Delete this {noun}?</DialogTitle>
           <DialogDescription>This can&rsquo;t be undone. Guests, RSVPs and photos will be permanently removed.</DialogDescription>
         </DialogHeader>
         {error && (

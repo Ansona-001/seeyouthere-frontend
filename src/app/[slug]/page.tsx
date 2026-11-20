@@ -12,6 +12,7 @@ import { shareDescription } from "@/lib/share-description";
 import { ogImageFor } from "@/lib/share-image";
 import { serverApi } from "@/lib/server-api";
 
+import { EntryPass } from "./entry-pass";
 import { InviteRequired } from "./invite-required";
 
 // The DB's slug regex already forbids characters that would need escaping
@@ -86,13 +87,18 @@ export default async function PublicEventPage({ params }: PageProps<"/[slug]">) 
 
   const { event, viewer, photos, wishes } = result.data;
 
+  const pass = viewer.pass;
+  const passName = viewer.guest?.name ?? viewer.rsvp?.name;
+
   return (
+    <>
     <EventView
       content={event.content}
       theme={event.theme}
       media={event.media}
       musicSrc={event.music_src}
       mode="live"
+      site={event.kind === "hosted"}
       removeBranding={event.remove_branding}
       slug={slug}
       title={event.title}
@@ -103,6 +109,8 @@ export default async function PublicEventPage({ params }: PageProps<"/[slug]">) 
         maxPartySize: event.rsvp.max_party_size,
         spotsLeft: event.rsvp.spots_left,
         closedReason: event.rsvp.closed_reason,
+        hosted: event.kind === "hosted",
+        entryPasses: event.entry_passes ?? true,
         guestName: viewer.guest?.name,
         existingRsvp: viewer.rsvp,
       }}
@@ -110,5 +118,7 @@ export default async function PublicEventPage({ params }: PageProps<"/[slug]">) 
       photosNextCursor={photos.next_cursor}
       wishes={wishes}
     />
+    {pass && passName && <EntryPass pass={pass} guestName={passName} title={event.title} />}
+    </>
   );
 }

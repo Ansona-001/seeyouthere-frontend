@@ -9,6 +9,7 @@ import { ShareLinks } from "@/components/share-links";
 import { paymentRequiredDetails, UnlockDesignDialog } from "@/components/unlock-design-dialog";
 import { Button } from "@/components/ui/button";
 import { api, ApiError, type Event, type PaymentRequiredDetails } from "@/lib/api";
+import { kindNoun } from "@/lib/kind";
 import { displayUrl } from "@/lib/urls";
 
 const STATUS_LABEL: Record<Event["status"], string> = {
@@ -72,7 +73,7 @@ export function OverviewActions({ event }: { event: Event }) {
 
       {notReady && (
         <div role="alert" className="rounded-xl bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
-          This event isn&rsquo;t ready to publish yet. Missing: {notReady.join(", ")}. Set these in{" "}
+          This {kindNoun(event.kind)} isn&rsquo;t ready to publish yet. Missing: {notReady.join(", ")}. Set these in{" "}
           <Link href={`/app/${event.id}/settings`} className="underline">
             Settings
           </Link>

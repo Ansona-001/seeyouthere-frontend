@@ -10,6 +10,7 @@ import { paymentRequiredDetails, UnlockDesignDialog } from "@/components/unlock-
 import { Button } from "@/components/ui/button";
 import { cn } from "cn";
 import { api, ApiError, type Event, type MusicSource, type Occasion, type Overrides, type PaymentRequiredDetails, type PublicWish, type ShareImageSource, type TemplateSummary, type ValidationIssue, type WishListResponse } from "@/lib/api";
+import { kindNoun } from "@/lib/kind";
 
 import { BlockForm } from "./block-form";
 import { BlockIssuesProvider, blockIssues, groupIssuesByBlock, issueLabel, uninlinedIssues } from "./block-issues";
@@ -346,6 +347,8 @@ export function Editor({
               theme={state.theme}
               media={state.media}
               mode="preview"
+              site={state.kind === "hosted"}
+              title={state.title}
               removeBranding={state.removeBranding}
               slug={state.slug ?? undefined}
               startsAt={state.startsAt}
@@ -525,14 +528,14 @@ function EditorTopBar({
       <div className="flex items-center gap-3">
         <Link
           href={state.role === "anon" ? "/" : "/app"}
-          aria-label={state.role === "anon" ? "Back to the home page" : "Back to your events"}
+          aria-label={state.role === "anon" ? "Back to the home page" : state.kind === "hosted" ? "Back to your events" : "Back to your invites"}
           className="inline-flex min-h-11 items-center gap-1 rounded-md pr-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
         >
           <span aria-hidden="true">&larr;</span>
-          <span className="hidden sm:inline">{state.role === "anon" ? "Home" : "Your events"}</span>
+          <span className="hidden sm:inline">{state.role === "anon" ? "Home" : state.kind === "hosted" ? "Your events" : "Your invites"}</span>
         </Link>
         <div>
-          <p className="font-heading text-lg text-brand-heading">{state.title || "Untitled event"}</p>
+          <p className="font-heading text-lg text-brand-heading">{state.title || `Untitled ${kindNoun(state.kind)}`}</p>
           <SaveIndicator state={state} />
         </div>
       </div>

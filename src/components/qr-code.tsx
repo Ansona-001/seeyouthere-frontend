@@ -3,10 +3,10 @@ import qrcode from "qrcode-generator";
 const QUIET_ZONE = 4;
 
 /**
- * Renders `value` as an inline SVG QR code. Generated entirely in the browser:
- * the TOTP secret must never be sent to a third-party QR service.
+ * Renders `value` as an inline SVG QR code. Generated locally (never via a third-party QR service):
+ * the TOTP secret and entry-pass tokens must not leave our origin. `className` sets the size.
  */
-export function QrCode({ value, label }: { value: string; label: string }) {
+export function QrCode({ value, label, className = "size-48" }: { value: string; label: string; className?: string }) {
   const qr = qrcode(0, "M");
   qr.addData(value);
   qr.make();
@@ -26,7 +26,7 @@ export function QrCode({ value, label }: { value: string; label: string }) {
       role="img"
       aria-label={label}
       shapeRendering="crispEdges"
-      className="size-48 max-w-full rounded-lg"
+      className={`${className} max-w-full rounded-lg`}
     >
       <rect width={size} height={size} fill="#fff" />
       <path d={path} fill="#000" />

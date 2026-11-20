@@ -3,7 +3,7 @@
 // successful write ("applied") is the single source of truth for `version`,
 // `theme` and `media` — the client never computes those itself.
 
-import type { Block, Event, EventAudio, EventPremium, EventRole, EventStatus, MediaMap, MediaRef, Overrides, RsvpMode, ShareImageSource, Theme, ValidationIssue, Visibility } from "@/lib/api-types";
+import type { Block, Event, EventAudio, EventKind, EventPremium, EventRole, EventStatus, MediaMap, MediaRef, Overrides, RsvpMode, ShareImageSource, Theme, ValidationIssue, Visibility } from "@/lib/api-types";
 
 export type SaveStatus = "idle" | "saving" | "saved" | "error" | "conflict";
 
@@ -20,6 +20,7 @@ export type EditorState = {
   rsvpMode: RsvpMode;
   notifyRsvps: boolean;
   removeBranding: boolean;
+  kind: EventKind;
   version: number;
   content: Block[];
   overrides: Overrides;
@@ -56,6 +57,7 @@ export type EditorAction =
 export function editorStateFromEvent(event: Event): EditorState {
   return {
     id: event.id,
+    kind: event.kind,
     status: event.status,
     role: event.role,
     slug: event.slug,

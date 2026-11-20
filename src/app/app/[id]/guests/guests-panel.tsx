@@ -119,7 +119,7 @@ export function GuestsPanel({
       router.refresh();
     } catch (err) {
       if (err instanceof ApiError && err.code === "event_not_published") {
-        setError("Publish this event before sending invites.");
+        setError("Publish first before sending invites.");
       } else if (err instanceof ApiError && err.code === "daily_limit") {
         setError("You've reached today's invite-sending limit. Try again tomorrow.");
       } else {
@@ -200,7 +200,7 @@ export function GuestsPanel({
       </div>
 
       {!published && canManage && (
-        <p className="text-sm text-muted-foreground">Publish this event to send invites.</p>
+        <p className="text-sm text-muted-foreground">Publish first to send invites.</p>
       )}
       {notice && <p role="status" className="text-sm font-medium text-brand-success">{notice}</p>}
       {error && (

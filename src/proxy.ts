@@ -59,7 +59,10 @@ export function proxy(request: NextRequest) {
   response.headers.set("Content-Security-Policy", csp);
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("Referrer-Policy", "same-origin");
-  response.headers.set("Permissions-Policy", "camera=(), geolocation=(), microphone=()");
+  // Permissions-Policy is fixed per document: a soft (client-side) navigation into the check-in page keeps the
+  // policy of the page it started from, so the camera must be allowed across the whole signed-in /app area.
+  const camera = /^\/app\//.test(request.nextUrl.pathname) ? "(self)" : "()";
+  response.headers.set("Permissions-Policy", `camera=${camera}, geolocation=(), microphone=()`);
   return response;
 }
 

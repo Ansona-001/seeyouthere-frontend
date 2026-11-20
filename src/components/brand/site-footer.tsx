@@ -27,7 +27,7 @@ export async function SiteFooter({ signedIn, flush = false }: { signedIn?: boole
           <ul className="flex flex-wrap gap-x-6 gap-y-2 text-[0.9375rem]">
             <li>
               <Link href="/create" className="underline-offset-4 decoration-brand-brass-bright hover:underline">
-                Create an event
+                Create an invite
               </Link>
             </li>
             <li>
