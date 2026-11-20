@@ -3,8 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 
+import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api, ApiError, type User } from "@/lib/api";
@@ -14,7 +16,11 @@ type Step = "email" | "code";
 // Seconds before a new code can be requested; keeps the resend button from being hammered.
 const RESEND_COOLDOWN_SECONDS = 30;
 
-export function LoginForm({ nextPath = "/app" }: { nextPath?: string }) {
+/**
+ * The email-code login. On its own page it draws a card; with `embedded` it is the body of a `Dialog` (the caller
+ * supplies the dialog chrome, and the title and description become the dialog's, for screen readers).
+ */
+export function LoginForm({ nextPath = "/app", embedded = false }: { nextPath?: string; embedded?: boolean }) {
   const router = useRouter();
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
@@ -60,22 +66,18 @@ export function LoginForm({ nextPath = "/app" }: { nextPath?: string }) {
     });
   }
 
-  return (
-    <Card className="w-full max-w-sm rounded-3xl shadow-md">
-      <CardHeader>
-        <CardTitle className="text-3xl">{step === "email" ? "Log in or sign up" : "Check your email"}</CardTitle>
-        <CardDescription>
-          {step === "email" ? (
-            "We'll email you a 6-digit code. No password needed."
-          ) : (
-            <>
-              We sent a code to <span className="font-medium text-foreground">{email}</span>. It expires in 10
-              minutes.
-            </>
-          )}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+  const title = step === "email" ? "Log in or sign up" : "Check your email";
+  const description =
+    step === "email" ? (
+      "We'll email you a 6-digit code. No password needed."
+    ) : (
+      <>
+        We sent a code to <span className="font-medium text-foreground">{email}</span>. It expires in 10 minutes.
+      </>
+    );
+
+  const body = (
+    <>
         {step === "email" ? (
           <form onSubmit={requestCode} className="grid gap-4">
             <div className="grid gap-2">
@@ -140,7 +142,29 @@ export function LoginForm({ nextPath = "/app" }: { nextPath?: string }) {
             </div>
           </form>
         )}
-      </CardContent>
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div className="grid gap-6">
+        <DialogHeader className="items-center gap-3 text-center">
+          <Logo variant="mark" title="" className="size-12 text-brand-heading" />
+          <DialogTitle className="font-heading text-3xl text-brand-heading sm:text-4xl">{title}</DialogTitle>
+          <DialogDescription className="max-w-[30ch] text-balance text-base">{description}</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 text-left [&_input]:h-12">{body}</div>
+      </div>
+    );
+  }
+
+  return (
+    <Card className="w-full max-w-sm rounded-3xl shadow-md">
+      <CardHeader>
+        <CardTitle className="text-3xl">{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>{body}</CardContent>
     </Card>
   );
 }

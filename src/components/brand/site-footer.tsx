@@ -31,6 +31,11 @@ export async function SiteFooter({ signedIn, flush = false }: { signedIn?: boole
               </Link>
             </li>
             <li>
+              <Link href="/create/event" className="underline-offset-4 decoration-brand-brass-bright hover:underline">
+                Host an event
+              </Link>
+            </li>
+            <li>
               <Link href="/help" className="underline-offset-4 decoration-brand-brass-bright hover:underline">
                 Help
               </Link>

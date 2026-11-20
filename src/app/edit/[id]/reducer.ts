@@ -19,6 +19,8 @@ export type EditorState = {
   hasPassword: boolean;
   rsvpMode: RsvpMode;
   notifyRsvps: boolean;
+  /** Hosted events: show and mail entry passes (QR codes). */
+  entryPasses: boolean;
   removeBranding: boolean;
   kind: EventKind;
   version: number;
@@ -67,6 +69,7 @@ export function editorStateFromEvent(event: Event): EditorState {
     hasPassword: event.has_password,
     rsvpMode: event.rsvp_mode,
     notifyRsvps: event.notify_rsvps,
+    entryPasses: event.entry_passes,
     removeBranding: event.remove_branding,
     version: event.version,
     content: event.content,

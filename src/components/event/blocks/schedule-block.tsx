@@ -68,7 +68,7 @@ function ItemLocation({ location, className }: { location: string; className?: s
 }
 
 /** "13:30" -> "1:30 PM", matching how the date block shows times. Anything that is not HH:MM is shown as typed. */
-function clockLabel(time: string): string {
+export function clockLabel(time: string): string {
   const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(time);
   if (!m) return time;
   return new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" }).format(

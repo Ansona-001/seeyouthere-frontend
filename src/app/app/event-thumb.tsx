@@ -2,7 +2,7 @@ import { EventView } from "@/components/event/event-view";
 import type { Block, Event, EventSummary } from "@/lib/api-types";
 import { serverApi } from "@/lib/server-api";
 
-import { OccasionTile } from "./occasion-art";
+import { OccasionTile } from "@/components/app-shell/occasion-art";
 
 // What a card preview draws after the hero: static, text-led sections only. Anything interactive (RSVP form, links,
 // wishes), media-heavy (gallery, video, photos) or live (guest photos) would be wasted work or nested interactive
@@ -17,7 +17,7 @@ const PREVIEW_SECTIONS = 2;
  */
 export async function EventThumb({ summary }: { summary: EventSummary }) {
   const result = await serverApi<{ event: Event }>(`/v1/events/${encodeURIComponent(summary.id)}`);
-  if (!result.ok) return <ThumbFrame><OccasionTile slug={summary.occasion_slug} className="size-full" /></ThumbFrame>;
+  if (!result.ok) return <ThumbFrame><OccasionTile slug={summary.occasion_slug} site={summary.kind === "hosted"} className="size-full" /></ThumbFrame>;
 
   const { event } = result.data;
   const hero = event.content.find((b) => b.type === "hero");

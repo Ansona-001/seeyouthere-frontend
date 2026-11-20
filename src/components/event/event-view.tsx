@@ -36,7 +36,7 @@ import { WishesBlock } from "./blocks/wishes-block";
 import { DecorationDivider } from "./decorations";
 import { EventFooter } from "./footer";
 import { EventLayoutShell } from "./layouts";
-import { SiteLayout, type SiteNavItem } from "./site-layout";
+import { SiteView } from "./site/site-view";
 import { IntroCover } from "./intro-cover";
 import { LoadGate } from "./load-gate";
 import { ScrollReveal } from "./scroll-reveal";
@@ -120,6 +120,44 @@ export function EventView({
   musicSrc,
   site = false,
 }: EventViewProps) {
+  const locationForSite = site ? content.find((block): block is LocationBlockType => block.type === "location") : undefined;
+  if (site) {
+    const calendarLocation = locationForSite ? [locationForSite.name, locationForSite.address].filter(Boolean).join(", ") : "";
+    return (
+      <SiteView
+        content={content}
+        theme={theme}
+        media={media}
+        mode={mode}
+        slug={slug}
+        title={title}
+        startsAt={startsAt}
+        endsAt={endsAt}
+        rsvp={rsvp}
+        photos={photos}
+        photosNextCursor={photosNextCursor}
+        wishes={wishes}
+        removeBranding={removeBranding}
+        renderFallback={(block) => (
+          <RenderBlock
+            block={block}
+            media={media}
+            mode={mode}
+            slug={slug}
+            startsAt={startsAt}
+            endsAt={endsAt}
+            title={title}
+            calendarLocation={calendarLocation}
+            rsvp={rsvp}
+            photos={photos}
+            photosNextCursor={photosNextCursor}
+            wishes={wishes}
+          />
+        )}
+      />
+    );
+  }
+
   const heroBlock = content.find((block): block is HeroBlockType => block.type === "hero");
   // Autumn themes show the date, time and "Add to Calendar" in the hero.
   const autumn = theme.layers?.some((l) => l.kind === "art" && STATIONERY_ART.has(l.art)) ?? false;
@@ -137,29 +175,11 @@ export function EventView({
   const heroEndsWithDivider =
     theme.engine !== 2 && Boolean(heroBlock) && theme.decoration !== "none" && !(theme.hero_style === "full_bleed" && heroImage);
 
-  // Website layout: one top-bar link per titled section (capped so the bar stays usable); the register button
-  // jumps to the RSVP section.
-  const siteNav: SiteNavItem[] = site
-    ? rest
-        .flatMap((block) => {
-          const label = "heading" in block && typeof block.heading === "string" ? block.heading.trim() : "";
-          return label && block.type !== "rsvp" ? [{ id: block.id, label }] : [];
-        })
-        .slice(0, 8)
-    : [];
-  const siteCtaId = site ? content.find((block) => block.type === "rsvp")?.id : undefined;
-  const siteLayout = (hero: ReactNode, children: ReactNode) => (
-    <SiteLayout title={title ?? ""} nav={siteNav} ctaId={siteCtaId} interactive={mode === "live"} hero={hero}>
-      {children}
-    </SiteLayout>
-  );
-
   const blocks = (
     <ScrollReveal enabled={mode === "live"}>
       {rest.map((block, index) => (
         <BlockSection
           key={block.id}
-          id={site ? `s-${block.id}` : undefined}
           divider={
             theme.engine === 2 ? (
               <DividerOrnament divider={theme.ornament?.divider} />
@@ -243,13 +263,9 @@ export function EventView({
         {mode === "live" && music && <ThemeMusic key={music} src={music} download={customMusic !== null} />}
         <LayerStack layers={theme.layers} region="page" foil={theme.foil} />
         <div className="flex-1" style={!slug && clearBottom ? { paddingBottom: clearBottom } : undefined}>
-          {site ? (
-            siteLayout(hero, blocks)
-          ) : (
-            <LayoutV2 layout={theme.layout} hero={hero}>
-              {blocks}
-            </LayoutV2>
-          )}
+          <LayoutV2 layout={theme.layout} hero={hero}>
+            {blocks}
+          </LayoutV2>
         </div>
         {slug && <EventFooter slug={slug} removeBranding={removeBranding} mode={mode} clearBottom={clearBottom} />}
       </ThemeRootV2>
@@ -266,13 +282,9 @@ export function EventView({
     {gate}
     <EventTheme theme={theme} mode={mode} className="flex min-h-dvh flex-col">
       <div className="flex-1">
-        {site ? (
-          siteLayout(v1Hero, blocks)
-        ) : (
-          <EventLayoutShell layout={theme.layout} hero={v1Hero}>
-            {blocks}
-          </EventLayoutShell>
-        )}
+        <EventLayoutShell layout={theme.layout} hero={v1Hero}>
+          {blocks}
+        </EventLayoutShell>
       </div>
       {slug && <EventFooter slug={slug} removeBranding={removeBranding} mode={mode} />}
     </EventTheme>
@@ -291,20 +303,16 @@ export function EventView({
  * `data-reveal="on"`.
  */
 function BlockSection({
-  id,
   children,
   divider,
   showDivider,
 }: {
-  /** Anchor for the website layout's top-bar links. */
-  id?: string;
   children: ReactNode;
   divider: ReactNode;
   showDivider: boolean;
 }) {
   return (
     <div
-      id={id}
       data-ev-reveal=""
       className={cn(
         "scroll-mt-28",

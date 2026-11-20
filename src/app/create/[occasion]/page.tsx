@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { Analytics } from "@/components/analytics";
 import { EmptyState } from "@/components/brand/empty-state";
 import { SiteFooter } from "@/components/brand/site-footer";
 import { SiteHeader } from "@/components/brand/site-header";
 import { Button } from "@/components/ui/button";
-import type { EventKind, OccasionsResponse, TemplatesResponse } from "@/lib/api-types";
+import type { OccasionsResponse, TemplatesResponse } from "@/lib/api-types";
 import { serverApi } from "@/lib/server-api";
 import { getCurrentUser } from "@/lib/session";
 
@@ -33,8 +33,8 @@ export async function generateMetadata({ params }: PageProps<"/create/[occasion]
  */
 export default async function CreateOccasionPage({ params, searchParams }: PageProps<"/create/[occasion]">) {
   const { occasion: occasionSlug } = await params;
-  // Only the literal "hosted" opts in, and only for the stage occasion; anything else is the default invite flow.
-  const kind: EventKind = (await searchParams).kind === "hosted" && occasionSlug === "function" ? "hosted" : "invite";
+  // Hosting has its own flow (/create/event); keep old "?kind=hosted" links working.
+  if ((await searchParams).kind === "hosted") redirect("/create/event");
 
   const [occasionsResult, templatesResult] = await Promise.all([
     serverApi<OccasionsResponse>("/v1/occasions", { cache: "force-cache", next: { revalidate: 300 } }),
@@ -91,7 +91,7 @@ export default async function CreateOccasionPage({ params, searchParams }: PageP
 
   return (
     <CreateShell wide>
-      <SetupWizard occasion={occasion} templates={templatesResult.data.templates} signedIn={signedIn} kind={kind} />
+      <SetupWizard occasion={occasion} templates={templatesResult.data.templates} signedIn={signedIn} />
       <OccasionInfo slug={occasionSlug} />
     </CreateShell>
   );

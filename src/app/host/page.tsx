@@ -8,21 +8,21 @@ import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Host an event",
-  description: "Register your event, invite guests, give each one an entry pass and scan them in at the door.",
+  description: "Build a website for your event with a programme and registration, then check guests in at the door.",
   alternates: { canonical: "/host" },
 };
 
 const STEPS = [
-  { title: "Register your event", body: "Design the stage event page your guests will see." },
+  { title: "Build your event website", body: "Add the about text, programme, venue and speakers as sections you can edit and reorder." },
   {
     title: "Share one link",
-    body: "Guests register, and we email each one their entry pass.",
+    body: "Guests register on your site, and we email each one a confirmation.",
   },
-  { title: "They get an entry pass", body: "Guests see a QR pass on the event page once they say they’re coming." },
-  { title: "Scan at the door", body: "Open Check-in on your phone, scan passes and see who has arrived." },
+  { title: "Optional entry passes", body: "Turn on QR entry passes if you want them. Guests see theirs on the event page once they register." },
+  { title: "Check guests in", body: "Open Check-in on your phone, scan passes or search the list, and see who has arrived." },
 ] as const;
 
-/** Entry point for hosts who want entry passes and door check-in. Hosting is limited to the "On stage" occasion. */
+/** Entry point for hosts who want an event website with registration and door check-in. */
 export default function HostPage() {
   return (
     <>
@@ -31,8 +31,7 @@ export default function HostPage() {
         <header>
           <h1 className="font-heading text-3xl text-brand-heading sm:text-5xl">Host an event</h1>
           <p className="mt-3 max-w-[48ch] text-base text-muted-foreground sm:text-lg">
-            Run the door as well as the invitation. Each guest gets an entry pass, and you check them in by scanning
-            it. Hosting is for stage events.
+            Give your conference, concert or gala its own website, take registrations, and check guests in at the door.
           </p>
         </header>
 
@@ -54,8 +53,8 @@ export default function HostPage() {
         </ol>
 
         <div>
-          <Button size="lg" render={<Link href="/create/function?kind=hosted" />} nativeButton={false}>
-            Host a stage event
+          <Button size="lg" render={<Link href="/create/event" />} nativeButton={false}>
+            Host an event
           </Button>
         </div>
       </main>

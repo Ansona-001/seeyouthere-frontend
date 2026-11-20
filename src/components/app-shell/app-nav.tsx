@@ -6,6 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Logo } from "@/components/brand/logo";
+
+import { CreateDialog } from "./create-dialog";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -51,6 +53,7 @@ export function AppNav() {
   const pathname = usePathname();
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const onDashboard = pathname === "/app";
 
@@ -80,15 +83,18 @@ export function AppNav() {
         <Logo variant="mark" title="" className="size-8" />
       </Link>
 
-      <Link
-        href="/create"
+      <button
+        type="button"
+        onClick={() => setCreateOpen(true)}
+        aria-haspopup="dialog"
         className="group flex min-h-11 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1 text-[0.6875rem] font-semibold text-brand-heading outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:mb-2 md:flex-none md:gap-1"
       >
         <span className="grid size-9 place-items-center rounded-full bg-primary text-primary-foreground shadow-sm transition-transform group-hover:scale-105 md:size-11 motion-reduce:transition-none">
           <Plus className="size-5" aria-hidden />
         </span>
         Create
-      </Link>
+      </button>
+      <CreateDialog open={createOpen} onOpenChange={setCreateOpen} />
 
       <NavItem href="/app" label="Home" icon={House} active={onDashboard} />
 

@@ -132,9 +132,6 @@ const DETAILS = [
 
 // Sits on the hero's occasion colour: `text-foreground`, `bg-accent` and `ring` resolve to that
 // occasion's pair there (see .landing-hero in globals.css).
-const navLink =
-  "inline-flex h-11 items-center rounded-full px-3 text-sm font-semibold text-foreground transition-colors duration-(--duration-fast) outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/60 motion-reduce:transition-none";
-
 const sectionTitle =
   "font-heading text-[clamp(2.3rem,5.5vw,4.25rem)] leading-[0.98] font-extrabold tracking-[-0.035em]";
 
@@ -229,24 +226,7 @@ export default function HomePage() {
           only the hero itself re-renders. */}
       <div data-landing-top data-occasion="wedding" className="flex flex-1 flex-col">
         <div className="landing-hero">
-          <SiteHeader
-            links={
-              <>
-                <a href="#designs" className={navLink}>
-                  Designs
-                </a>
-                <a href="#how" className={navLink}>
-                  How it works
-                </a>
-                <a href="#host" className={navLink}>
-                  Host an event
-                </a>
-                <Link href="/help" className={navLink}>
-                  Help
-                </Link>
-              </>
-            }
-          />
+          <SiteHeader />
         </div>
         <main className="flex flex-1 flex-col">
           <LandingHero />
@@ -425,7 +405,7 @@ export default function HomePage() {
                 ))}
               </ul>
               <div className="mt-7 flex flex-wrap items-center gap-3">
-                <Button size="lg" render={<Link href="/create/function?kind=hosted" />} nativeButton={false}>
+                <Button size="lg" render={<Link href="/create/event" />} nativeButton={false}>
                   Host an event
                 </Button>
                 <Link

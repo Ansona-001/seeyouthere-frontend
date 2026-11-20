@@ -124,6 +124,7 @@ function OwnerSettings({
   const [password, setPassword] = useState("");
   const [rsvpMode, setRsvpMode] = useState<RsvpMode>(state.rsvpMode);
   const [notifyRsvps, setNotifyRsvps] = useState(state.notifyRsvps);
+  const [entryPasses, setEntryPasses] = useState(state.entryPasses);
 
   useEffect(() => {
     if (slugLocked || slugInput.trim() === "" || slugInput.trim().toLowerCase() === (state.slug ?? "")) return;
@@ -161,6 +162,7 @@ function OwnerSettings({
       if (password) body.password = password;
       if (rsvpMode !== state.rsvpMode) body.rsvp_mode = rsvpMode;
       if (notifyRsvps !== state.notifyRsvps) body.notify_rsvps = notifyRsvps;
+      if (state.kind === "hosted" && entryPasses !== state.entryPasses) body.entry_passes = entryPasses;
 
       const { event } = await api<{ event: Event }>(`/v1/events/${state.id}/settings`, { method: "PATCH", json: body });
       dispatch({ type: "applied", event, templateSlug: event.template.slug });
@@ -324,6 +326,18 @@ function OwnerSettings({
             </SelectContent>
           </Select>
         </div>
+
+        {state.kind === "hosted" && (
+          <div className="grid gap-1">
+            <div className="flex items-center gap-3">
+              <Switch id="settings-passes" checked={entryPasses} onCheckedChange={setEntryPasses} />
+              <Label htmlFor="settings-passes" className="min-h-11">Give guests an entry pass (QR code)</Label>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Turn this off if you only need registration: no QR code on the page or in emails.
+            </p>
+          </div>
+        )}
 
         <div className="flex items-center gap-3">
           <Switch id="settings-notify" checked={notifyRsvps} onCheckedChange={setNotifyRsvps} />

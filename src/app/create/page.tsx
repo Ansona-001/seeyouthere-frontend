@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { Analytics } from "@/components/analytics";
 import { EmptyState } from "@/components/brand/empty-state";
 import { SiteFooter } from "@/components/brand/site-footer";
 import { SiteHeader } from "@/components/brand/site-header";
+import { Button } from "@/components/ui/button";
 import type { OccasionsResponse } from "@/lib/api-types";
 import { serverApi } from "@/lib/server-api";
 
@@ -44,6 +46,24 @@ export default async function CreatePage() {
         ) : (
           <OccasionCoverflow occasions={result.data.occasions} />
         )}
+
+        <aside
+          aria-labelledby="host-cta-title"
+          className="mx-auto mt-2 flex w-full max-w-2xl flex-col items-center gap-3 rounded-2xl bg-card p-5 text-center ring-1 ring-border sm:flex-row sm:text-left"
+        >
+          <div className="flex-1">
+            <h2 id="host-cta-title" className="font-heading text-xl text-brand-heading">
+              Running a conference, concert or gala?
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Host an event instead: a full website with a programme, registration and door check-in. It&rsquo;s
+              separate from invitations.
+            </p>
+          </div>
+          <Button variant="outline" render={<Link href="/create/event" />} nativeButton={false}>
+            Host an event
+          </Button>
+        </aside>
       </main>
       <SiteFooter />
       <Analytics />

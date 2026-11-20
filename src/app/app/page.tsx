@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { HOST_OPTION, INVITE_OPTIONS, type CreateOption } from "@/components/app-shell/create-options";
+import { OccasionTile } from "@/components/app-shell/occasion-art";
 import { EmptyState } from "@/components/brand/empty-state";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -14,7 +16,6 @@ import { cn } from "@/lib/utils";
 import { EventThumb, ThumbFrame } from "./event-thumb";
 import { EventsList } from "./events-list";
 import { ItemActions } from "./item-actions";
-import { OccasionTile } from "./occasion-art";
 import { ScrollRow } from "./scroll-row";
 
 export const metadata: Metadata = { title: "Your invites and events" };
@@ -57,7 +58,7 @@ const TABS: readonly Tab[] = [
     key: "events",
     kind: "hosted",
     label: "Events",
-    createHref: "/create/function?kind=hosted",
+    createHref: "/create/event",
     createLabel: "Host an event",
     emptyTitle: "No events yet",
     emptyBody: "Host a conference, concert or gala: a full event website with registration and door check-in.",
@@ -65,16 +66,8 @@ const TABS: readonly Tab[] = [
   },
 ];
 
-// One-tap starts for the home view: the occasions behind /create/[slug], plus hosting.
-const QUICK_START = [
-  { slug: "wedding", label: "Wedding", href: "/create/wedding" },
-  { slug: "birthday", label: "Birthday", href: "/create/birthday" },
-  { slug: "baby-shower", label: "Baby shower", href: "/create/baby-shower" },
-  { slug: "housewarming", label: "Housewarming", href: "/create/housewarming" },
-  { slug: "engagement", label: "Engagement", href: "/create/engagement" },
-  { slug: "party", label: "Party", href: "/create/party" },
-  { slug: "function", label: "Host an event", href: "/create/function?kind=hosted" },
-] as const;
+// One-tap starts for the home view: the invitation occasions (the stage one is on the Create popup), plus hosting.
+const QUICK_START: readonly CreateOption[] = [...INVITE_OPTIONS.filter((o) => o.slug !== "function"), HOST_OPTION];
 
 const kindQuery = (kind: EventKind | null) => (kind ? `&kind=${kind}` : "");
 
@@ -111,6 +104,7 @@ async function HomeView({ filter }: { filter: Tab }) {
               >
                 <OccasionTile
                   slug={q.slug}
+                  site={q.site}
                   className="size-16 rounded-full shadow-sm ring-1 ring-foreground/10 transition-transform group-hover:-translate-y-0.5 motion-reduce:transition-none"
                 />
                 <span className="leading-tight">{q.label}</span>
@@ -191,7 +185,7 @@ function RecentCard({ event: e }: { event: EventSummary }) {
       <Suspense
         fallback={
           <ThumbFrame>
-            <OccasionTile slug={e.occasion_slug} className="size-full" />
+            <OccasionTile slug={e.occasion_slug} site={e.kind === "hosted"} className="size-full" />
           </ThumbFrame>
         }
       >
