@@ -1,10 +1,13 @@
 "use client";
 
-import { LayoutListIcon, MonitorIcon, PaletteIcon, Settings2Icon, SmartphoneIcon, XIcon } from "lucide-react";
+import { LayoutListIcon, MonitorIcon, PaletteIcon, PlayIcon, Settings2Icon, SmartphoneIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useReducer, useRef, useState } from "react";
 
 import { EventView } from "@/components/event/event-view";
+import { IntroCover } from "@/components/event/intro-cover";
+import { INTROS } from "@/components/event/theme-engine/intros";
+import { ownKey } from "@/components/event/theme-engine/safe";
 import { ShareLinks } from "@/components/share-links";
 import { paymentRequiredDetails, UnlockDesignDialog } from "@/components/unlock-design-dialog";
 import { Button } from "@/components/ui/button";
@@ -49,6 +52,7 @@ export function Editor({
   // The side panel (a bottom sheet on phones); null = closed so the preview has the whole stage.
   const [panel, setPanel] = useState<PanelId | null>("pages");
   const [device, setDevice] = useState<Device>("desktop");
+  const [openingPreview, setOpeningPreview] = useState(false);
   // Set when switching a published event to a premium design that isn't unlocked yet.
   // `switching` = the target is a different design than the event's current one (cannot be unlocked while live).
   const [unlock, setUnlock] = useState<{ name: string; details: PaymentRequiredDetails; retry: () => Promise<boolean>; switching?: boolean } | null>(null);
@@ -323,6 +327,7 @@ export function Editor({
   // The editor is pinned to the window so the page itself never scrolls; only the preview and the
   // side panel do. Anything in a theme that overflows is clipped here.
   const panelTitle = PANELS.find((p) => p.id === panel)?.label;
+  const introKey = state.theme.engine === 2 ? ownKey(INTROS, state.theme.intro) : null;
   return (
     <div className="fixed inset-0 flex flex-col bg-background">
       <EditorTopBar
@@ -335,7 +340,8 @@ export function Editor({
       />
 
       <div className="relative flex min-h-0 flex-1">
-        <div className="min-w-0 flex-1 overflow-y-auto overscroll-contain bg-muted/50 [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:var(--border)_transparent]">
+        <div className="relative min-w-0 flex-1">
+        <div className="h-full overflow-y-auto overscroll-contain bg-muted/50 [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:var(--border)_transparent]">
           <div
             className={cn(
               "mx-auto transition-[max-width] duration-(--duration-fast) motion-reduce:transition-none",
@@ -355,6 +361,31 @@ export function Editor({
               wishes={wishesEnabled ? approvedWishes : undefined}
             />
           </div>
+        </div>
+        {introKey && !openingPreview && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="absolute top-3 right-5 z-30 shadow-md"
+            onClick={() => setOpeningPreview(true)}
+          >
+            <PlayIcon data-icon="inline-start" />
+            Preview opening
+          </Button>
+        )}
+        {introKey && openingPreview && (
+          <div className="pointer-events-none absolute inset-0 flex justify-center overflow-hidden">
+            <div
+              className={cn(
+                "pointer-events-auto relative h-full w-full [container-type:size]",
+                device === "mobile" && "my-4 h-[calc(100%-2rem)] max-w-[390px] overflow-hidden rounded-[2rem]",
+              )}
+            >
+              <IntroCover intro={introKey} theme={state.theme} onPreviewDone={() => setOpeningPreview(false)} />
+            </div>
+          </div>
+        )}
         </div>
 
         <aside

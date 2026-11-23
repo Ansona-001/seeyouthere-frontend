@@ -31,7 +31,9 @@ function settled(img: HTMLImageElement) {
  * if scripts never run (and with `noscript`, and under `prefers-reduced-motion`). It sits outside the theme root,
  * which is a size container, so its theme variables are applied on its own root.
  */
-export function IntroCover({ intro, theme }: { intro: IntroKey; theme: Theme }) {
+export function IntroCover({ intro, theme, onPreviewDone }: { intro: IntroKey; theme: Theme; onPreviewDone?: () => void }) {
+  // Editor preview: the cover fills its positioned parent instead of the window, locks nothing, and reports back once it has opened.
+  const preview = onPreviewDone !== undefined;
   const ref = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const ready = useRef<Promise<void> | null>(null);
@@ -44,6 +46,15 @@ export function IntroCover({ intro, theme }: { intro: IntroKey; theme: Theme }) 
     const el = ref.current;
     // A tap handled before this effect already opened the card: never lock the page behind it afterwards.
     if (!el || opened.current) return;
+    if (preview) {
+      el.setAttribute("data-js", "");
+      el.setAttribute("data-ready", "");
+      const pending = timers.current;
+      return () => {
+        pending.forEach(clearTimeout);
+        pending.length = 0;
+      };
+    }
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || getComputedStyle(el).visibility === "hidden") {
       setGone(true);
       return;
@@ -77,13 +88,18 @@ export function IntroCover({ intro, theme }: { intro: IntroKey; theme: Theme }) 
       root?.removeAttribute("inert");
       html.style.overflow = previousOverflow;
     };
-  }, []);
+  }, [preview]);
 
   function open() {
     if (opened.current) return;
     opened.current = true;
     const el = ref.current;
     const pending = timers.current;
+    if (preview) {
+      el?.setAttribute("data-open", "");
+      pending.push(setTimeout(onPreviewDone, OPEN_MS));
+      return;
+    }
     const wait = new Promise<void>((resolve) => pending.push(setTimeout(resolve, OPEN_WAIT_MS)));
     void Promise.race([ready.current ?? Promise.resolve(), wait]).then(() => {
       if (!el?.isConnected) return;
@@ -118,7 +134,7 @@ export function IntroCover({ intro, theme }: { intro: IntroKey; theme: Theme }) 
       <noscript>
         <style>{".ev-intro{display:none!important}"}</style>
       </noscript>
-      <div ref={ref} className="ev-intro" data-state="idle" style={style} role="dialog" aria-modal="true" aria-label="Your invitation">
+      <div ref={ref} className={preview ? "ev-intro ev-intro-contained" : "ev-intro"} data-state="idle" style={style} role="dialog" aria-modal={preview ? undefined : "true"} aria-label="Your invitation">
         <div className="ev-intro-panel ev-intro-panel-l" aria-hidden="true">
           {/* eslint-disable-next-line @next/next/no-img-element -- constant decorative artwork, sized by CSS */}
           <img className="ev-intro-strand" src={art.strand.src} width={art.strand.width} height={art.strand.height} alt="" loading="eager" decoding="async" />

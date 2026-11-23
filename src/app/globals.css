@@ -950,6 +950,8 @@
   .ev-intro .ev-intro-strand-r { animation-duration: 7.3s; animation-delay: -3.1s; }
   [data-ev-engine="2"][data-ev-intro-open] .ev-rise { animation: ev-rise-again .9s var(--ease-out) calc(.6s + var(--i, 0) * 160ms) both; }
 }
+/* Editor preview: fills the positioned frame around the preview (not the window) and is shown even under reduced motion, since the author asked for it. */
+.ev-intro-contained { position: absolute; z-index: 20; --intro-bow-w: min(50cqw, 40cqh, 480px); }
 @media (prefers-reduced-motion: reduce) {
-  .ev-intro { display: none; }
+  .ev-intro:not(.ev-intro-contained) { display: none; }
 }
