@@ -544,6 +544,9 @@
   --occasion-party-on: oklch(0.208 0.061 303.9); /* #1E0F2E */
   --occasion-function: oklch(0.391 0.125 17.9); /* #7A1F2B Curtain */
   --occasion-function-on: oklch(0.962 0.038 83.8); /* #FFF1D6 */
+  /* Hosted events (the mini-website tile): teal, distinct from every invite occasion above. */
+  --occasion-site: oklch(0.46 0.085 215); /* ~#0F5E6B Deep teal */
+  --occasion-site-on: oklch(0.965 0.022 200); /* ~#E8F6F6 */
   --envelope: oklch(0.970 0.031 84.6); /* #FFF4DE */
   --envelope-shade: oklch(0.891 0.048 83.9); /* #EAD9B8 Inside of the envelope */
 }
@@ -574,6 +577,10 @@
 [data-occasion="function"] {
   --ground: var(--occasion-function);
   --on: var(--occasion-function-on);
+}
+[data-occasion="site"] {
+  --ground: var(--occasion-site);
+  --on: var(--occasion-site-on);
 }
 
 @layer components {

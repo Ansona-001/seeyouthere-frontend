@@ -6,7 +6,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 const ARROW =
-  "absolute top-1/2 z-10 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-card text-brand-heading shadow-md ring-1 ring-foreground/10 outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50";
+  // top-9 = the centre of the 4rem tile circle (0.25rem link padding + 2rem), so the arrows line up with the circles, not the labels.
+  "absolute top-9 z-10 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-card text-brand-heading shadow-md ring-1 ring-foreground/10 outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50";
 
 /**
  * A horizontally scrolling row of `<li>`s with round arrow buttons that appear on whichever side has more to show,

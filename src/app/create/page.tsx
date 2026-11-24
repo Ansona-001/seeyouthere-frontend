@@ -47,6 +47,13 @@ export default async function CreatePage() {
           <OccasionCoverflow occasions={result.data.occasions} />
         )}
 
+        <p className="text-center text-sm text-muted-foreground">
+          Want to see the looks first?{" "}
+          <Link href="/designs" className="font-medium text-brand-heading underline underline-offset-4 decoration-brand-brass-bright">
+            Browse all designs
+          </Link>
+        </p>
+
         <aside
           aria-labelledby="host-cta-title"
           className="mx-auto mt-2 flex w-full max-w-2xl flex-col items-center gap-3 rounded-2xl bg-card p-5 text-center ring-1 ring-border sm:flex-row sm:text-left"

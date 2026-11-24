@@ -23,8 +23,8 @@ export async function SiteFooter({ signedIn, flush = false }: { signedIn?: boole
         <Link href="/" aria-label="See You There, home" className="w-fit rounded-md">
           <Logo title="" className="h-7" />
         </Link>
-        <nav aria-label="Footer">
-          <ul className="flex flex-wrap gap-x-6 gap-y-2 text-[0.9375rem]">
+        <nav aria-label="Footer" className="min-w-0 max-w-full overflow-x-auto [scrollbar-width:none] sm:overflow-visible [&::-webkit-scrollbar]:hidden">
+          <ul className="flex gap-x-6 text-[0.9375rem] whitespace-nowrap sm:flex-wrap sm:gap-y-2">
             <li>
               <Link href="/create" className="underline-offset-4 decoration-brand-brass-bright hover:underline">
                 Create an invite

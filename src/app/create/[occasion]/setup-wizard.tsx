@@ -10,15 +10,16 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { api, ApiError, type Event } from "@/lib/api";
 import type { Occasion, TemplateSummary } from "@/lib/api-types";
+import { chooseTemplate } from "@/lib/template-choice";
 
 // A visitor who isn't signed in keeps their answers across the login redirect in sessionStorage
 // (this tab only, cleared on restore). Everything read back is re-validated against the live
 // question list, since storage is attacker-editable.
 const DRAFT_KEY = "syt:create-draft";
 
-type Restored = { answers: Record<string, string> };
+type Restored = { answers: Record<string, string>; template: string | null };
 
-type SavedDraft = { occasion: string; answers: Record<string, string> };
+type SavedDraft = { occasion: string; answers: Record<string, string>; template: string };
 
 function saveDraft(draft: SavedDraft) {
   try {
@@ -47,12 +48,12 @@ function clearDraft() {
 const noopSubscribe = () => () => {};
 
 /** Parses and validates a saved draft against the live occasion; null if anything is off. */
-function restoreDraft(raw: string | null, occasion: Occasion): Restored | null {
+function restoreDraft(raw: string | null, occasion: Occasion, templates: readonly TemplateSummary[]): Restored | null {
   if (!raw) return null;
   try {
     const d: unknown = JSON.parse(raw);
     if (typeof d !== "object" || d === null) return null;
-    const { occasion: o, answers } = d as Record<string, unknown>;
+    const { occasion: o, answers, template } = d as Record<string, unknown>;
     if (o !== occasion.slug) return null;
     if (typeof answers !== "object" || answers === null || Array.isArray(answers)) return null;
     const restored: Record<string, string> = {};
@@ -60,7 +61,9 @@ function restoreDraft(raw: string | null, occasion: Occasion): Restored | null {
       const v = (answers as Record<string, unknown>)[q.key];
       if (typeof v === "string" && v.length <= 500) restored[q.key] = v;
     }
-    return { answers: restored };
+    // Only a template that is on offer for this occasion survives; anything else falls back to the default.
+    const known = typeof template === "string" && templates.some((t) => t.slug === template);
+    return { answers: restored, template: known ? template : null };
   } catch {
     return null;
   }
@@ -77,10 +80,13 @@ function restoreDraft(raw: string | null, occasion: Occasion): Restored | null {
 export function SetupWizard(props: { occasion: Occasion; templates: TemplateSummary[]; signedIn: boolean }) {
   // Coming back from login (?resume=1): restore what the visitor had picked and land on the
   // design step. The server renders without it, so the saved choices are read client-side.
-  const resume = useSearchParams().get("resume") === "1";
+  const params = useSearchParams();
+  const resume = params.get("resume") === "1";
   const raw = useSyncExternalStore(noopSubscribe, () => (resume && props.signedIn ? readDraft() : null), () => null);
-  const initial = restoreDraft(raw, props.occasion);
-  return <SetupWizardInner key={initial ? "restored" : "fresh"} {...props} initial={initial} />;
+  const initial = restoreDraft(raw, props.occasion, props.templates);
+  // ?template=<slug> from the design gallery; the inner component checks it against the offered templates.
+  const requestedTemplate = params.get("template");
+  return <SetupWizardInner key={initial ? "restored" : "fresh"} {...props} initial={initial} requestedTemplate={requestedTemplate} />;
 }
 
 function SetupWizardInner({
@@ -88,11 +94,13 @@ function SetupWizardInner({
   templates,
   signedIn,
   initial,
+  requestedTemplate,
 }: {
   occasion: Occasion;
   templates: TemplateSummary[];
   signedIn: boolean;
   initial: Restored | null;
+  requestedTemplate: string | null;
 }) {
   const router = useRouter();
   const hasQuestions = occasion.setup_questions.length > 0;
@@ -105,8 +113,9 @@ function SetupWizardInner({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // The look is chosen in the editor; new events start from the occasion's first free template.
-  const template = templates.find((t) => !t.is_premium) ?? templates[0];
+  // The look can be changed in the editor. New events start from the design picked in the gallery (kept
+  // through the login round trip), else the occasion's first free template.
+  const template = chooseTemplate(templates, requestedTemplate, initial?.template);
 
   const browserTimezone = useMemo(() => {
     try {
@@ -155,7 +164,7 @@ function SetupWizardInner({
       if (value) finalAnswers[q.key] = value;
     }
     if (!signedIn) {
-      saveDraft({ occasion: occasion.slug, answers: finalAnswers });
+      saveDraft({ occasion: occasion.slug, answers: finalAnswers, template: template.slug });
       const back = `/create/${occasion.slug}?resume=1`;
       router.push(`/login?next=${encodeURIComponent(back)}`);
       return;

@@ -66,8 +66,8 @@ const TABS: readonly Tab[] = [
   },
 ];
 
-// One-tap starts for the home view: the invitation occasions (the stage one is on the Create popup), plus hosting.
-const QUICK_START: readonly CreateOption[] = [...INVITE_OPTIONS.filter((o) => o.slug !== "function"), HOST_OPTION];
+// One-tap starts for the home view: every invitation occasion (On stage included), plus hosting.
+const QUICK_START: readonly CreateOption[] = [...INVITE_OPTIONS, HOST_OPTION];
 
 const kindQuery = (kind: EventKind | null) => (kind ? `&kind=${kind}` : "");
 

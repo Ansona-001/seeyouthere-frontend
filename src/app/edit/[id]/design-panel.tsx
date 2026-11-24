@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import type { EventPremium, Overrides, Palette, TemplateSummary } from "@/lib/api-types";
 import { fontCssVar } from "@/lib/fonts";
+import { templatePreviewSrc } from "@/lib/template-preview";
 import { cn } from "cn";
 
 const CHOICE =
@@ -170,31 +171,6 @@ function PaletteSwatch({
   );
 }
 
-/** Slugs that ship a preview at public/templates/<slug>.webp; anything else (e.g. admin-created) gets a swatch. */
-const PREVIEW_SLUGS: ReadonlySet<string> = new Set([
-  "olive-grove", "letterpress", "velvet-foil", "sunlit", "sprinkles", "risograph",
-  "cloud-nine", "gingham", "open-door", "terrazzo", "gilt-noir", "mirror-ball",
-  "heirloom", "confetti", "classic", "garden", "modern", "minimal", "mimosa", "harvest", "marigold", "wildflower",
-  "clothesline", "welcome-home", "lovebirds", "fizz", "glitterball",
-  "nocturne", "silk-knot", "candlelight", "lullaby", "lit-window", "afterglow", "wisteria",
-]);
-
-/**
- * Occasion-specific previews at public/templates/<slug>--<occasion>.webp for the
- * v1 templates. Keys are a static allowlist: the occasion comes from
- * the event, so it is never interpolated into a URL unless it is listed here.
- */
-const OCCASION_PREVIEWS: ReadonlySet<string> = new Set([
-  ...["wedding", "engagement", "birthday", "baby-shower", "housewarming", "party"].flatMap((o) => [
-    `classic--${o}`,
-    `modern--${o}`,
-    `minimal--${o}`,
-  ]),
-  ...["birthday", "party", "baby-shower", "housewarming"].map((o) => `confetti--${o}`),
-  ...["wedding", "engagement", "baby-shower"].map((o) => `garden--${o}`),
-  ...["wedding", "engagement"].map((o) => `heirloom--${o}`),
-]);
-
 /** Template option: a preview of the full invite (or a palette/font swatch when none exists), plus its name. */
 function TemplateCard({
   template,
@@ -213,8 +189,7 @@ function TemplateCard({
 }) {
   const palette = template.palettes.find((p) => p.id === template.defaults.palette) ?? template.palettes[0];
   const font = template.fonts.find((f) => f.id === template.defaults.font) ?? template.fonts[0];
-  const variant = `${template.slug}--${occasionSlug}`;
-  const previewSrc = OCCASION_PREVIEWS.has(variant) ? `/templates/${variant}.webp` : `/templates/${template.slug}.webp`;
+  const previewSrc = templatePreviewSrc(template.slug, occasionSlug);
   return (
     <button
       type="button"
@@ -224,7 +199,7 @@ function TemplateCard({
       className={cn(CHOICE, "flex flex-col items-stretch gap-2 rounded-2xl p-2", selected ? CHOICE_ON : CHOICE_OFF)}
     >
       <span className="relative block">
-        {PREVIEW_SLUGS.has(template.slug) ? (
+        {previewSrc ? (
           // Decorative: the name caption below already identifies the template.
           <Image
             src={previewSrc}
