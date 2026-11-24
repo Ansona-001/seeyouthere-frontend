@@ -542,6 +542,16 @@
   );
   opacity: 0.9;
 }
+.ev-life-halo {
+  position: absolute;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(255 230 160 / 0.55), rgb(255 200 110 / 0.18) 50%, transparent);
+  opacity: 0.6;
+}
+.ev-life-halo[data-pink] {
+  background: radial-gradient(closest-side, rgb(255 205 220 / 0.5), rgb(240 150 180 / 0.16) 50%, transparent);
+}
 .ev-life-mist,
 .ev-life-glint,
 .ev-life-beam,
@@ -554,6 +564,10 @@
   55% { opacity: 0.78; scale: 0.97; }
   80% { opacity: 1; scale: 1.05; }
   100% { opacity: 0.72; scale: 0.96; }
+}
+@keyframes ev-life-breathe {
+  from { opacity: 0.3; scale: 0.92; }
+  to { opacity: 0.85; scale: 1.06; }
 }
 @keyframes ev-life-rise {
   from { translate: 0 6%; }
@@ -592,6 +606,10 @@
 @media (prefers-reduced-motion: no-preference) {
   .ev-life-push {
     animation: ev-life-push 40s ease-in-out infinite alternate;
+  }
+  .ev-life-halo {
+    animation: ev-life-breathe 5.5s ease-in-out infinite alternate;
+    animation-delay: calc(var(--i, 0) * -1.9s);
   }
   .ev-life-lamp {
     animation: ev-life-lamp 2.3s ease-in-out infinite alternate;

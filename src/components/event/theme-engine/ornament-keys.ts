@@ -159,7 +159,7 @@ const CLEARANCE: Record<string, { top?: number; topFluid?: number; bottom?: numb
  * Page art that frames the first screen (Temple Pond's arch, pillars and temple): the page opens on one card as tall
  * as the screen with the hero in the window between the arch and the temple; every other section follows below.
  */
-export const FRAMED_ART: ReadonlySet<string> = new Set(["temple_pond_page"]);
+export const FRAMED_ART: ReadonlySet<string> = new Set(["temple_pond_page", "lotus_velvet", "ganesha_mandapam"]);
 /**
  * The landscape painting a framed theme fills a wide screen with instead of its portrait art, as a Tailwind class
  * (a background image, so a phone never downloads it). Written out in full so Tailwind generates it; constant
@@ -167,6 +167,51 @@ export const FRAMED_ART: ReadonlySet<string> = new Set(["temple_pond_page"]);
  */
 export const FRAMED_WIDE: Record<string, string> = {
   temple_pond_page: "bg-[url(/themes/temple-pond-wide.webp)]",
+  lotus_velvet: "bg-[url(/themes/lotus-velvet-wide.webp)]",
+};
+/**
+ * Framed art painted on a plain wall the theme's paper matches (Ganesha Mandapam): instead of a landscape copy, a wide
+ * screen keeps the portrait card and fades its sides into the paper, so the wall reads as one across the screen.
+ */
+export const FRAMED_BLEND: ReadonlySet<string> = new Set(["ganesha_mandapam"]);
+/**
+ * Framed art that is the background of the whole page rather than of the first screen (Lotus Velvet): the painting
+ * stays put while the hero and every section scroll by in a column beside the art. The value is that column's padding,
+ * as Tailwind classes (written out in full): on a phone the lotuses climb the left 40% of the portrait, so the column
+ * runs to their right; the landscape copy has them at both edges, so there it is centred between them.
+ */
+export const FRAMED_SCROLL: Record<string, string> = {
+  lotus_velvet: "pr-[4%] pl-[40%] @min-[900px]/ev:landscape:px-[16%]",
+};
+
+/** Padding that keeps a framed hero inside its painting's open space, as Tailwind classes (written out in full). */
+export type FramedWindow = {
+  /** On a phone. `cqi` is a share of the card width; the screen-height forms are for the live page and the editor. */
+  portrait: { live: string; preview: string };
+  /** On a wide landscape screen (from 900px), over the landscape painting (only for keys in FRAMED_WIDE). */
+  wide?: { live: string; preview: string };
+};
+
+/**
+ * Per framed art key. Temple Pond: between the arch (46% of the card width down) and the temple (50% up), and between
+ * 15% and 57% of the height of the landscape. Ganesha Mandapam: below Ganesha (24% down) and above
+ * the lotus bowl on the floor.
+ */
+export const FRAMED_WINDOW: Record<string, FramedWindow> = {
+  temple_pond_page: {
+    portrait: { live: "pt-[46cqi] pb-[50cqi]", preview: "pt-[46cqi] pb-[50cqi]" },
+    wide: {
+      live: "@min-[900px]/ev:landscape:pt-[15dvh] @min-[900px]/ev:landscape:pb-[43dvh]",
+      preview:
+        "@min-[900px]/ev:landscape:pt-[calc(max(480px,calc(100dvh-11rem))*0.15)] @min-[900px]/ev:landscape:pb-[calc(max(480px,calc(100dvh-11rem))*0.43)]",
+    },
+  },
+  ganesha_mandapam: {
+    portrait: {
+      live: "pt-[24dvh] pb-[18dvh]",
+      preview: "pt-[calc(max(480px,calc(100dvh-11rem))*0.24)] pb-[calc(max(480px,calc(100dvh-11rem))*0.18)]",
+    },
+  },
 };
 
 /** Art keys of the stationery-style themes (Harvest, Marigold): a hero that opens the page and cards drawn as flat paper tags. */

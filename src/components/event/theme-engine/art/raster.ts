@@ -64,6 +64,31 @@ export function makeRasterTop(spec: {
 }
 
 /**
+ * One bundled painting covering the whole page (placement `page` only), cropped to fill it, for the framed themes
+ * whose first screen is a single portrait picture (../ornament-keys.ts, FRAMED_ART). `src` is a constant same-origin
+ * file under `public/`, never user input. Not animated itself; art/frame-life.tsx draws the life over it.
+ */
+export function makeRasterCover(spec: { src: string; width: number; height: number }): (props: ArtProps) => ReactElement | null {
+  return function RasterCover({ placement }: ArtProps) {
+    if (placement !== "page") return null;
+    return createElement(
+      "div",
+      { className: "absolute inset-0", "aria-hidden": "true" },
+      createElement("img", {
+        src: spec.src,
+        alt: "",
+        width: spec.width,
+        height: spec.height,
+        decoding: "async",
+        loading: "eager",
+        fetchPriority: "high",
+        className: "block size-full object-cover",
+      }),
+    );
+  };
+}
+
+/**
  * A bundled raster page background (placement `page` only): a tiled watercolour wash with painted
  * leaf band mirrored along the bottom edge of the page (the top edge belongs to the `top` band). Every `src` is a constant
  * same-origin file under `public/`, never user input. Not animated.

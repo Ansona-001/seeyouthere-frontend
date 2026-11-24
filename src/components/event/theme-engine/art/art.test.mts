@@ -40,6 +40,8 @@ const BACKEND: Record<string, { min: number; max: number; foil: boolean; placeme
   glitterball_page: { min: 0, max: 0, foil: false, placements: ["page"] },
   temple_pond: { min: 0, max: 0, foil: false, placements: ["top"] },
   temple_pond_page: { min: 0, max: 0, foil: false, placements: ["page"] },
+  lotus_velvet: { min: 0, max: 0, foil: false, placements: ["page"] },
+  ganesha_mandapam: { min: 0, max: 0, foil: false, placements: ["page"] },
   doodles: { min: 2, max: 4, foil: false, placements: ["scatter", "edges"] },
   clothesline: { min: 3, max: 5, foil: false, placements: ["top"] },
   little_house: { min: 4, max: 6, foil: false, placements: ["hero_top"] },
@@ -57,7 +59,7 @@ const PALETTE = ["#112233", "#445566", "#778899", "#AABBCC", "#DDEEFF", "#102030
 
 // React 19 hoists a preload hint for a raster's constant src; it is the only markup outside the layer box.
 // Rasters: one constant same-origin <img>-based layer each, no SVG.
-const RASTER_KEYS: ReadonlySet<string> = new Set(["mimosa", "wisteria", "autumn", "autumn_page", "marigold", "marigold_page", "wildflower", "wildflower_page", "glitterball", "glitterball_page", "temple_pond", "temple_pond_page"]);
+const RASTER_KEYS: ReadonlySet<string> = new Set(["mimosa", "wisteria", "autumn", "autumn_page", "marigold", "marigold_page", "wildflower", "wildflower_page", "glitterball", "glitterball_page", "temple_pond", "temple_pond_page", "lotus_velvet", "ganesha_mandapam"]);
 const PRELOAD_LINK = /<link rel="preload"[^>]*\/>/g;
 function render(key: string, placement: string, colors: readonly string[], extra: Record<string, unknown> = {}): string {
   return renderToStaticMarkup(createElement(ART[key], { placement, colors, region: "page", density: "dense", ...extra })).replace(PRELOAD_LINK, "");
@@ -317,6 +319,17 @@ test("temple_pond is one constant same-origin raster band, a pillar per side and
   for (const html of [top, page]) assert.ok(!/<script|<svg|\bhref\b|\bon\w+=|style=|ev-sway/i.test(html), html);
   for (const placement of ALL_PLACEMENTS.filter((p) => p !== "top")) assert.equal(render("temple_pond", placement, []), "", placement);
   for (const placement of ALL_PLACEMENTS.filter((p) => p !== "page")) assert.equal(render("temple_pond_page", placement, []), "", placement);
+});
+
+test("lotus_velvet and ganesha_mandapam are one constant same-origin painting covering the page, never animated", () => {
+  for (const [key, file] of [["lotus_velvet", "lotus-velvet"], ["ganesha_mandapam", "ganesha-mandapam"]] as const) {
+    const page = render(key, "page", []);
+    assert.equal(count(page, /<img\b/g), 1, key);
+    assert.match(page, new RegExp(`<img src="/themes/${file}\\.webp" alt="" width="736" height="1308" `), key);
+    assert.match(page, /object-cover/, key);
+    assert.ok(!/<script|<svg|\bhref\b|\bon\w+=|style=|ev-sway/i.test(page), page);
+    for (const placement of ALL_PLACEMENTS.filter((p) => p !== "page")) assert.equal(render(key, placement, []), "", `${key} ${placement}`);
+  }
 });
 
 test("wildflower is one constant same-origin raster band and its bottom flowers one upright image, never animated", () => {

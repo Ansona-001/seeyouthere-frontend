@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 
 import { makeArt } from "./layout.ts";
-import { makeRasterPage, makeRasterTop } from "./raster.ts";
+import { makeRasterCover, makeRasterPage, makeRasterTop } from "./raster.ts";
 import * as balloons from "./shapes/balloons.ts";
 import * as botanicalWash from "./shapes/botanical_wash.ts";
 import * as candles from "./shapes/candles.ts";
@@ -197,6 +197,9 @@ export const ART: Record<string, ComponentType<ArtProps>> = {
     bottom: { src: "/themes/temple-pond-bottom.webp", width: 736, height: 414, flip: false },
     sides: { src: "/themes/temple-pond-pillar.webp", width: 72, height: 105 },
   }),
+  // Lotus Velvet and Ganesha Mandapam: one portrait painting each, covering the framed first screen.
+  lotus_velvet: makeRasterCover({ src: "/themes/lotus-velvet.webp", width: 736, height: 1308 }),
+  ganesha_mandapam: makeRasterCover({ src: "/themes/ganesha-mandapam.webp", width: 736, height: 1308 }),
   autumn_page: makeRasterPage({
     wash: "/themes/autumn-wash.webp",
     bottom: { src: "/themes/autumn-canopy.webp", width: 1000, height: 266 },
