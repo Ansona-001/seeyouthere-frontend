@@ -127,7 +127,7 @@ function TitleText({
       {parts.map((part, i) => {
         if (!part.amp) {
           return (
-            <span key={i} className={stacked ? "block" : undefined}>
+            <span key={i} data-ev-name="" className={stacked ? "block" : undefined}>
               {part.text}
               {!stacked && i < parts.length - 1 ? " " : null}
             </span>
@@ -379,6 +379,8 @@ export function HeroV2({
           (onBlock
             ? "@min-[900px]/ev:pt-[max(5rem,var(--ev-ptw,0px))]"
             : "@min-[900px]/ev:pt-[max(6rem,var(--ev-ptw,0px))]"),
+        // Inside a framed first screen the frame already holds the hero clear of the art.
+        inWindow && "pt-2! @min-[900px]/ev:pt-2!",
         split && "@min-[900px]/ev:h-full @min-[900px]/ev:justify-center @min-[900px]/ev:px-12 @min-[900px]/ev:py-20",
         onBlock && "mb-[34px] text-(--ev-accent-text)",
         // The colour block runs edge to edge even inside the centred column.

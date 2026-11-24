@@ -156,15 +156,18 @@ const CLEARANCE: Record<string, { top?: number; topFluid?: number; bottom?: numb
 };
 
 /**
- * Page art that frames a fixed window (Temple Pond's arch, pillars and temple): the page is drawn as one 9:16 card that
- * fills the screen and never scrolls, and only the content inside the window between the arch and the temple scrolls.
+ * Page art that frames the first screen (Temple Pond's arch, pillars and temple): the page opens on one card as tall
+ * as the screen with the hero in the window between the arch and the temple; every other section follows below.
  */
 export const FRAMED_ART: ReadonlySet<string> = new Set(["temple_pond_page"]);
 /**
- * What fills the screen either side of a framed card on wide screens: a small copy of the whole painting, drawn
- * blurred and faded behind the card. Constant same-origin files under public/, never user input.
+ * The landscape painting a framed theme fills a wide screen with instead of its portrait art, as a Tailwind class
+ * (a background image, so a phone never downloads it). Written out in full so Tailwind generates it; constant
+ * same-origin files under public/, never user input.
  */
-export const FRAMED_BACKDROPS: Record<string, string> = { temple_pond_page: "/themes/temple-pond-backdrop.webp" };
+export const FRAMED_WIDE: Record<string, string> = {
+  temple_pond_page: "bg-[url(/themes/temple-pond-wide.webp)]",
+};
 
 /** Art keys of the stationery-style themes (Harvest, Marigold): a hero that opens the page and cards drawn as flat paper tags. */
 export const STATIONERY_ART: ReadonlySet<string> = new Set(["autumn", "marigold", "wildflower"]);

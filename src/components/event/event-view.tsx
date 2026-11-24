@@ -45,7 +45,8 @@ import { INTROS } from "./theme-engine/intros";
 import { HeroV2 } from "./theme-engine/hero";
 import { customMusicSrc, MUSIC_TRACKS } from "./theme-engine/music-tracks";
 import { ART } from "./theme-engine/art/registry";
-import { artClearance, dateOrnamentKey, FRAMED_ART, FRAMED_BACKDROPS, STATIONERY_ART } from "./theme-engine/ornament-keys";
+import { FrameLife } from "./theme-engine/art/frame-life";
+import { artClearance, dateOrnamentKey, FRAMED_ART, FRAMED_WIDE, STATIONERY_ART } from "./theme-engine/ornament-keys";
 import { LayerStack } from "./theme-engine/layers";
 import { LayoutV2 } from "./theme-engine/layout";
 import { BadgeOrnament, DividerOrnament } from "./theme-engine/ornaments";
@@ -261,50 +262,82 @@ export function EventView({
     const music = customMusic ?? (track ? MUSIC_TRACKS[track] : null);
     const framedArt = theme.layers?.find((l) => l.kind === "art" && FRAMED_ART.has(l.art));
     if (framedArt && framedArt.kind === "art") {
-      // A framed theme is one 9:16 card as tall as the screen (or the editor's preview pane, and never narrower than
-      // its 390px phone frame). The art frames it and never moves; only the window between the arch (46% of the card
-      // width down) and the temple (50% up) scrolls, its edges fading under the art. On a wider screen the rest of the
-      // screen shows the same painting blurred behind the card, so the template fills it without stretching the art.
-      const backdropKey = ownKey(FRAMED_BACKDROPS, framedArt.art);
+      // A framed theme opens on one card as tall as the screen (or the editor's preview pane, and never narrower than
+      // its 390px phone frame): 9:16, or the full width on a phone. The hero sits in the window between the arch (46%
+      // of the card width down) and the temple (50% up); the card grows taller only if the hero needs more room, and
+      // the pillars stretch with it. The whole page, either side of the card included, is the theme's paper and
+      // texture without the art, so every other section follows below on the same paper.
+      // A wide landscape screen (from 900px) instead fills the whole first screen, edge to edge, with the theme's
+      // landscape painting; the hero sits in its open middle, from 15% to 57% of the height.
+      const plainLayers = theme.layers?.filter((l) => l.kind !== "art");
+      const wideKey = ownKey(FRAMED_WIDE, framedArt.art);
       return (
         <>
         {gate}
-        <div className="relative isolate flex justify-center overflow-hidden" style={{ backgroundColor: theme.palette.background }}>
-          {backdropKey && (
-            // eslint-disable-next-line @next/next/no-img-element -- constant decorative artwork, sized by CSS
-            <img
-              src={FRAMED_BACKDROPS[backdropKey]}
-              alt=""
-              aria-hidden="true"
-              decoding="async"
-              className="pointer-events-none absolute inset-0 -z-10 size-full scale-110 object-cover opacity-70 blur-2xl"
-            />
-          )}
+        <ThemeRootV2 theme={theme} className="flex min-h-dvh flex-col">
+        {mode === "live" && music && <ThemeMusic key={music} src={music} download={customMusic !== null} />}
+        <LayerStack layers={plainLayers} region="page" foil={theme.foil} />
+        <div data-ev-frame="" className="flex justify-center">
+          {/* Its own container, so the art and the window are measured against the card, not the page. */}
           <ThemeRootV2
             theme={theme}
             className={cn(
-              "w-full overflow-hidden shadow-[0_0_48px_rgb(0_0_0/0.22)]",
+              "flex w-full flex-col overflow-hidden shadow-[0_0_32px_rgb(0_0_0/0.14)]",
               mode === "preview"
-                ? "h-[max(480px,calc(100dvh-11rem))] max-w-[max(390px,calc(max(480px,calc(100dvh-11rem))*9/16))]"
-                : "h-dvh max-w-[calc(100dvh*9/16)]",
+                ? "min-h-[max(480px,calc(100dvh-11rem))] max-w-[max(390px,calc(max(480px,calc(100dvh-11rem))*9/16))]"
+                : // A phone is taller than 9:16, so there the card takes the whole width (up to 640px) instead of
+                  // leaving strips of paper either side.
+                  "min-h-dvh max-w-[max(calc(100dvh*9/16),min(100%,640px))]",
+              wideKey && "@min-[900px]/ev:landscape:max-w-none @min-[900px]/ev:landscape:shadow-none",
             )}
           >
-            {mode === "live" && music && <ThemeMusic key={music} src={music} download={customMusic !== null} />}
-            <LayerStack layers={theme.layers} region="page" foil={theme.foil} />
+            {/* The painting moves in very slowly, as the camera does in the film (globals.css, `.ev-life-push`). */}
+            <div className={cn("absolute inset-0", wideKey && "@min-[900px]/ev:landscape:hidden")}>
+              <div className="ev-life-push absolute inset-0">
+                <LayerStack layers={theme.layers} region="page" foil={theme.foil} />
+              </div>
+              <FrameLife art={framedArt.art} wide={false} />
+            </div>
+            {wideKey && (
+              // The landscape painting, cropped to cover the screen. It is drawn in a box of the painting's own shape
+              // (1920 × 1084) centred over the screen, so the lamp glows and the pond line up with it at any size.
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 hidden overflow-hidden [container-type:size] @min-[900px]/ev:landscape:block"
+              >
+                <div className="absolute top-1/2 left-1/2 h-[max(100cqh,calc(100cqw*1084/1920))] w-[max(100cqw,calc(100cqh*1920/1084))] -translate-1/2">
+                  <div className={cn("ev-life-push absolute inset-0 bg-size-[100%_100%]", FRAMED_WIDE[wideKey])} />
+                  <FrameLife art={framedArt.art} wide />
+                </div>
+              </div>
+            )}
+            {/* The window is smaller than a page, so the hero in it is set 15% smaller, spacing included. */}
+            {/* The zoom sits inside the padding so it never shrinks the clearance of the arch and the temple. */}
             <div
-              className="absolute inset-x-0 top-[46cqi] bottom-[50cqi] overflow-y-auto overscroll-contain [scrollbar-width:none] [mask-image:linear-gradient(transparent,#000_24px,#000_calc(100%-24px),transparent)]"
+              className={cn(
+                "relative flex flex-1 flex-col justify-center pt-[46cqi] pb-[50cqi]",
+                wideKey &&
+                  (mode === "preview"
+                    ? "@min-[900px]/ev:landscape:pt-[calc(max(480px,calc(100dvh-11rem))*0.15)] @min-[900px]/ev:landscape:pb-[calc(max(480px,calc(100dvh-11rem))*0.43)]"
+                    : "@min-[900px]/ev:landscape:pt-[15dvh] @min-[900px]/ev:landscape:pb-[43dvh]"),
+              )}
               style={clearSide ? { paddingInline: clearSide } : undefined}
             >
-              {/* The window is smaller than a page, so everything in it is set 15% smaller, spacing included. */}
               <div className="[zoom:0.85]">
                 <LayoutV2 layout={theme.layout} hero={hero}>
-                  {blocks}
+                  {null}
                 </LayoutV2>
-                {slug && <EventFooter slug={slug} removeBranding={removeBranding} mode={mode} />}
               </div>
             </div>
           </ThemeRootV2>
         </div>
+          <div className="pt-6">
+            <LayoutV2 layout={theme.layout} hero={null}>
+              {blocks}
+            </LayoutV2>
+          </div>
+          {slug && <EventFooter slug={slug} removeBranding={removeBranding} mode={mode} />}
+        </ThemeRootV2>
         </>
       );
     }
