@@ -292,7 +292,7 @@ export function EventView({
               className="absolute inset-0 hidden overflow-hidden [container-type:size] @min-[900px]/ev:landscape:block"
             >
               <div className="absolute top-1/2 left-1/2 h-[max(100cqh,calc(100cqw*1084/1920))] w-[max(100cqw,calc(100cqh*1920/1084))] -translate-1/2">
-                <div className={cn("ev-life-push absolute inset-0 bg-size-[100%_100%]", FRAMED_WIDE[wideKey])} />
+                <div className={cn("ev-life-push absolute inset-0", FRAMED_WIDE[wideKey])} />
                 <FrameLife art={framedArt.art} wide />
               </div>
             </div>

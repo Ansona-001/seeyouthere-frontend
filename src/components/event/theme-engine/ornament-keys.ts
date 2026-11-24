@@ -159,15 +159,25 @@ const CLEARANCE: Record<string, { top?: number; topFluid?: number; bottom?: numb
  * Page art that frames the first screen (Temple Pond's arch, pillars and temple): the page opens on one card as tall
  * as the screen with the hero in the window between the arch and the temple; every other section follows below.
  */
-export const FRAMED_ART: ReadonlySet<string> = new Set(["temple_pond_page", "lotus_velvet", "ganesha_mandapam"]);
+export const FRAMED_ART: ReadonlySet<string> = new Set([
+  "temple_pond_page",
+  "lotus_velvet",
+  "ganesha_mandapam",
+  "noor",
+  "grace",
+]);
 /**
- * The landscape painting a framed theme fills a wide screen with instead of its portrait art, as a Tailwind class
- * (a background image, so a phone never downloads it). Written out in full so Tailwind generates it; constant
- * same-origin files under public/, never user input.
+ * What a framed theme fills a wide screen with instead of its portrait art, as Tailwind classes (a background image,
+ * so a phone never downloads it): a landscape painting stretched over a box of its own shape, or a photograph cropped
+ * to cover the screen at a chosen point (Noor's sky, Grace's altar, Grace with the same ivory veil over the ceiling).
+ * Written out in full so Tailwind generates them; constant same-origin files under public/, never user input.
  */
 export const FRAMED_WIDE: Record<string, string> = {
-  temple_pond_page: "bg-[url(/themes/temple-pond-wide.webp)]",
-  lotus_velvet: "bg-[url(/themes/lotus-velvet-wide.webp)]",
+  temple_pond_page: "bg-[url(/themes/temple-pond-wide.webp)] bg-size-[100%_100%]",
+  lotus_velvet: "bg-[url(/themes/lotus-velvet-wide.webp)] bg-size-[100%_100%]",
+  noor: "bg-[url(/themes/noor-wide.webp)] bg-cover bg-[position:center_14%]",
+  grace:
+    "bg-[image:linear-gradient(to_bottom,rgb(244_238_230/0.94),rgb(244_238_230/0.8)_28%,rgb(244_238_230/0.3)_46%,transparent_58%),url(/themes/grace-wide.webp)] bg-cover bg-[position:center_34%]",
 };
 /**
  * Framed art painted on a plain wall the theme's paper matches (Ganesha Mandapam): instead of a landscape copy, a wide
@@ -195,7 +205,8 @@ export type FramedWindow = {
 /**
  * Per framed art key. Temple Pond: between the arch (46% of the card width down) and the temple (50% up), and between
  * 15% and 57% of the height of the landscape. Ganesha Mandapam: below Ganesha (24% down) and above
- * the lotus bowl on the floor.
+ * the lotus bowl on the floor. Noor: in the night sky above the dome. Grace: under the veil over the church
+ * ceiling, above the altar.
  */
 export const FRAMED_WINDOW: Record<string, FramedWindow> = {
   temple_pond_page: {
@@ -210,6 +221,28 @@ export const FRAMED_WINDOW: Record<string, FramedWindow> = {
     portrait: {
       live: "pt-[24dvh] pb-[18dvh]",
       preview: "pt-[calc(max(480px,calc(100dvh-11rem))*0.24)] pb-[calc(max(480px,calc(100dvh-11rem))*0.18)]",
+    },
+  },
+  noor: {
+    portrait: {
+      live: "pt-[6dvh] pb-[56dvh]",
+      preview: "pt-[calc(max(480px,calc(100dvh-11rem))*0.06)] pb-[calc(max(480px,calc(100dvh-11rem))*0.56)]",
+    },
+    wide: {
+      live: "@min-[900px]/ev:landscape:pt-[8dvh] @min-[900px]/ev:landscape:pb-[46dvh]",
+      preview:
+        "@min-[900px]/ev:landscape:pt-[calc(max(480px,calc(100dvh-11rem))*0.08)] @min-[900px]/ev:landscape:pb-[calc(max(480px,calc(100dvh-11rem))*0.46)]",
+    },
+  },
+  grace: {
+    portrait: {
+      live: "pt-[8dvh] pb-[50dvh]",
+      preview: "pt-[calc(max(480px,calc(100dvh-11rem))*0.08)] pb-[calc(max(480px,calc(100dvh-11rem))*0.5)]",
+    },
+    wide: {
+      live: "@min-[900px]/ev:landscape:pt-[6dvh] @min-[900px]/ev:landscape:pb-[48dvh]",
+      preview:
+        "@min-[900px]/ev:landscape:pt-[calc(max(480px,calc(100dvh-11rem))*0.06)] @min-[900px]/ev:landscape:pb-[calc(max(480px,calc(100dvh-11rem))*0.48)]",
     },
   },
 };

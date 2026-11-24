@@ -6,7 +6,7 @@ const PREVIEW_SLUGS: ReadonlySet<string> = new Set([
   "cloud-nine", "gingham", "open-door", "terrazzo", "gilt-noir", "mirror-ball",
   "heirloom", "confetti", "classic", "garden", "modern", "minimal", "mimosa", "harvest", "marigold", "wildflower",
   "clothesline", "welcome-home", "lovebirds", "fizz", "glitterball",
-  "nocturne", "silk-knot", "candlelight", "lullaby", "lit-window", "afterglow", "wisteria", "temple-pond", "lotus-velvet", "ganesha-mandapam",
+  "nocturne", "silk-knot", "candlelight", "lullaby", "lit-window", "afterglow", "wisteria", "temple-pond", "lotus-velvet", "ganesha-mandapam", "noor", "grace",
 ]);
 
 /**

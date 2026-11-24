@@ -29,6 +29,8 @@ type Scene = {
   pond?: { from: number; to: number; top?: string; bottom?: string };
   /** The height of a tree line the mist drifts along. */
   mist?: { top?: string; bottom?: string };
+  /** Small stars that twinkle, for a night sky. */
+  stars?: Spot[];
   /** `false` leaves out the diagonal beam of light that sweeps across now and then (on by default). */
   beam?: false;
 };
@@ -104,6 +106,58 @@ const SCENES: Record<string, { portrait: Scene; wide?: Scene }> = {
       pond: { from: 40, to: 88, top: "95%" },
     },
   },
+  // A lit Ottoman dome under a black sky (Pexels photo): stars over the sky, the small lit dome below glows.
+  noor: {
+    portrait: {
+      cover: { width: 1080, height: 1620 },
+      beam: false,
+      halos: [
+        { spot: { left: "50%", top: "87%" }, size: "34%" },
+        { spot: { left: "61%", top: "52%" }, size: "9%" },
+        { spot: { left: "77%", top: "52%" }, size: "9%" },
+      ],
+      stars: [
+        { left: "12%", top: "6%" },
+        { left: "31%", top: "14%" },
+        { left: "47%", top: "4%" },
+        { left: "21%", top: "29%" },
+        { left: "63%", top: "10%" },
+        { left: "9%", top: "43%" },
+        { left: "40%", top: "24%" },
+        { left: "72%", top: "20%" },
+        { left: "88%", top: "7%" },
+        { left: "55%", top: "18%" },
+      ],
+    },
+    // On a wide screen the photo is cropped to its sky and the dome's crown: stars only.
+    wide: {
+      beam: false,
+      stars: [
+        { left: "8%", top: "10%" },
+        { left: "19%", top: "26%" },
+        { left: "31%", top: "8%" },
+        { left: "44%", top: "4%" },
+        { left: "13%", top: "48%" },
+        { left: "27%", top: "40%" },
+        { left: "62%", top: "6%" },
+        { left: "74%", top: "16%" },
+        { left: "90%", top: "9%" },
+        { left: "84%", top: "30%" },
+      ],
+    },
+  },
+  // A church aisle to a candlelit altar (Pexels photo): the altar candles glow.
+  grace: {
+    portrait: {
+      cover: { width: 1080, height: 1440 },
+      beam: false,
+      halos: [
+        { spot: { left: "49.5%", top: "55%" }, size: "26%" },
+        { spot: { left: "40.5%", top: "51%" }, size: "10%" },
+        { spot: { left: "58.5%", top: "51%" }, size: "10%" },
+      ],
+    },
+  },
 };
 
 // A fixed pseudo-random sequence, so the server and every visit draw the same particles.
@@ -167,6 +221,9 @@ export function FrameLife({ art, wide, className }: { art: string; wide: boolean
             data-pink={h.pink ? "" : undefined}
             style={{ ...h.spot, width: h.size, translate: centre(h.spot), "--i": i } as CSSProperties}
           />
+        ))}
+        {scene.stars?.map((spot, i) => (
+          <div key={`s${i}`} className="ev-life-star" style={{ ...spot, "--i": i } as CSSProperties} />
         ))}
         {scene.lamps?.map((spot, i) => (
           <div

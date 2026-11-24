@@ -68,7 +68,13 @@ export function makeRasterTop(spec: {
  * whose first screen is a single portrait picture (../ornament-keys.ts, FRAMED_ART). `src` is a constant same-origin
  * file under `public/`, never user input. Not animated itself; art/frame-life.tsx draws the life over it.
  */
-export function makeRasterCover(spec: { src: string; width: number; height: number }): (props: ArtProps) => ReactElement | null {
+export function makeRasterCover(spec: {
+  src: string;
+  width: number;
+  height: number;
+  /** A constant Tailwind class laid over the picture to keep text on it readable (a soft veil); written out in full. */
+  scrim?: string;
+}): (props: ArtProps) => ReactElement | null {
   return function RasterCover({ placement }: ArtProps) {
     if (placement !== "page") return null;
     return createElement(
@@ -84,6 +90,7 @@ export function makeRasterCover(spec: { src: string; width: number; height: numb
         fetchPriority: "high",
         className: "block size-full object-cover",
       }),
+      spec.scrim ? createElement("div", { className: `absolute inset-0 ${spec.scrim}` }) : null,
     );
   };
 }

@@ -549,6 +549,16 @@
   background: radial-gradient(closest-side, rgb(255 230 160 / 0.55), rgb(255 200 110 / 0.18) 50%, transparent);
   opacity: 0.6;
 }
+.ev-life-star {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: #fff6dc;
+  box-shadow: 0 0 6px 2px rgb(255 236 180 / 0.55);
+  opacity: 0.7;
+}
 .ev-life-halo[data-pink] {
   background: radial-gradient(closest-side, rgb(255 205 220 / 0.5), rgb(240 150 180 / 0.16) 50%, transparent);
 }
@@ -606,6 +616,10 @@
 @media (prefers-reduced-motion: no-preference) {
   .ev-life-push {
     animation: ev-life-push 40s ease-in-out infinite alternate;
+  }
+  .ev-life-star {
+    animation: ev-life-twinkle 2.8s ease-in-out infinite alternate;
+    animation-delay: calc(var(--i, 0) * -0.7s);
   }
   .ev-life-halo {
     animation: ev-life-breathe 5.5s ease-in-out infinite alternate;

@@ -200,6 +200,15 @@ export const ART: Record<string, ComponentType<ArtProps>> = {
   // Lotus Velvet and Ganesha Mandapam: one portrait painting each, covering the framed first screen.
   lotus_velvet: makeRasterCover({ src: "/themes/lotus-velvet.webp", width: 736, height: 1308 }),
   ganesha_mandapam: makeRasterCover({ src: "/themes/ganesha-mandapam.webp", width: 736, height: 1308 }),
+  // Noor and Grace: one photograph each (Pexels licence). Grace's bright church ceiling gets a soft ivory veil so the
+  // dark names read over it.
+  noor: makeRasterCover({ src: "/themes/noor.webp", width: 1080, height: 1620 }),
+  grace: makeRasterCover({
+    src: "/themes/grace.webp",
+    width: 1080,
+    height: 1440,
+    scrim: "bg-[linear-gradient(to_bottom,rgb(244_238_230/0.94),rgb(244_238_230/0.82)_30%,rgb(244_238_230/0.35)_48%,transparent_60%)]",
+  }),
   autumn_page: makeRasterPage({
     wash: "/themes/autumn-wash.webp",
     bottom: { src: "/themes/autumn-canopy.webp", width: 1000, height: 266 },
