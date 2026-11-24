@@ -101,10 +101,13 @@ export function splitTitle(title: string): TitlePart[] {
   return parts;
 }
 
-/** Space the text column keeps clear of art drawn at the page edges, in px at phone width. */
-export type ArtClearance = { top: number; topFluid: number; bottom: number; reserve: number };
+/**
+ * Space the text column keeps clear of art drawn at the page edges, in px at phone width; `side` is a share of the page
+ * width (percent, up to the 1280px band) kept clear on both sides of art that runs down the page edges.
+ */
+export type ArtClearance = { top: number; topFluid: number; bottom: number; reserve: number; side: number };
 
-const CLEARANCE: Record<string, { top?: number; topFluid?: number; bottom?: number; reserve?: number }> = {
+const CLEARANCE: Record<string, { top?: number; topFluid?: number; bottom?: number; reserve?: number; side?: number }> = {
   olive_branches: { top: 118, bottom: 70 },
   botanical_wash: { top: 150, bottom: 60 },
   printers_corners: { top: 96, bottom: 40 },
@@ -132,6 +135,12 @@ const CLEARANCE: Record<string, { top?: number; topFluid?: number; bottom?: numb
   // The party-bunting band is 36.7% as tall as it is wide; the silver and pink balls rise about 90px from the bottom on a phone.
   glitterball: { topFluid: 37 },
   glitterball_page: { bottom: 150 },
+  // The temple arch band is 65.2% as tall as it is wide; its lamps hang to 49.6% of the width, so the names start below them.
+  // The temple and lotuses rise about 200px from the bottom on a phone (the band's faded top quarter is only sky).
+  temple_pond: { topFluid: 52 },
+  // Its pillars run down both sides; their shafts end 11.7% of the band width in from the page edge, so the text keeps
+  // 13% (plus the layout's own 8px of air beyond that, see event-view.tsx) clear on each side.
+  temple_pond_page: { bottom: 200, side: 13 },
   // Washing line: items hang to about y=104 of a 120px-tall band (about 162px deep at the 600px desktop copy).
   clothesline: { top: 135 },
   lovebirds: { top: 150 },
@@ -145,6 +154,17 @@ const CLEARANCE: Record<string, { top?: number; topFluid?: number; bottom?: numb
   lit_house: { reserve: 246 },
   sunset: { reserve: 210 },
 };
+
+/**
+ * Page art that frames a fixed window (Temple Pond's arch, pillars and temple): the page is drawn as one 9:16 card that
+ * fills the screen and never scrolls, and only the content inside the window between the arch and the temple scrolls.
+ */
+export const FRAMED_ART: ReadonlySet<string> = new Set(["temple_pond_page"]);
+/**
+ * What fills the screen either side of a framed card on wide screens: a small copy of the whole painting, drawn
+ * blurred and faded behind the card. Constant same-origin files under public/, never user input.
+ */
+export const FRAMED_BACKDROPS: Record<string, string> = { temple_pond_page: "/themes/temple-pond-backdrop.webp" };
 
 /** Art keys of the stationery-style themes (Harvest, Marigold): a hero that opens the page and cards drawn as flat paper tags. */
 export const STATIONERY_ART: ReadonlySet<string> = new Set(["autumn", "marigold", "wildflower"]);
@@ -162,7 +182,7 @@ const BOTTOM_PLACEMENTS = new Set(["corners", "bottom_corners", "page"]);
  * reserved for art that does not render.
  */
 export function artClearance(layers: readonly ThemeLayer[] | undefined, drawn: (key: string) => boolean): ArtClearance {
-  const out: ArtClearance = { top: 0, topFluid: 0, bottom: 0, reserve: 0 };
+  const out: ArtClearance = { top: 0, topFluid: 0, bottom: 0, reserve: 0, side: 0 };
   for (const layer of layers ?? []) {
     if (layer.kind !== "art" || !drawn(layer.art)) continue;
     const c = ownKey(CLEARANCE, layer.art);
@@ -174,6 +194,7 @@ export function artClearance(layers: readonly ThemeLayer[] | undefined, drawn: (
       out.topFluid = Math.max(out.topFluid, spec.topFluid ?? 0);
     }
     if (page && BOTTOM_PLACEMENTS.has(layer.placement)) out.bottom = Math.max(out.bottom, spec.bottom ?? 0);
+    if (page && layer.placement === "page") out.side = Math.max(out.side, spec.side ?? 0);
     if (layer.placement === "hero_top") out.reserve = Math.max(out.reserve, spec.reserve ?? 0);
   }
   return out;

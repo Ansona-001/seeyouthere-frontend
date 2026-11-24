@@ -55,9 +55,9 @@ test("artClearance reserves space only for drawn art", () => {
     { kind: "art", art: "__proto__", placement: "corners", colors: [], opacity: 1 },
     { kind: "paper", tone: "#FFFFFF" },
   ] as never;
-  assert.deepEqual(artClearance(layers, () => false), { top: 0, topFluid: 0, bottom: 0, reserve: 0 });
-  assert.deepEqual(artClearance(layers, () => true), { top: 118, topFluid: 0, bottom: 70, reserve: 236 });
-  assert.deepEqual(artClearance(undefined, () => true), { top: 0, topFluid: 0, bottom: 0, reserve: 0 });
+  assert.deepEqual(artClearance(layers, () => false), { top: 0, topFluid: 0, bottom: 0, reserve: 0, side: 0 });
+  assert.deepEqual(artClearance(layers, () => true), { top: 118, topFluid: 0, bottom: 70, reserve: 236, side: 0 });
+  assert.deepEqual(artClearance(undefined, () => true), { top: 0, topFluid: 0, bottom: 0, reserve: 0, side: 0 });
 });
 
 test("dateOrnamentKey allows bars only", () => {

@@ -38,6 +38,8 @@ const BACKEND: Record<string, { min: number; max: number; foil: boolean; placeme
   wildflower_page: { min: 0, max: 0, foil: false, placements: ["page"] },
   glitterball: { min: 0, max: 0, foil: false, placements: ["top"] },
   glitterball_page: { min: 0, max: 0, foil: false, placements: ["page"] },
+  temple_pond: { min: 0, max: 0, foil: false, placements: ["top"] },
+  temple_pond_page: { min: 0, max: 0, foil: false, placements: ["page"] },
   doodles: { min: 2, max: 4, foil: false, placements: ["scatter", "edges"] },
   clothesline: { min: 3, max: 5, foil: false, placements: ["top"] },
   little_house: { min: 4, max: 6, foil: false, placements: ["hero_top"] },
@@ -55,7 +57,7 @@ const PALETTE = ["#112233", "#445566", "#778899", "#AABBCC", "#DDEEFF", "#102030
 
 // React 19 hoists a preload hint for a raster's constant src; it is the only markup outside the layer box.
 // Rasters: one constant same-origin <img>-based layer each, no SVG.
-const RASTER_KEYS: ReadonlySet<string> = new Set(["mimosa", "wisteria", "autumn", "autumn_page", "marigold", "marigold_page", "wildflower", "wildflower_page", "glitterball", "glitterball_page"]);
+const RASTER_KEYS: ReadonlySet<string> = new Set(["mimosa", "wisteria", "autumn", "autumn_page", "marigold", "marigold_page", "wildflower", "wildflower_page", "glitterball", "glitterball_page", "temple_pond", "temple_pond_page"]);
 const PRELOAD_LINK = /<link rel="preload"[^>]*\/>/g;
 function render(key: string, placement: string, colors: readonly string[], extra: Record<string, unknown> = {}): string {
   return renderToStaticMarkup(createElement(ART[key], { placement, colors, region: "page", density: "dense", ...extra })).replace(PRELOAD_LINK, "");
@@ -207,7 +209,7 @@ test("every drawing paints only through --aN, --hl, --sh or the foil gradient", 
 test("clearance reaches the text column for the keys that reserve it", () => {
   const drawn = (key: string) => Object.hasOwn(ART, key);
   const layer = (art: string, placement: string, region: "page" | "hero" = "page") => ({ kind: "art", art, placement, region, colors: [] }) as never;
-  const none = { top: 0, topFluid: 0, bottom: 0, reserve: 0 };
+  const none = { top: 0, topFluid: 0, bottom: 0, reserve: 0, side: 0 };
   assert.deepEqual(artClearance([layer("olive_branches", "corners")], drawn), { ...none, top: 118, bottom: 70 });
   assert.deepEqual(artClearance([layer("mirror_ball", "hero_top", "hero")], drawn), { ...none, reserve: 236 });
   assert.deepEqual(artClearance([layer("open_door_plants", "bottom_corners")], drawn), { ...none, bottom: 170 });
@@ -232,8 +234,10 @@ test("clearance reaches the text column for the keys that reserve it", () => {
   assert.deepEqual(artClearance([layer("wildflower_page", "page")], drawn), { ...none, bottom: 200 });
   assert.deepEqual(artClearance([layer("glitterball", "top")], drawn), { ...none, topFluid: 37 });
   assert.deepEqual(artClearance([layer("glitterball_page", "page")], drawn), { ...none, bottom: 150 });
+  assert.deepEqual(artClearance([layer("temple_pond", "top")], drawn), { ...none, topFluid: 52 });
+  assert.deepEqual(artClearance([layer("temple_pond_page", "page")], drawn), { ...none, bottom: 200, side: 13 });
   assert.deepEqual(artClearance([layer("mimosa", "top", "hero")], drawn), none);
-  assert.deepEqual(artClearance([layer("mimosa", "top"), layer("olive_branches", "corners")], drawn), { top: 118, topFluid: 27, bottom: 70, reserve: 0 });
+  assert.deepEqual(artClearance([layer("mimosa", "top"), layer("olive_branches", "corners")], drawn), { top: 118, topFluid: 27, bottom: 70, reserve: 0, side: 0 });
   assert.deepEqual(artClearance([layer("balloons", "hero_top", "hero")], drawn), none);
 });
 
@@ -298,6 +302,21 @@ test("marigold is one constant same-origin raster band and its lilies one uprigh
   for (const html of [top, page]) assert.ok(!/<script|<svg|\bhref\b|\bon\w+=|style=|ev-sway/i.test(html), html);
   for (const placement of ALL_PLACEMENTS.filter((p) => p !== "top")) assert.equal(render("marigold", placement, []), "", placement);
   for (const placement of ALL_PLACEMENTS.filter((p) => p !== "page")) assert.equal(render("marigold_page", placement, []), "", placement);
+});
+
+test("temple_pond is one constant same-origin raster band, a pillar per side and one upright temple, never animated", () => {
+  const top = render("temple_pond", "top", []);
+  assert.equal(count(top, /<img\b/g), 1);
+  assert.match(top, /<img src="\/themes\/temple-pond-top\.webp" alt="" width="736" height="480" /);
+  const page = render("temple_pond_page", "page", []);
+  assert.equal(count(page, /<img\b/g), 3);
+  assert.equal(count(page, /<img src="\/themes\/temple-pond-pillar\.webp" alt="" width="72" height="105" /g), 2);
+  assert.equal(count(page, /-scale-x-100/g), 1, "the right pillar is the left one mirrored");
+  assert.match(page, /<img src="\/themes\/temple-pond-bottom\.webp" alt="" width="736" height="414" /);
+  assert.ok(!/-scale-y-100/.test(page), "the temple stays upright");
+  for (const html of [top, page]) assert.ok(!/<script|<svg|\bhref\b|\bon\w+=|style=|ev-sway/i.test(html), html);
+  for (const placement of ALL_PLACEMENTS.filter((p) => p !== "top")) assert.equal(render("temple_pond", placement, []), "", placement);
+  for (const placement of ALL_PLACEMENTS.filter((p) => p !== "page")) assert.equal(render("temple_pond_page", placement, []), "", placement);
 });
 
 test("wildflower is one constant same-origin raster band and its bottom flowers one upright image, never animated", () => {

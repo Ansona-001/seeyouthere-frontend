@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { ART } from "./art/registry";
 import { foilGradient } from "./foil";
 import { LayerStack } from "./layers";
-import { artClearance, heroOrnamentKey, sanitizeBadge, splitTitle, STATIONERY_ART } from "./ornament-keys";
+import { artClearance, FRAMED_ART, heroOrnamentKey, sanitizeBadge, splitTitle, STATIONERY_ART } from "./ornament-keys";
 import { HeroOrnament, NumeralBackdrop } from "./ornaments";
 import { ownKey } from "./safe";
 
@@ -47,6 +47,14 @@ const INVITATION_TITLE_SIZE: Partial<Record<FontKey, string>> = {
   // Playfair is wide and heavy; Heirloom's long couple names wrapped to three lines at the default size.
   playfair_display: "text-[clamp(1.75rem,10.5cqi,2.75rem)] @min-[900px]/ev:text-[52px]",
 };
+/**
+ * The invitation title when the accent font is not a script (Temple Pond's Cinzel): the spaced capitals live in the
+ * labels, so the names are set large in upper and lower case, upright and semibold, like the printed card.
+ */
+const INVITATION_TITLE_CAPS_ACCENT: Partial<Record<FontKey, string>> = {
+  cormorant_garamond:
+    "not-italic font-semibold tracking-normal leading-[1.08] text-[clamp(2rem,9.5cqi,3rem)] @min-[900px]/ev:text-[60px]",
+};
 
 /** Kicker (accent font) style by the kind of face the accent font is. */
 const ACCENT_KIND: Partial<Record<FontKey, "serif" | "sans" | "display">> = {
@@ -55,6 +63,7 @@ const ACCENT_KIND: Partial<Record<FontKey, "serif" | "sans" | "display">> = {
   fraunces: "serif",
   dm_serif_display: "serif",
   playfair_display: "serif",
+  cinzel: "display",
   bodoni_moda: "serif",
   bagel_fat_one: "display",
   limelight: "display",
@@ -91,17 +100,22 @@ function accentKind(accent: FontKey): keyof typeof KICKER_CLASS {
   return ACCENT_KIND[accent] ?? "sans";
 }
 
-/** The title as real text; `&` is set in the accent font when the theme asks for it. */
+/**
+ * The title as real text; a `script` `&` is set in the accent font when that is a script face, otherwise in Great
+ * Vibes (always loaded, see lib/fonts.ts) so a capitals accent never sets the ampersand in capitals.
+ */
 function TitleText({
   title,
   amp,
   foil,
   primaryFoil,
+  scriptAccent,
 }: {
   title: string;
   amp: "script" | "word" | null;
   foil: boolean;
   primaryFoil: boolean;
+  scriptAccent: boolean;
 }) {
   const parts = amp ? splitTitle(title) : null;
   if (!parts || !parts.some((p) => p.amp)) return <>{title}</>;
@@ -134,7 +148,8 @@ function TitleText({
             key={i}
             data-ev-foil-text={foil && primaryFoil && i === firstAmp ? "" : undefined}
             className={cn(
-              "[font-family:var(--ev-font-accent)] font-normal not-italic tracking-normal",
+              scriptAccent ? "[font-family:var(--ev-font-accent)]" : "[font-family:var(--font-great-vibes)]",
+              "font-normal not-italic tracking-normal",
               stacked ? "my-0.5 block text-[1.05em] leading-[1.05]" : "px-[.1em]",
               foil ? "ev-foil-text" : HERO_INK,
             )}
@@ -197,7 +212,9 @@ export function HeroV2({
   const showNum = numeral && badge !== "";
   const scale = numeralScale(Array.from(badge).length);
 
-  const clearance = artClearance(theme.layers, (key) => Object.hasOwn(ART, key));
+  // Inside a framed window (FRAMED_ART) the window already starts below the art, so the hero adds no clearance of its own.
+  const inWindow = theme.layers?.some((l) => l.kind === "art" && FRAMED_ART.has(l.art)) ?? false;
+  const clearance = artClearance(inWindow ? [] : theme.layers, (key) => Object.hasOwn(ART, key));
   const fillsScreen = theme.layers?.some((l) => l.kind === "art" && STATIONERY_ART.has(l.art)) ?? false;
   const pt = clearance.reserve || clearance.top;
   const ptWide = clearance.reserve ? clearance.reserve + 40 : clearance.top ? clearance.top + 30 : 0;
@@ -207,7 +224,8 @@ export function HeroV2({
   const vars = (pt || ptWide || fluid ? { "--ev-pt": gap(pt), "--ev-ptw": gap(ptWide) } : undefined) as
     CSSProperties | undefined;
 
-  const kickerClass = KICKER_CLASS[accentKind(accentFont)];
+  const kickerKind = accentKind(accentFont);
+  const kickerClass = KICKER_CLASS[kickerKind];
   const subSans = SANS_BODY.has(theme.fonts.body) && !onBlock;
 
   const content: ReactNode = (
@@ -223,7 +241,7 @@ export function HeroV2({
             invitation && "mx-auto max-w-[66cqi] text-balance @min-[900px]/ev:max-w-none",
             "ev-rise [--i:1]",
             kickerClass,
-            invitation && "text-[22px]",
+            invitation && (kickerKind === "script" ? "text-[22px]" : "pl-[.28em] text-[14px] tracking-[.28em] @min-[900px]/ev:text-[16px]"),
           )}
         >
           {block.kicker}
@@ -238,7 +256,10 @@ export function HeroV2({
             TITLE_SIZE,
             "leading-[1.04] font-medium",
             TITLE_FONT[headingFont],
-            invitation && (INVITATION_TITLE_SIZE[headingFont] ?? "text-[clamp(2.25rem,14cqi,3.5rem)]"),
+            invitation &&
+              ((kickerKind !== "script" && INVITATION_TITLE_CAPS_ACCENT[headingFont]) ||
+                INVITATION_TITLE_SIZE[headingFont] ||
+                "text-[clamp(2.25rem,14cqi,3.5rem)]"),
             fullBleed
               ? "text-white"
               : onBlock
@@ -284,7 +305,13 @@ export function HeroV2({
               )}
             </>
           ) : (
-            <TitleText title={block.title} amp={amp} foil={foil} primaryFoil={ornament !== "foil_numeral"} />
+            <TitleText
+              title={block.title}
+              amp={amp}
+              foil={foil}
+              primaryFoil={ornament !== "foil_numeral"}
+              scriptAccent={kickerKind === "script"}
+            />
           )}
         </h1>
       </div>

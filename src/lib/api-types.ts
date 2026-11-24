@@ -337,7 +337,8 @@ export type FontKey =
   | "bagel_fat_one"
   | "limelight"
   | "josefin_sans"
-  | "dancing_script";
+  | "dancing_script"
+  | "cinzel";
 
 export type Layout = "centered" | "split" | "stacked";
 export type HeroStyle = "full_bleed" | "framed" | "text_only" | "spotlight" | "color_block" | "invitation";

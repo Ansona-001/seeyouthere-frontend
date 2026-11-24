@@ -45,7 +45,7 @@ import { INTROS } from "./theme-engine/intros";
 import { HeroV2 } from "./theme-engine/hero";
 import { customMusicSrc, MUSIC_TRACKS } from "./theme-engine/music-tracks";
 import { ART } from "./theme-engine/art/registry";
-import { artClearance, dateOrnamentKey, STATIONERY_ART } from "./theme-engine/ornament-keys";
+import { artClearance, dateOrnamentKey, FRAMED_ART, FRAMED_BACKDROPS, STATIONERY_ART } from "./theme-engine/ornament-keys";
 import { LayerStack } from "./theme-engine/layers";
 import { LayoutV2 } from "./theme-engine/layout";
 import { BadgeOrnament, DividerOrnament } from "./theme-engine/ornaments";
@@ -251,18 +251,77 @@ export function EventView({
         />
       ) : null;
     const hero = heroBlock ? <HeroV2 block={heroBlock} theme={theme} media={media} footer={heroDate} /> : null;
-    // Keep the footer clear of art that hangs in the bottom corners.
-    const clearBottom = artClearance(theme.layers, (key) => Object.hasOwn(ART, key)).bottom;
+    // Keep the footer clear of art that hangs in the bottom corners, and the text column clear of art down the sides
+    // (a share of the page width up to the 1280px band, less half of the 16px the layout already pads by).
+    const clearance = artClearance(theme.layers, (key) => Object.hasOwn(ART, key));
+    const clearBottom = clearance.bottom;
+    const clearSide = clearance.side ? `max(0px, min(${clearance.side}cqi, ${clearance.side * 12.8}px) - 8px)` : undefined;
     const customMusic = customMusicSrc(musicSrc);
     const track = ownKey(MUSIC_TRACKS, theme.music);
     const music = customMusic ?? (track ? MUSIC_TRACKS[track] : null);
+    const framedArt = theme.layers?.find((l) => l.kind === "art" && FRAMED_ART.has(l.art));
+    if (framedArt && framedArt.kind === "art") {
+      // A framed theme is one 9:16 card as tall as the screen (or the editor's preview pane, and never narrower than
+      // its 390px phone frame). The art frames it and never moves; only the window between the arch (46% of the card
+      // width down) and the temple (50% up) scrolls, its edges fading under the art. On a wider screen the rest of the
+      // screen shows the same painting blurred behind the card, so the template fills it without stretching the art.
+      const backdropKey = ownKey(FRAMED_BACKDROPS, framedArt.art);
+      return (
+        <>
+        {gate}
+        <div className="relative isolate flex justify-center overflow-hidden" style={{ backgroundColor: theme.palette.background }}>
+          {backdropKey && (
+            // eslint-disable-next-line @next/next/no-img-element -- constant decorative artwork, sized by CSS
+            <img
+              src={FRAMED_BACKDROPS[backdropKey]}
+              alt=""
+              aria-hidden="true"
+              decoding="async"
+              className="pointer-events-none absolute inset-0 -z-10 size-full scale-110 object-cover opacity-70 blur-2xl"
+            />
+          )}
+          <ThemeRootV2
+            theme={theme}
+            className={cn(
+              "w-full overflow-hidden shadow-[0_0_48px_rgb(0_0_0/0.22)]",
+              mode === "preview"
+                ? "h-[max(480px,calc(100dvh-11rem))] max-w-[max(390px,calc(max(480px,calc(100dvh-11rem))*9/16))]"
+                : "h-dvh max-w-[calc(100dvh*9/16)]",
+            )}
+          >
+            {mode === "live" && music && <ThemeMusic key={music} src={music} download={customMusic !== null} />}
+            <LayerStack layers={theme.layers} region="page" foil={theme.foil} />
+            <div
+              className="absolute inset-x-0 top-[46cqi] bottom-[50cqi] overflow-y-auto overscroll-contain [scrollbar-width:none] [mask-image:linear-gradient(transparent,#000_24px,#000_calc(100%-24px),transparent)]"
+              style={clearSide ? { paddingInline: clearSide } : undefined}
+            >
+              {/* The window is smaller than a page, so everything in it is set 15% smaller, spacing included. */}
+              <div className="[zoom:0.85]">
+                <LayoutV2 layout={theme.layout} hero={hero}>
+                  {blocks}
+                </LayoutV2>
+                {slug && <EventFooter slug={slug} removeBranding={removeBranding} mode={mode} />}
+              </div>
+            </div>
+          </ThemeRootV2>
+        </div>
+        </>
+      );
+    }
     return (
       <>
       {gate}
       <ThemeRootV2 theme={theme} className="flex min-h-dvh flex-col">
         {mode === "live" && music && <ThemeMusic key={music} src={music} download={customMusic !== null} />}
         <LayerStack layers={theme.layers} region="page" foil={theme.foil} />
-        <div className="flex-1" style={!slug && clearBottom ? { paddingBottom: clearBottom } : undefined}>
+        <div
+          className="flex-1"
+          style={
+            (!slug && clearBottom) || clearSide
+              ? { paddingBottom: !slug && clearBottom ? clearBottom : undefined, paddingInline: clearSide }
+              : undefined
+          }
+        >
           <LayoutV2 layout={theme.layout} hero={hero}>
             {blocks}
           </LayoutV2>

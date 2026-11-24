@@ -73,8 +73,30 @@ export function makeRasterPage(spec: {
   wash?: string;
   /** `flip: false` keeps the image upright (art that grows up from the bottom edge); the default mirrors a top band. */
   bottom: { src: string; width: number; height: number; flip?: boolean };
+  /**
+   * Optional pillar running the full height of the page on the left (and mirrored on the right; the text column keeps
+   * clear of it through the key's `side` clearance in ../ornament-keys.ts): a short slice of a plain shaft cut from the top band's left edge, stretched to
+   * the page height (its grooves run vertically, so the stretch reads as a longer shaft). Its width is a fixed share of
+   * the band width so it lines up with the pillars painted into the top and bottom bands, which cover its ends.
+   */
+  sides?: { src: string; width: number; height: number };
 }): (props: ArtProps) => ReactElement | null {
   const end = "absolute left-1/2 block h-auto w-full -translate-x-1/2 @min-[1280px]/ev:w-[1280px] @min-[1280px]/ev:mask-x-from-85%";
+  // Written out in full so Tailwind generates them. The shaft is 72 of the band's 736px (9.78%, at most 125px of a
+  // 1280px band) and starts 14px (1.9%, at most 24px) in from the band's edge, where the painted pillars stand.
+  const side = "absolute top-0 block h-full w-[min(9.78%,125px)] object-fill";
+  const pillar = (className: string) =>
+    spec.sides
+      ? createElement("img", {
+          src: spec.sides.src,
+          alt: "",
+          width: spec.sides.width,
+          height: spec.sides.height,
+          decoding: "async",
+          loading: "lazy",
+          className: `${side} ${className}`,
+        })
+      : null;
   return function RasterPage({ placement }: ArtProps) {
     if (placement !== "page") return null;
     return createElement(
@@ -86,6 +108,8 @@ export function makeRasterPage(spec: {
             style: { backgroundImage: `url(${spec.wash})` },
           })
         : null,
+      pillar("left-[calc(max(0px,calc(50%-640px))+min(1.9%,24px))]"),
+      pillar("right-[calc(max(0px,calc(50%-640px))+min(1.9%,24px))] -scale-x-100"),
       createElement("img", {
         src: spec.bottom.src,
         alt: "",

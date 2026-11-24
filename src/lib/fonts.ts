@@ -3,6 +3,7 @@ import {
   Birthstone,
   Bodoni_Moda,
   Bricolage_Grotesque,
+  Cinzel,
   Cormorant_Garamond,
   Dancing_Script,
   DM_Serif_Display,
@@ -13,6 +14,7 @@ import {
   Limelight,
   Lora,
   Montserrat,
+  Noto_Serif_Malayalam,
   Pinyon_Script,
   Playfair_Display,
 } from "next/font/google";
@@ -20,18 +22,18 @@ import {
 import type { FontKey } from "./api-types";
 
 /**
- * The sixteen font families a template manifest may reference (build-out plan
+ * The seventeen font families a template manifest may reference (build-out plan
  * §3.4; rich-blocks extension §4.4 added `birthstone`/`montserrat`). This
  * list MUST match the Go allowlist in `internal/content/manifest.go` on the
  * backend — the server validates every manifest against it, so this file
  * only needs to keep the *rendering* side in sync. `great_vibes` and
  * `birthstone` are heading/accent-only by backend convention (never valid as
  * a body font); we don't re-enforce that here since the manifest is
- * validated server-side.
+ * validated server-side. `cinzel` (capitals only) is heading/accent-only too.
  *
  * All are loaded once at module scope (a next/font requirement). Figtree and
  * Bricolage Grotesque double as the site's own UI font (`font-sans`/
- * `font-heading` in globals.css) so they're preloaded; the other fourteen are
+ * `font-heading` in globals.css) so they're preloaded; the other fifteen are
  * only used by whichever event theme is on screen, so `preload: false` keeps
  * a page paying for just the two or three fonts its theme actually needs.
  */
@@ -127,6 +129,26 @@ const josefinSans = Josefin_Sans({
   display: "swap",
 });
 
+const cinzel = Cinzel({
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  variable: "--font-cinzel",
+  preload: false,
+  display: "swap",
+});
+/**
+ * Not a manifest font: the Malayalam fallback of Cormorant and Cinzel, so a Malayalam line ("ശുഭ വിവാഹം")
+ * typed into a Kerala theme is set in a matching serif. Its font files carry a Malayalam unicode-range, so a
+ * page downloads them only when it has Malayalam text.
+ */
+const notoSerifMalayalam = Noto_Serif_Malayalam({
+  subsets: ["malayalam"],
+  weight: ["500", "600"],
+  variable: "--font-noto-serif-malayalam",
+  preload: false,
+  display: "swap",
+});
+
 const FONT_VARIABLE: Record<FontKey, string> = {
   figtree: figtree.variable,
   bricolage_grotesque: bricolageGrotesque.variable,
@@ -144,13 +166,14 @@ const FONT_VARIABLE: Record<FontKey, string> = {
   bagel_fat_one: bagelFatOne.variable,
   limelight: limelight.variable,
   josefin_sans: josefinSans.variable,
+  cinzel: cinzel.variable,
 };
 
 const FONT_CSS_VAR: Record<FontKey, string> = {
   figtree: "var(--font-figtree)",
   bricolage_grotesque: "var(--font-bricolage)",
   playfair_display: "var(--font-playfair-display)",
-  cormorant_garamond: "var(--font-cormorant-garamond)",
+  cormorant_garamond: "var(--font-cormorant-garamond), var(--font-noto-serif-malayalam)",
   dm_serif_display: "var(--font-dm-serif-display)",
   lora: "var(--font-lora)",
   fraunces: "var(--font-fraunces)",
@@ -163,6 +186,7 @@ const FONT_CSS_VAR: Record<FontKey, string> = {
   bagel_fat_one: "var(--font-bagel-fat-one)",
   limelight: "var(--font-limelight)",
   josefin_sans: "var(--font-josefin-sans)",
+  cinzel: "var(--font-cinzel), var(--font-noto-serif-malayalam)",
 };
 
 /**
@@ -179,7 +203,7 @@ export const SCRIPT_FONTS: ReadonlySet<FontKey> = new Set(["great_vibes", "birth
  * anywhere in the app (editor preview, public page, admin template preview)
  * can reference its two chosen fonts via CSS variables.
  */
-export const eventFontVariables = Object.values(FONT_VARIABLE).join(" ");
+export const eventFontVariables = [...Object.values(FONT_VARIABLE), notoSerifMalayalam.variable].join(" ");
 
 /** Resolves a manifest font key to the `var(--font-…)` reference for inline styles. */
 export function fontCssVar(key: FontKey): string {

@@ -190,6 +190,13 @@ export const ART: Record<string, ComponentType<ArtProps>> = {
   glitterball_page: makeRasterPage({
     bottom: { src: "/themes/disco-bottom.webp", width: 900, height: 330, flip: false },
   }),
+  // Temple Pond: the carved arch with its hanging lamps across the top, its pillars down both sides, and the temple,
+  // pond and lotuses growing up from the bottom.
+  temple_pond: makeRasterTop({ src: "/themes/temple-pond-top.webp", width: 736, height: 480, solid: true }),
+  temple_pond_page: makeRasterPage({
+    bottom: { src: "/themes/temple-pond-bottom.webp", width: 736, height: 414, flip: false },
+    sides: { src: "/themes/temple-pond-pillar.webp", width: 72, height: 105 },
+  }),
   autumn_page: makeRasterPage({
     wash: "/themes/autumn-wash.webp",
     bottom: { src: "/themes/autumn-canopy.webp", width: 1000, height: 266 },

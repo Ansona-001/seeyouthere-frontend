@@ -14,7 +14,8 @@ test("intro cover markup is accessible and safe", () => {
   assert.match(src, /Tap to open/);
   assert.ok(src.includes(".ev-intro{display:none!important}"));
   assert.match(src, /role="dialog"/);
-  assert.match(src, /aria-modal="true"/);
+  // Modal on the live page; the editor preview sits inside the editor, so it is not.
+  assert.match(src, /aria-modal=\{preview \? undefined : "true"\}/);
   const imgs = src.match(/<img[^>]*\/>/g) ?? [];
   assert.equal(imgs.length, 3);
   for (const img of imgs) {
