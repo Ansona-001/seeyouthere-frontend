@@ -314,7 +314,9 @@ export function EventView({
                 "sticky top-0 overflow-hidden",
                 // In the editor the pane's height depends on its chrome (a bottom bar on narrow windows), so the
                 // painting takes the whole window there: taller than the pane is only cropped, shorter leaves a band.
-                mode === "preview" ? "h-[max(480px,100dvh)]" : "h-lvh",
+                // Live, the painting runs 4rem past the screen's bottom edge: on iOS Safari the floating toolbar sits over
+                // the page there, and a painting that stopped at 100lvh left a band of plain paper under it.
+                mode === "preview" ? "h-[max(480px,100dvh)]" : "h-[calc(100lvh+4rem)]",
               )}
             >
               {painting}
@@ -323,7 +325,7 @@ export function EventView({
               data-ev-frame=""
               className={cn(
                 "relative",
-                mode === "preview" ? "-mt-[max(480px,100dvh)]" : "-mt-[100lvh]",
+                mode === "preview" ? "-mt-[max(480px,100dvh)]" : "-mt-[calc(100lvh+4rem)]",
                 FRAMED_SCROLL[scrollKey],
               )}
             >

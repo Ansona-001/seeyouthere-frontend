@@ -74,6 +74,8 @@ export function makeRasterCover(spec: {
   height: number;
   /** A constant Tailwind class laid over the picture to keep text on it readable (a soft veil); written out in full. */
   scrim?: string;
+  /** A constant Tailwind `object-*` class for which part of the picture stays when it is cropped to fit; written out in full. */
+  position?: string;
 }): (props: ArtProps) => ReactElement | null {
   return function RasterCover({ placement }: ArtProps) {
     if (placement !== "page") return null;
@@ -88,7 +90,7 @@ export function makeRasterCover(spec: {
         decoding: "async",
         loading: "eager",
         fetchPriority: "high",
-        className: "block size-full object-cover",
+        className: `block size-full object-cover ${spec.position ?? ""}`,
       }),
       spec.scrim ? createElement("div", { className: `absolute inset-0 ${spec.scrim}` }) : null,
     );

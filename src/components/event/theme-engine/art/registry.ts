@@ -198,7 +198,8 @@ export const ART: Record<string, ComponentType<ArtProps>> = {
     sides: { src: "/themes/temple-pond-pillar.webp", width: 72, height: 105 },
   }),
   // Lotus Velvet and Ganesha Mandapam: one portrait painting each, covering the framed first screen.
-  lotus_velvet: makeRasterCover({ src: "/themes/lotus-velvet.webp", width: 736, height: 1308 }),
+  // object-left: the lotus column hugs the left edge, so a taller box crops the velvet on the right, not the flowers.
+  lotus_velvet: makeRasterCover({ src: "/themes/lotus-velvet.webp", width: 736, height: 1308, position: "object-left" }),
   ganesha_mandapam: makeRasterCover({ src: "/themes/ganesha-mandapam.webp", width: 736, height: 1308 }),
   // Noor and Grace: one photograph each (Pexels licence). Grace's bright church ceiling gets a soft ivory veil so the
   // dark names read over it.
