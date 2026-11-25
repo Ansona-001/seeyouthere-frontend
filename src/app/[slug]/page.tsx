@@ -1,10 +1,11 @@
-import type { Metadata, ResolvingMetadata } from "next";
+import type { Metadata, ResolvingMetadata, Viewport } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 
 import { GateShell } from "@/components/brand/gate-shell";
 import { EventView } from "@/components/event/event-view";
+import { safeHex } from "@/components/event/theme-engine/safe";
 import { PasswordGate } from "@/components/event/password-gate";
 import { Button } from "@/components/ui/button";
 import type { PublicEvent } from "@/lib/api-types";
@@ -52,6 +53,15 @@ export async function generateMetadata({ params }: PageProps<"/[slug]">, parent:
       images: event.share_image ? [ogImageFor(event.share_image)] : ((await parent).openGraph?.images ?? []),
     },
   };
+}
+
+// The phone's status and navigation bars take the event's own background, so a dark invitation isn't framed by
+// cream strips above and below (the root layout's colour is the site's).
+export async function generateViewport({ params }: PageProps<"/[slug]">): Promise<Viewport> {
+  const { slug: rawSlug } = await params;
+  const result = await getPublicEvent(normalizeSlug(rawSlug));
+  const background = result.ok ? safeHex(result.data.event.theme.palette.background) : null;
+  return background ? { themeColor: background } : {};
 }
 
 export default async function PublicEventPage({ params }: PageProps<"/[slug]">) {

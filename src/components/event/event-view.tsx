@@ -312,7 +312,9 @@ export function EventView({
             <div
               className={cn(
                 "sticky top-0 overflow-hidden",
-                mode === "preview" ? "h-[max(480px,calc(100dvh-11rem))]" : "h-dvh",
+                // In the editor the pane's height depends on its chrome (a bottom bar on narrow windows), so the
+                // painting takes the whole window there: taller than the pane is only cropped, shorter leaves a band.
+                mode === "preview" ? "h-[max(480px,100dvh)]" : "h-lvh",
               )}
             >
               {painting}
@@ -321,7 +323,7 @@ export function EventView({
               data-ev-frame=""
               className={cn(
                 "relative",
-                mode === "preview" ? "-mt-[max(480px,calc(100dvh-11rem))]" : "-mt-[100dvh]",
+                mode === "preview" ? "-mt-[max(480px,100dvh)]" : "-mt-[100lvh]",
                 FRAMED_SCROLL[scrollKey],
               )}
             >

@@ -345,7 +345,9 @@ export function Editor({
           <div
             className={cn(
               "mx-auto transition-[max-width] duration-(--duration-fast) motion-reduce:transition-none",
-              device === "mobile" ? "my-4 max-w-[390px] overflow-hidden rounded-[2rem] shadow-xl ring-1 ring-border" : "max-w-full",
+              // overflow-clip, not -hidden: it rounds the corners without becoming a scroll container, so a
+              // theme's sticky background (Lotus Velvet) stays put as it does on the live page.
+              device === "mobile" ? "my-4 max-w-[390px] overflow-clip rounded-[2rem] shadow-xl ring-1 ring-border" : "max-w-full",
             )}
           >
             <EventView
