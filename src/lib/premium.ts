@@ -14,6 +14,12 @@ export function formatMoney(currency: Currency, amountMinor: number): string {
   return FORMATTERS[currency].format(amountMinor / 100);
 }
 
+/** A premium design's price in the viewer's region ("₹599"); the first offered price (India) when that region isn't offered. */
+export function priceLabel(prices: readonly RegionPrice[] | undefined, region: Region): string | undefined {
+  const price = prices?.find((p) => p.region === region) ?? prices?.[0];
+  return price ? formatMoney(price.currency, price.amount_minor) : undefined;
+}
+
 export const REGION_LABELS: Record<Region, string> = { IN: "India", AE: "UAE", INT: "Rest of world" };
 
 const REGION_STORAGE_KEY = "syt_pay_region";
@@ -41,23 +47,24 @@ export function pickRegion(preferred: Region | null, prices: readonly RegionPric
   return prices[0]?.region ?? null;
 }
 
-/** The host's remembered choice, else the detected region (browser only; never throws). */
-export function initialRegion(prices: readonly RegionPrice[]): Region | null {
-  let preferred: Region | null = null;
+/** The viewer's remembered choice, else the region detected from their time zone (browser only; never throws). */
+export function preferredRegion(): Region | null {
   try {
     const saved = window.localStorage.getItem(REGION_STORAGE_KEY);
-    if (isRegion(saved)) preferred = saved;
+    if (isRegion(saved)) return saved;
   } catch {
     // storage blocked: fall through to detection
   }
-  if (!preferred) {
-    try {
-      preferred = detectRegion(Intl.DateTimeFormat().resolvedOptions().timeZone, navigator.languages ?? [navigator.language]);
-    } catch {
-      preferred = null;
-    }
+  try {
+    return detectRegion(Intl.DateTimeFormat().resolvedOptions().timeZone, navigator.languages ?? [navigator.language]);
+  } catch {
+    return null;
   }
-  return pickRegion(preferred, prices);
+}
+
+/** The host's remembered choice, else the detected region, among the offered prices (browser only; never throws). */
+export function initialRegion(prices: readonly RegionPrice[]): Region | null {
+  return pickRegion(preferredRegion(), prices);
 }
 
 /** Remembers the host's manual region choice (per-viewer convenience only). */

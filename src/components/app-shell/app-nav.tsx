@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleHelp, House, LogOut, Plus, UserRound, type LucideIcon } from "lucide-react";
+import { CircleHelp, House, LayoutGrid, LogOut, Plus, UserRound, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -46,8 +46,8 @@ function NavItem({
 
 /**
  * The signed-in app's navigation: a slim icon rail down the left from md up, a bar along the bottom on phones.
- * Home is the dashboard (its invites/events filter lives on the page itself); Create is the primary action. Help and
- * Account live outside `/app` but share this shell (see `AppShell`).
+ * Home is the dashboard (its invites/events filter lives on the page itself); Create is the primary action. Designs,
+ * Help and Account live outside `/app` but share this shell (see `AppShell`).
  */
 export function AppNav() {
   const pathname = usePathname();
@@ -97,6 +97,7 @@ export function AppNav() {
       <CreateDialog open={createOpen} onOpenChange={setCreateOpen} />
 
       <NavItem href="/app" label="Home" icon={House} active={onDashboard} />
+      <NavItem href="/designs" label="Designs" icon={LayoutGrid} active={pathname.startsWith("/designs")} />
 
       <div className="hidden flex-1 md:block" />
 

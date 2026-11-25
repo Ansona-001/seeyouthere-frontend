@@ -7,13 +7,19 @@ import { useState, type ReactNode } from "react";
 import { PremiumBadge } from "@/components/premium-badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import type { Occasion, TemplateSummary } from "@/lib/api-types";
+import { RegionSelect } from "@/components/region-select";
+import type { Occasion, Region, TemplateSummary } from "@/lib/api-types";
 import { fontCssVar } from "@/lib/fonts";
+import { priceLabel } from "@/lib/premium";
 import { templatePreviewSrc } from "@/lib/template-preview";
+import { useRegion } from "@/lib/use-region";
 import { cn } from "cn";
 
 const CHIP =
-  "inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-medium transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+  "inline-flex min-h-10 items-center rounded-full border px-4 text-sm font-medium transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+
+const SEGMENT =
+  "inline-flex min-h-9 items-center rounded-full px-4 text-sm font-medium transition-[background-color,color,box-shadow] motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 // One row on phones (scrolls sideways inside itself), wrapping and centred from `sm` up.
 const CHIP_ROW =
@@ -86,11 +92,30 @@ function FilterChip({ active, onClick, children }: { active: boolean; onClick: (
       onClick={onClick}
       className={cn(
         CHIP,
-        active ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-foreground hover:bg-muted",
+        active ? "border-primary bg-primary text-primary-foreground" : "border-transparent bg-muted text-foreground hover:bg-muted/70",
       )}
     >
       {children}
     </button>
+  );
+}
+
+/** A small pill-shaped switch for one-of-few choices; the selected option lifts onto a card-coloured thumb. */
+function Segment({ label, options }: { label: string; options: { value: Tier | null; text: string; active: boolean; onSelect: () => void }[] }) {
+  return (
+    <div role="group" aria-label={label} className="inline-flex rounded-full bg-muted p-1">
+      {options.map((o) => (
+        <button
+          key={o.text}
+          type="button"
+          aria-pressed={o.active}
+          onClick={o.onSelect}
+          className={cn(SEGMENT, o.active ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
+        >
+          {o.text}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -101,11 +126,13 @@ export function DesignGallery({ templates, occasions }: { templates: TemplateSum
   // `selected` outlives `open` so the dialog keeps its content while it animates out.
   const [selected, setSelected] = useState<TemplateSummary | null>(null);
   const [open, setOpen] = useState(false);
+  const [region] = useRegion();
 
   // Only occasions that have at least one design make a chip.
   const chips = occasions.filter((o) => templates.some((t) => t.tags.occasions?.includes(o.slug)));
   // The price chips only make sense while the catalog has both kinds.
-  const hasBothTiers = templates.some((t) => t.is_premium) && templates.some((t) => !t.is_premium);
+  const hasPremium = templates.some((t) => t.is_premium);
+  const hasBothTiers = hasPremium && templates.some((t) => !t.is_premium);
   const visible = templates.filter(
     (t) =>
       (!filter || t.tags.occasions?.includes(filter)) &&
@@ -114,30 +141,34 @@ export function DesignGallery({ templates, occasions }: { templates: TemplateSum
 
   return (
     <>
-      <div role="group" aria-label="Filter by occasion" className={CHIP_ROW}>
-        <FilterChip active={filter === null} onClick={() => setFilter(null)}>
-          All
-        </FilterChip>
-        {chips.map((o) => (
-          <FilterChip key={o.slug} active={filter === o.slug} onClick={() => setFilter(o.slug)}>
-            {o.name}
+      <div className="flex flex-col gap-3">
+        <div role="group" aria-label="Filter by occasion" className={CHIP_ROW}>
+          <FilterChip active={filter === null} onClick={() => setFilter(null)}>
+            All
           </FilterChip>
-        ))}
-      </div>
-
-      {hasBothTiers && (
-        <div role="group" aria-label="Filter by price" className={CHIP_ROW}>
-          <FilterChip active={tier === null} onClick={() => setTier(null)}>
-            Free &amp; premium
-          </FilterChip>
-          <FilterChip active={tier === "free"} onClick={() => setTier("free")}>
-            Free
-          </FilterChip>
-          <FilterChip active={tier === "premium"} onClick={() => setTier("premium")}>
-            Premium
-          </FilterChip>
+          {chips.map((o) => (
+            <FilterChip key={o.slug} active={filter === o.slug} onClick={() => setFilter(o.slug)}>
+              {o.name}
+            </FilterChip>
+          ))}
         </div>
-      )}
+
+        {hasPremium && (
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-between">
+            {hasBothTiers && (
+              <Segment
+                label="Filter by price"
+                options={[
+                  { value: null, text: "Any price", active: tier === null, onSelect: () => setTier(null) },
+                  { value: "free", text: "Free", active: tier === "free", onSelect: () => setTier("free") },
+                  { value: "premium", text: "Premium", active: tier === "premium", onSelect: () => setTier("premium") },
+                ]}
+              />
+            )}
+            <RegionSelect className="flex items-center gap-2 text-sm text-muted-foreground sm:ml-auto" />
+          </div>
+        )}
+      </div>
 
       <p role="status" className="text-center text-sm text-muted-foreground">
         Showing {visible.length} {visible.length === 1 ? "design" : "designs"}
@@ -157,9 +188,11 @@ export function DesignGallery({ templates, occasions }: { templates: TemplateSum
               <span className="relative block">
                 {/* Decorative: the name caption below already labels the card. */}
                 <DesignArt template={t} occasionSlug={filter} alt="" />
-                {t.is_premium && (
-                  <PremiumBadge isPremium className="absolute top-2 left-2 bg-card/90 shadow-sm backdrop-blur-sm" />
-                )}
+                <PremiumBadge
+                  isPremium={t.is_premium}
+                  price={priceLabel(t.prices, region)}
+                  className="absolute top-2 left-2 bg-card/90 shadow-sm backdrop-blur-sm"
+                />
               </span>
               <span className="flex items-center justify-between gap-2 px-1 pb-1">
                 <span className="min-w-0 truncate font-heading text-base text-brand-heading">{t.name}</span>
@@ -172,15 +205,26 @@ export function DesignGallery({ templates, occasions }: { templates: TemplateSum
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-2xl">
-          {selected && <Preview template={selected} occasions={occasions} filter={filter} />}
+          {selected && <Preview template={selected} occasions={occasions} filter={filter} region={region} />}
         </DialogContent>
       </Dialog>
     </>
   );
 }
 
-function Preview({ template, occasions, filter }: { template: TemplateSummary; occasions: Occasion[]; filter: string | null }) {
+function Preview({
+  template,
+  occasions,
+  filter,
+  region,
+}: {
+  template: TemplateSummary;
+  occasions: Occasion[];
+  filter: string | null;
+  region: Region;
+}) {
   const { palette, font } = defaultsOf(template);
+  const price = priceLabel(template.prices, region);
   // Keep catalog order and only offer occasions the app knows about.
   const suits = occasions.filter((o) => template.tags.occasions?.includes(o.slug));
   const href = (o: Occasion) => `/create/${encodeURIComponent(o.slug)}?template=${encodeURIComponent(template.slug)}`;
@@ -198,9 +242,9 @@ function Preview({ template, occasions, filter }: { template: TemplateSummary; o
 
         {template.is_premium && (
           <div className="flex flex-col gap-1.5">
-            <PremiumBadge isPremium className="w-fit" />
+            <PremiumBadge isPremium price={price} className="w-fit" />
             <p className="text-sm text-muted-foreground">
-              Premium designs are free to design; a one-off unlock is needed to publish.
+              Premium designs are free to design; a one-off unlock{price ? ` (${price} per event)` : ""} is needed to publish.
             </p>
           </div>
         )}

@@ -4,12 +4,15 @@ import Image from "next/image";
 import { useState } from "react";
 
 import { PremiumBadge } from "@/components/premium-badge";
+import { RegionSelect } from "@/components/region-select";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import type { EventPremium, Overrides, Palette, TemplateSummary } from "@/lib/api-types";
 import { fontCssVar } from "@/lib/fonts";
+import { priceLabel } from "@/lib/premium";
 import { templatePreviewSrc } from "@/lib/template-preview";
+import { useRegion } from "@/lib/use-region";
 import { cn } from "cn";
 
 const CHOICE =
@@ -74,6 +77,7 @@ export function DesignPanel({
 
       <div>
         <p id="design-template" className="mb-2 text-sm font-semibold">Template</p>
+        {templates.some((t) => t.is_premium) && <RegionSelect className="mb-2 flex items-center gap-2 text-sm text-muted-foreground" />}
         <div className="grid grid-cols-2 gap-2">
           {templates.map((t) => (
             <TemplateCard
@@ -190,6 +194,7 @@ function TemplateCard({
   const palette = template.palettes.find((p) => p.id === template.defaults.palette) ?? template.palettes[0];
   const font = template.fonts.find((f) => f.id === template.defaults.font) ?? template.fonts[0];
   const previewSrc = templatePreviewSrc(template.slug, occasionSlug);
+  const [region] = useRegion();
   return (
     <button
       type="button"
@@ -230,6 +235,7 @@ function TemplateCard({
         <PremiumBadge
           isPremium={template.is_premium}
           unlocked={unlocked}
+          price={priceLabel(template.prices, region)}
           className="absolute top-2 left-2 bg-card/90 shadow-sm backdrop-blur-sm"
         />
       </span>

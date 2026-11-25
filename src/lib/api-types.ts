@@ -564,6 +564,8 @@ export type TemplateSummary = {
   decoration: Decoration;
   /** Premium designs can be picked and edited freely; publishing needs a one-off unlock per event. */
   is_premium: boolean;
+  /** Offered unlock prices of a premium design (IN first); absent for free designs. */
+  prices?: RegionPrice[];
 };
 
 export type TemplatesResponse = { templates: TemplateSummary[] };
