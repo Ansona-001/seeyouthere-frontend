@@ -106,6 +106,7 @@ export function PeopleForm({
               <p className="text-sm font-medium">Photo</p>
               <MediaField
                 eventId={eventId}
+                crop={{ aspect: 1, round: true }}
                 preview={person.photo ? media[person.photo.media_id] ?? null : null}
                 onUploaded={(id, ref) => {
                   onMediaUploaded(id, ref);

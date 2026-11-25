@@ -47,7 +47,7 @@ import type {
 } from "@/lib/api-types";
 
 import { useFieldError } from "./block-issues";
-import { heroDrawsBadge, heroDrawsPhoto } from "./hero-fields";
+import { heroDrawsBadge, heroDrawsPhoto, heroPhotoCrop } from "./hero-fields";
 import { MediaField } from "./media-field";
 import { PeopleForm } from "./people-form";
 import { VideoForm } from "./video-form";
@@ -343,6 +343,7 @@ function HeroForm({
           <MediaField
             eventId={eventId}
             preview={block.image ? media[block.image.media_id] ?? null : null}
+            crop={heroPhotoCrop(theme)}
             onUploaded={(id, ref) => {
               onMediaUploaded(id, ref);
               onChange({ image: { media_id: id, alt: block.image?.alt ?? "" } });

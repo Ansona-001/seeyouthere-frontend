@@ -19,6 +19,23 @@ export function heroDrawsPhoto(theme: Theme): boolean {
   return true;
 }
 
+/**
+ * The frame the hero photo is cropped to, matching how the template draws it (HeroBlock / HeroV2): a circle for
+ * `spotlight` and a colour-block portrait, a 4:5 card for `framed`, and a portrait fill for `full_bleed` (a wide
+ * screen crops further, centred).
+ */
+export function heroPhotoCrop(theme: Theme): { aspect: number; round?: boolean } {
+  switch (theme.hero_style) {
+    case "spotlight":
+    case "color_block":
+      return { aspect: 1, round: true };
+    case "framed":
+      return { aspect: 4 / 5 };
+    default:
+      return { aspect: 3 / 4 };
+  }
+}
+
 export function heroDrawsBadge(theme: Theme): boolean {
   if (theme.engine !== 2) return false;
   const ornament = heroOrnamentKey(theme.ornament?.hero);

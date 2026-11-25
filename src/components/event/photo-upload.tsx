@@ -19,7 +19,14 @@ const JPEG_QUALITY = 0.85;
  * can reuse the exact same client-side downscale before uploading host media
  * (build-out plan §11.4) instead of duplicating it.
  */
-export async function downscaleToJpeg(file: File, opts?: { aspect?: number }): Promise<Blob> {
+export async function downscaleToJpeg(
+  file: File,
+  opts?: {
+    aspect?: number;
+    /** A crop as fractions (0-1) of the picture, from the pan-and-zoom cropper; wins over `aspect`. */
+    crop?: { x: number; y: number; w: number; h: number };
+  },
+): Promise<Blob> {
   const bitmap = await createImageBitmap(file);
   try {
     // With an aspect (width / height), centre-crop the source to it before scaling.
@@ -28,7 +35,13 @@ export async function downscaleToJpeg(file: File, opts?: { aspect?: number }): P
     let sw = bitmap.width;
     let sh = bitmap.height;
     const aspect = opts?.aspect;
-    if (aspect && aspect > 0) {
+    const crop = opts?.crop;
+    if (crop) {
+      sx = Math.min(bitmap.width - 1, Math.max(0, Math.round(crop.x * bitmap.width)));
+      sy = Math.min(bitmap.height - 1, Math.max(0, Math.round(crop.y * bitmap.height)));
+      sw = Math.max(1, Math.min(bitmap.width - sx, Math.round(crop.w * bitmap.width)));
+      sh = Math.max(1, Math.min(bitmap.height - sy, Math.round(crop.h * bitmap.height)));
+    } else if (aspect && aspect > 0) {
       if (sw / sh > aspect) {
         sw = Math.max(1, Math.round(sh * aspect));
         sx = Math.floor((bitmap.width - sw) / 2);

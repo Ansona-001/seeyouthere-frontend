@@ -108,6 +108,7 @@ export function VideoForm({
         <p className="text-sm text-muted-foreground">Shown before the guest presses play. Falls back to a themed placeholder.</p>
         <MediaField
           eventId={eventId}
+          crop={{ aspect: 16 / 9 }}
           preview={block.poster_media_id ? media[block.poster_media_id] ?? null : null}
           onUploaded={(id, ref) => {
             onMediaUploaded(id, ref);

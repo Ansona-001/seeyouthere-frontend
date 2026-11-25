@@ -33,3 +33,11 @@ test("heroDrawsBadge: only v2 themes with a badge-carrying ornament", () => {
   // A v1 theme never prints the badge, whatever an ornament says.
   assert.equal(heroDrawsBadge(theme({ ornament: { hero: "wreath_monogram", badge: "wax_seal" } })), false);
 });
+
+test("the hero photo is cropped to the shape the template draws", async () => {
+  const { heroPhotoCrop } = await import("./hero-fields.ts");
+  assert.deepEqual(heroPhotoCrop(theme({ hero_style: "spotlight" })), { aspect: 1, round: true });
+  assert.deepEqual(heroPhotoCrop(theme({ hero_style: "color_block" })), { aspect: 1, round: true });
+  assert.deepEqual(heroPhotoCrop(theme({ hero_style: "framed" })), { aspect: 4 / 5 });
+  assert.deepEqual(heroPhotoCrop(theme({ hero_style: "full_bleed" })), { aspect: 3 / 4 });
+});
