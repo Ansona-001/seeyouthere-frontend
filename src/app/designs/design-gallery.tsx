@@ -35,7 +35,17 @@ function defaultsOf(t: TemplateSummary) {
 }
 
 /** Preview image, or a palette/font swatch for designs that ship without one. */
-function DesignArt({ template, occasionSlug, alt }: { template: TemplateSummary; occasionSlug: string | null; alt: string }) {
+function DesignArt({
+  template,
+  occasionSlug,
+  alt,
+  className,
+}: {
+  template: TemplateSummary;
+  occasionSlug: string | null;
+  alt: string;
+  className?: string;
+}) {
   const { palette, font } = defaultsOf(template);
   const src = templatePreviewSrc(template.slug, occasionSlug);
   if (src) {
@@ -48,7 +58,7 @@ function DesignArt({ template, occasionSlug, alt }: { template: TemplateSummary;
         // Static, pre-compressed files; the site's custom loader only serves media renditions.
         unoptimized
         loading="lazy"
-        className="aspect-3/4 w-full rounded-xl object-cover object-top ring-1 ring-foreground/10"
+        className={cn("aspect-3/4 w-full rounded-xl object-cover object-top ring-1 ring-foreground/10", className)}
         style={{ backgroundColor: palette?.colors.background }}
       />
     );
@@ -58,7 +68,7 @@ function DesignArt({ template, occasionSlug, alt }: { template: TemplateSummary;
       role={alt ? "img" : undefined}
       aria-label={alt || undefined}
       aria-hidden={alt ? undefined : true}
-      className="grid aspect-3/4 w-full place-items-center rounded-xl text-4xl ring-1 ring-foreground/10"
+      className={cn("grid aspect-3/4 w-full place-items-center rounded-xl text-4xl ring-1 ring-foreground/10", className)}
       style={{
         backgroundColor: palette?.colors.background,
         color: palette?.colors.text,
@@ -204,7 +214,7 @@ export function DesignGallery({ templates, occasions }: { templates: TemplateSum
       </ul>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="max-h-[calc(100dvh-2rem)] gap-3 overflow-y-auto p-4 sm:max-w-2xl sm:gap-4 sm:p-6">
           {selected && <Preview template={selected} occasions={occasions} filter={filter} region={region} />}
         </DialogContent>
       </Dialog>
@@ -230,9 +240,16 @@ function Preview({
   const href = (o: Occasion) => `/create/${encodeURIComponent(o.slug)}?template=${encodeURIComponent(template.slug)}`;
 
   return (
-    <div className="grid gap-5 sm:grid-cols-2 sm:items-start">
-      <DesignArt template={template} occasionSlug={filter} alt={`Preview of the ${template.name} design`} />
-      <div className="flex flex-col gap-4">
+    // On a phone everything fits one screen without scrolling: the picture is capped to a third of the height and
+    // the details sit side by side; from `sm` it is the roomier two-column layout.
+    <div className="grid gap-3 sm:grid-cols-2 sm:items-start sm:gap-5">
+      <DesignArt
+        template={template}
+        occasionSlug={filter}
+        alt={`Preview of the ${template.name} design`}
+        className="mx-auto max-h-[34dvh] w-auto sm:max-h-none sm:w-full"
+      />
+      <div className="flex flex-col gap-3 sm:gap-4">
         <DialogHeader>
           <DialogTitle>{template.name}</DialogTitle>
           <DialogDescription>
@@ -241,15 +258,15 @@ function Preview({
         </DialogHeader>
 
         {template.is_premium && (
-          <div className="flex flex-col gap-1.5">
-            <PremiumBadge isPremium price={price} className="w-fit" />
-            <p className="text-sm text-muted-foreground">
+          <div className="flex items-start gap-2 sm:flex-col sm:gap-1.5">
+            <PremiumBadge isPremium price={price} className="w-fit shrink-0" />
+            <p className="text-sm leading-snug text-muted-foreground">
               Premium designs are free to design; a one-off unlock{price ? ` (${price} per event)` : ""} is needed to publish.
             </p>
           </div>
         )}
 
-        <dl className="grid gap-3 text-sm">
+        <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-1">
           {palette && (
             <div>
               <dt className="font-medium text-foreground">Colours</dt>
@@ -270,7 +287,7 @@ function Preview({
         {suits.length === 0 ? (
           <p className="text-sm text-muted-foreground">This design isn&rsquo;t available to start from yet.</p>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className={cn("grid gap-2", suits.length > 1 && "grid-cols-2 sm:grid-cols-1")}>
             {suits.map((o) => (
               <Button key={o.slug} size="lg" render={<Link href={href(o)} />} nativeButton={false}>
                 {suits.length === 1 ? "Use this design" : `Use for ${o.name}`}
