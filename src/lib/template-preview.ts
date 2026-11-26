@@ -15,7 +15,7 @@ const PREVIEW_SLUGS: ReadonlySet<string> = new Set([
  * the event, so it is never interpolated into a URL unless it is listed here.
  */
 const OCCASION_PREVIEWS: ReadonlySet<string> = new Set([
-  ...["wedding", "engagement", "birthday", "baby-shower", "housewarming", "party"].flatMap((o) => [
+  ...["wedding", "engagement", "birthday", "baby-shower", "housewarming", "party", "function"].flatMap((o) => [
     `classic--${o}`,
     `modern--${o}`,
     `minimal--${o}`,

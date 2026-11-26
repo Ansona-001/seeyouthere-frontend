@@ -27,9 +27,17 @@ const CHIP_ROW =
 
 type Tier = "free" | "premium";
 
-function defaultsOf(t: TemplateSummary) {
+// Occasions whose cards are drawn in a non-default palette (the On stage previews are black and blue), so the
+// swatches match the picture. Falls back to the template's default when it has no such palette.
+const OCCASION_PALETTE: Readonly<Record<string, string>> = { function: "black-blue" };
+
+function defaultsOf(t: TemplateSummary, occasionSlug?: string | null) {
+  const wanted = occasionSlug ? OCCASION_PALETTE[occasionSlug] : undefined;
   return {
-    palette: t.palettes.find((p) => p.id === t.defaults.palette) ?? t.palettes[0],
+    palette:
+      (wanted ? t.palettes.find((p) => p.id === wanted) : undefined) ??
+      t.palettes.find((p) => p.id === t.defaults.palette) ??
+      t.palettes[0],
     font: t.fonts.find((f) => f.id === t.defaults.font) ?? t.fonts[0],
   };
 }
@@ -46,7 +54,7 @@ function DesignArt({
   alt: string;
   className?: string;
 }) {
-  const { palette, font } = defaultsOf(template);
+  const { palette, font } = defaultsOf(template, occasionSlug);
   const src = templatePreviewSrc(template.slug, occasionSlug);
   if (src) {
     return (
@@ -82,8 +90,8 @@ function DesignArt({
   );
 }
 
-function Swatches({ template }: { template: TemplateSummary }) {
-  const { palette } = defaultsOf(template);
+function Swatches({ template, occasionSlug }: { template: TemplateSummary; occasionSlug?: string | null }) {
+  const { palette } = defaultsOf(template, occasionSlug);
   if (!palette) return null;
   return (
     <span aria-hidden className="flex shrink-0 items-center gap-1">
@@ -206,7 +214,7 @@ export function DesignGallery({ templates, occasions }: { templates: TemplateSum
               </span>
               <span className="flex items-center justify-between gap-2 px-1 pb-1">
                 <span className="min-w-0 truncate font-heading text-base text-brand-heading">{t.name}</span>
-                <Swatches template={t} />
+                <Swatches template={t} occasionSlug={filter} />
               </span>
             </button>
           </li>
@@ -235,8 +243,9 @@ function Preview({
 }) {
   const { palette, font } = defaultsOf(template);
   const price = priceLabel(template.prices, region);
-  // Keep catalog order and only offer occasions the app knows about.
-  const suits = occasions.filter((o) => template.tags.occasions?.includes(o.slug));
+  // Keep catalog order and only offer occasions the app knows about. With an occasion chip selected the visitor has
+  // already chosen, so offer just that one (every visible design carries its tag).
+  const suits = occasions.filter((o) => (filter ? o.slug === filter : template.tags.occasions?.includes(o.slug)));
   const href = (o: Occasion) => `/create/${encodeURIComponent(o.slug)}?template=${encodeURIComponent(template.slug)}`;
 
   return (
@@ -270,9 +279,17 @@ function Preview({
           {palette && (
             <div>
               <dt className="font-medium text-foreground">Colours</dt>
-              <dd className="mt-1 flex items-center gap-2 text-muted-foreground">
-                <Swatches template={template} />
-                {palette.name}
+              <dd className="mt-1 flex flex-col gap-1.5 text-muted-foreground">
+                {template.palettes.map((p) => (
+                  <span key={p.id} className="flex items-center gap-2">
+                    <span aria-hidden className="flex shrink-0 items-center gap-1">
+                      {(["background", "accent", "text"] as const).map((k) => (
+                        <span key={k} className="size-4 rounded-full ring-1 ring-border" style={{ backgroundColor: p.colors[k] }} />
+                      ))}
+                    </span>
+                    {p.name}
+                  </span>
+                ))}
               </dd>
             </div>
           )}
