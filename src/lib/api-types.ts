@@ -972,7 +972,7 @@ export type AdminEventReport = {
   created_at: string;
 };
 
-export type AdminEventSummary = EventSummary & { owner_email: string };
+export type AdminEventSummary = EventSummary & { owner_email: string; content_updated_at: string };
 export type AdminEventsListResponse = { events: AdminEventSummary[]; next_cursor: string | null };
 
 export type AdminEventPayment = {
@@ -986,7 +986,7 @@ export type AdminEventPayment = {
 };
 
 export type AdminEventDetail = {
-  event: Event & { owner_email: string; template_id?: string };
+  event: Event & { owner_email: string; content_updated_at: string; template_id?: string };
   counts: { rsvps: number; guests: number; media: number };
   reports: AdminEventReport[];
   /** Unlocks recorded for this event. Optional so an older API response still renders. */

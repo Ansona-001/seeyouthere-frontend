@@ -49,6 +49,7 @@ export function EventsTable({
             <TableHead>Owner</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Created</TableHead>
+            <TableHead>Last updated</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -65,6 +66,7 @@ export function EventsTable({
                 <Badge variant={e.status === "taken_down" ? "destructive" : "secondary"}>{e.status}</Badge>
               </TableCell>
               <TableCell className="text-muted-foreground">{formatDateTime(e.created_at)}</TableCell>
+              <TableCell className="text-muted-foreground">{formatDateTime(e.content_updated_at)}</TableCell>
               <TableCell className="text-right">
                 <Button size="sm" variant="outline" render={<Link href={`/admin/events/${e.id}`} />} nativeButton={false}>
                   Manage

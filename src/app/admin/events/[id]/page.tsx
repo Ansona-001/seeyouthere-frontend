@@ -40,7 +40,7 @@ export default async function AdminEventDetailPage({ params }: PageProps<"/admin
         </Link>
         <h1 className="font-heading text-2xl text-brand-heading">{event.title || "(untitled)"}</h1>
         <p className="text-muted-foreground">
-          {event.owner_email} · {event.occasion_slug} · <Badge variant="outline">{event.status}</Badge>
+          {event.owner_email} · {event.occasion_slug} · <Badge variant="outline">{event.status}</Badge> · Last updated {formatDateTime(event.content_updated_at)}
         </p>
         {event.url && (
           <a href={event.url} target="_blank" rel="noopener noreferrer" className="text-sm underline">
